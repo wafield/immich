@@ -400,9 +400,13 @@
             <Text size="small" color="muted">EXIF Tags</Text>
           </div>
           <div class="mt-2 grid grid-cols-[140px_1fr] gap-x-4 gap-y-3 text-sm text-immich-fg dark:text-immich-dark-fg">
-            {#each extraExifFields as { label, value }}
-              <div class="text-immich-fg/60 dark:text-immich-dark-fg/60 font-medium select-none">{label}</div>
-              <div class="break-all whitespace-pre-wrap font-mono text-xs text-immich-fg opacity-75 dark:text-immich-dark-fg select-text">{value}</div>
+            {#each extraExifFields as { label, value } (label)}
+              <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">{label}</div>
+              <div
+                class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+              >
+                {value}
+              </div>
             {/each}
           </div>
         {/if}

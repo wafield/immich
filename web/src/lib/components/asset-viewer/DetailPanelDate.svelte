@@ -5,7 +5,8 @@
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
-  import { mdiCalendar, mdiPencil } from '@mdi/js';
+  import { mdiCalendar, mdiPencil, mdiCloudUploadOutline } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -21,6 +22,9 @@
       : fromISODateTimeUTC(asset.localDateTime),
   );
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
+  const uploadedDate = $derived(
+    asset.createdAt ? DateTime.fromISO(asset.createdAt) : undefined,
+  );
 
   const handleChangeDate = async () => {
     if (!isOwner) {
@@ -80,6 +84,36 @@
     </div>
     <div class="p-1">
       <Icon icon={mdiPencil} size="20" />
+    </div>
+  </div>
+{/if}
+
+{#if uploadedDate}
+  <div
+    class="flex w-full place-items-start justify-between gap-4 py-4 text-start"
+    title={$t('upload_status_uploaded')}
+  >
+    <div class="flex gap-4">
+      <Icon icon={mdiCloudUploadOutline} size="24" />
+
+      <div>
+        <p>
+          {uploadedDate.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale })}
+        </p>
+        <div class="flex gap-2 text-sm">
+          <p>
+            {uploadedDate.toLocaleString(
+              {
+                weekday: 'short',
+                hour: 'numeric',
+                minute: '2-digit',
+                second: '2-digit',
+              },
+              { locale: $locale },
+            )}
+          </p>
+        </div>
+      </div>
     </div>
   </div>
 {/if}

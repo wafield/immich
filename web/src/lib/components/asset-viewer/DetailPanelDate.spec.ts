@@ -27,7 +27,7 @@ describe('DetailPanelDate', () => {
   it('does not display a timezone offset or name when timeZone is not present', () => {
     const asset = assetFactory.build({
       localDateTime: '2023-11-20T01:11:00.000Z',
-      exifInfo: null,
+      exifInfo: undefined,
     });
 
     render(DetailPanelDate, {
