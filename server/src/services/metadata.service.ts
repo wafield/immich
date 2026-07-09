@@ -266,6 +266,130 @@ export class MetadataService extends BaseService {
 
     const tags = this.getTagList(exifTags);
 
+    const make =
+      exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null);
+    const makeUpper = make ? make.toUpperCase() : '';
+
+    let quality: string | null = null;
+    let sharpness: string | null = null;
+    let whiteBalanceFineTune: string | null = null;
+    let noiseReduction: string | null = null;
+    let clarity: string | null = null;
+    let focusMode: string | null = null;
+    let focusPixel: string | null = null;
+    let focusMode2: string | null = null;
+    let pictureMode: string | null = null;
+    let shadowTone: string | null = null;
+    let highlightTone: string | null = null;
+    let colorChromeEffect: string | null = null;
+    let colorChromeFXBlue: string | null = null;
+    let driveMode: string | null = null;
+    let shutterType: string | null = null;
+    let filmMode: string | null = null;
+    let continuousDrive: string | null = null;
+    let canonExposureMode: string | null = null;
+    let colorTone: string | null = null;
+    let autoISO: string | null = null;
+    let cameraTemperature: string | null = null;
+    let cameraType: string | null = null;
+    let colorTemperature: string | null = null;
+    let pictureStyle: string | null = null;
+    let afAreaMode: string | null = null;
+    let saturation: string | null = null;
+    let contrast: string | null = null;
+    let brightness: string | null = null;
+    let fileFormat: string | null = null;
+    let pictureEffect: string | null = null;
+    let focusLocation: string | null = null;
+    let shadows: string | null = null;
+    let highlights: string | null = null;
+    let imageQuality: string | null = null;
+    let imageStabilization: string | null = null;
+    let shootingMode: string | null = null;
+    let facesDetected: string | null = null;
+    let jpegQuality: string | null = null;
+    let colorTempKelvin: string | null = null;
+    let wbShiftAB: string | null = null;
+    let wbShiftGM: string | null = null;
+    let afPointPosition: string | null = null;
+    let rollAngle: string | null = null;
+    let pitchAngle: string | null = null;
+    let monochromeGrainEffect: string | null = null;
+    let afSubjectDetection: string | null = null;
+    let lut1Name: string | null = null;
+    let lut1Opacity: string | null = null;
+    let lut2Name: string | null = null;
+    let lut2Opacity: string | null = null;
+
+    if (makeUpper.includes('FUJIFILM')) {
+      quality = exifTags.Quality === undefined ? null : String(exifTags.Quality);
+      sharpness = exifTags.Sharpness === undefined ? null : String(exifTags.Sharpness);
+      whiteBalanceFineTune = exifTags.WhiteBalanceFineTune === undefined ? null : String(exifTags.WhiteBalanceFineTune);
+      noiseReduction = exifTags.NoiseReduction === undefined ? null : String(exifTags.NoiseReduction);
+      clarity = exifTags.Clarity === undefined ? null : String(exifTags.Clarity);
+      focusMode = exifTags.FocusMode === undefined ? null : String(exifTags.FocusMode);
+      focusPixel = exifTags.FocusPixel === undefined ? null : String(exifTags.FocusPixel);
+      focusMode2 = exifTags.FocusMode2 === undefined ? null : String(exifTags.FocusMode2);
+      pictureMode = exifTags.PictureMode === undefined ? null : String(exifTags.PictureMode);
+      shadowTone = exifTags.ShadowTone === undefined ? null : String(exifTags.ShadowTone);
+      highlightTone = exifTags.HighlightTone === undefined ? null : String(exifTags.HighlightTone);
+      colorChromeEffect = exifTags.ColorChromeEffect === undefined ? null : String(exifTags.ColorChromeEffect);
+      colorChromeFXBlue = exifTags.ColorChromeFXBlue === undefined ? null : String(exifTags.ColorChromeFXBlue);
+      driveMode = exifTags.DriveMode === undefined ? null : String(exifTags.DriveMode);
+      shutterType = exifTags.ShutterType === undefined ? null : String(exifTags.ShutterType);
+      filmMode = exifTags.FilmMode === undefined ? null : String(exifTags.FilmMode);
+    } else if (makeUpper.includes('CANON')) {
+      focusMode = exifTags.FocusMode === undefined ? null : String(exifTags.FocusMode);
+      continuousDrive = exifTags.ContinuousDrive === undefined ? null : String(exifTags.ContinuousDrive);
+      quality = exifTags.Quality === undefined ? null : String(exifTags.Quality);
+      canonExposureMode = exifTags.CanonExposureMode === undefined ? null : String(exifTags.CanonExposureMode);
+      colorTone = exifTags.ColorTone === undefined ? null : String(exifTags.ColorTone);
+      autoISO = exifTags.AutoISO === undefined ? null : String(exifTags.AutoISO);
+      cameraTemperature = exifTags.CameraTemperature === undefined ? null : String(exifTags.CameraTemperature);
+      cameraType = exifTags.CameraType === undefined ? null : String(exifTags.CameraType);
+      colorTemperature = exifTags.ColorTemperature === undefined ? null : String(exifTags.ColorTemperature);
+      pictureStyle = exifTags.PictureStyle === undefined ? null : String(exifTags.PictureStyle);
+      afAreaMode = exifTags.AFAreaMode === undefined ? null : String(exifTags.AFAreaMode);
+    } else if (makeUpper.includes('SONY')) {
+      sharpness = exifTags.Sharpness === undefined ? null : String(exifTags.Sharpness);
+      saturation = exifTags.Saturation === undefined ? null : String(exifTags.Saturation);
+      contrast = exifTags.Contrast === undefined ? null : String(exifTags.Contrast);
+      brightness = exifTags.Brightness === undefined ? null : String(exifTags.Brightness);
+      colorTemperature = exifTags.ColorTemperature === undefined ? null : String(exifTags.ColorTemperature);
+      fileFormat = exifTags.FileFormat === undefined ? null : String(exifTags.FileFormat);
+      quality = exifTags.Quality === undefined ? null : String(exifTags.Quality);
+      pictureEffect = exifTags.PictureEffect === undefined ? null : String(exifTags.PictureEffect);
+      focusMode = exifTags.FocusMode === undefined ? null : String(exifTags.FocusMode);
+      focusLocation = exifTags.FocusLocation === undefined ? null : String(exifTags.FocusLocation);
+      shadows = exifTags.Shadows === undefined ? null : String(exifTags.Shadows);
+      highlights = exifTags.Highlights === undefined ? null : String(exifTags.Highlights);
+      clarity = exifTags.Clarity === undefined ? null : String(exifTags.Clarity);
+    } else if (makeUpper.includes('PANASONIC')) {
+      imageQuality = exifTags.ImageQuality === undefined ? null : String(exifTags.ImageQuality);
+      focusMode = exifTags.FocusMode === undefined ? null : String(exifTags.FocusMode);
+      afAreaMode = exifTags.AFAreaMode === undefined ? null : String(exifTags.AFAreaMode);
+      imageStabilization = exifTags.ImageStabilization === undefined ? null : String(exifTags.ImageStabilization);
+      shootingMode = exifTags.ShootingMode === undefined ? null : String(exifTags.ShootingMode);
+      noiseReduction = exifTags.NoiseReduction === undefined ? null : String(exifTags.NoiseReduction);
+      facesDetected = exifTags.FacesDetected === undefined ? null : String(exifTags.FacesDetected);
+      jpegQuality = exifTags.JPEGQuality === undefined ? null : String(exifTags.JPEGQuality);
+      saturation = exifTags.Saturation === undefined ? null : String(exifTags.Saturation);
+      sharpness = exifTags.Sharpness === undefined ? null : String(exifTags.Sharpness);
+      colorTempKelvin = exifTags.ColorTempKelvin === undefined ? null : String(exifTags.ColorTempKelvin);
+      wbShiftAB = exifTags.WBShiftAB === undefined ? null : String(exifTags.WBShiftAB);
+      wbShiftGM = exifTags.WBShiftGM === undefined ? null : String(exifTags.WBShiftGM);
+      afPointPosition = exifTags.AFPointPosition === undefined ? null : String(exifTags.AFPointPosition);
+      rollAngle = exifTags.RollAngle === undefined ? null : String(exifTags.RollAngle);
+      pitchAngle = exifTags.PitchAngle === undefined ? null : String(exifTags.PitchAngle);
+      shutterType = exifTags.ShutterType === undefined ? null : String(exifTags.ShutterType);
+      monochromeGrainEffect = exifTags.MonochromeGrainEffect === undefined ? null : String(exifTags.MonochromeGrainEffect);
+      afSubjectDetection = exifTags.AFSubjectDetection === undefined ? null : String(exifTags.AFSubjectDetection);
+      lut1Name = exifTags.LUT1Name === undefined ? null : String(exifTags.LUT1Name);
+      lut1Opacity = exifTags.LUT1Opacity === undefined ? null : String(exifTags.LUT1Opacity);
+      lut2Name = exifTags.LUT2Name === undefined ? null : String(exifTags.LUT2Name);
+      lut2Opacity = exifTags.LUT2Opacity === undefined ? null : String(exifTags.LUT2Opacity);
+    }
+
     const exifData: Insertable<AssetExifTable> = {
       assetId: asset.id,
 
@@ -291,8 +415,7 @@ export class MetadataService extends BaseService {
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
       // camera
-      make:
-        exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
+      make,
       model:
         exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
       fps: video?.frameRate ?? validate(Number.parseFloat(exifTags.VideoFrameRate!)),
@@ -312,6 +435,65 @@ export class MetadataService extends BaseService {
       autoStackId: this.getAutoStackId(exifTags),
 
       tags: tags.length > 0 ? tags : null,
+
+      // Extra & Brand-Specific EXIF fields (Sorted alphabetically)
+      afAreaMode,
+      afPointPosition,
+      afSubjectDetection,
+      autoISO,
+      brightness,
+      cameraTemperature,
+      cameraType,
+      canonExposureMode,
+      clarity,
+      colorChromeEffect,
+      colorChromeFXBlue,
+      colorTempKelvin,
+      colorTemperature,
+      colorTone,
+      continuousDrive,
+      contrast,
+      driveMode,
+      exifVersion: exifTags.ExifVersion ? String(exifTags.ExifVersion) : null,
+      exposureCompensation: exifTags.ExposureCompensation ? String(exifTags.ExposureCompensation) : null,
+      exposureMode: exifTags.ExposureMode ? String(exifTags.ExposureMode) : null,
+      exposureProgram: exifTags.ExposureProgram ? String(exifTags.ExposureProgram) : null,
+      facesDetected,
+      fileFormat,
+      filmMode,
+      focusLocation,
+      focusMode,
+      focusMode2,
+      focusPixel,
+      highlightTone,
+      highlights,
+      imageQuality,
+      imageStabilization,
+      jpegQuality,
+      lut1Name,
+      lut1Opacity,
+      lut2Name,
+      lut2Opacity,
+      meteringMode: exifTags.MeteringMode ? String(exifTags.MeteringMode) : null,
+      monochromeGrainEffect,
+      noiseReduction,
+      pictureEffect,
+      pictureMode,
+      pictureStyle,
+      pitchAngle,
+      quality,
+      rollAngle,
+      saturation,
+      sensitivityType: exifTags.SensitivityType ? String(exifTags.SensitivityType) : null,
+      shadowTone,
+      shadows,
+      sharpness,
+      shootingMode,
+      shutterType,
+      wbShiftAB,
+      wbShiftGM,
+      whiteBalance: exifTags.WhiteBalance ? String(exifTags.WhiteBalance) : null,
+      whiteBalanceFineTune,
     };
 
     const audioData =

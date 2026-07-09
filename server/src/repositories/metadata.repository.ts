@@ -20,7 +20,64 @@ type TagsWithWrongTypes =
   | 'TagsList'
   | 'Keywords'
   | 'HierarchicalSubject'
-  | 'ISO';
+  | 'ISO'
+  | 'ExifVersion'
+  | 'SensitivityType'
+  | 'ExposureProgram'
+  | 'ExposureCompensation'
+  | 'ExposureMode'
+  | 'WhiteBalance'
+  | 'MeteringMode'
+  | 'Quality'
+  | 'Sharpness'
+  | 'WhiteBalanceFineTune'
+  | 'NoiseReduction'
+  | 'Clarity'
+  | 'FocusMode'
+  | 'FocusPixel'
+  | 'FocusMode2'
+  | 'PictureMode'
+  | 'ShadowTone'
+  | 'HighlightTone'
+  | 'ColorChromeEffect'
+  | 'ColorChromeFXBlue'
+  | 'DriveMode'
+  | 'ShutterType'
+  | 'FilmMode'
+  | 'ContinuousDrive'
+  | 'CanonExposureMode'
+  | 'ColorTone'
+  | 'AutoISO'
+  | 'CameraTemperature'
+  | 'CameraType'
+  | 'ColorTemperature'
+  | 'PictureStyle'
+  | 'AFAreaMode'
+  | 'Saturation'
+  | 'Contrast'
+  | 'Brightness'
+  | 'FileFormat'
+  | 'PictureEffect'
+  | 'FocusLocation'
+  | 'Shadows'
+  | 'Highlights'
+  | 'ImageQuality'
+  | 'ImageStabilization'
+  | 'ShootingMode'
+  | 'FacesDetected'
+  | 'JPEGQuality'
+  | 'ColorTempKelvin'
+  | 'WBShiftAB'
+  | 'WBShiftGM'
+  | 'AFPointPosition'
+  | 'RollAngle'
+  | 'PitchAngle'
+  | 'MonochromeGrainEffect'
+  | 'AFSubjectDetection'
+  | 'LUT1Name'
+  | 'LUT1Opacity'
+  | 'LUT2Name'
+  | 'LUT2Opacity';
 
 export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   ContentIdentifier?: string;
@@ -74,6 +131,65 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   AndroidModel?: string;
   DeviceManufacturer?: string;
   DeviceModelName?: string;
+
+  // Extra & Brand-Specific EXIF fields
+  ExifVersion?: string;
+  SensitivityType?: string | number;
+  ExposureProgram?: string | number;
+  ExposureCompensation?: string | number;
+  ExposureMode?: string | number;
+  WhiteBalance?: string | number;
+  MeteringMode?: string | number;
+  Quality?: string | number;
+  Sharpness?: string | number;
+  WhiteBalanceFineTune?: string | number;
+  NoiseReduction?: string | number;
+  Clarity?: string | number;
+  FocusMode?: string | number;
+  FocusPixel?: string | number;
+  FocusMode2?: string | number;
+  PictureMode?: string | number;
+  ShadowTone?: string | number;
+  HighlightTone?: string | number;
+  ColorChromeEffect?: string | number;
+  ColorChromeFXBlue?: string | number;
+  DriveMode?: string | number;
+  ShutterType?: string | number;
+  FilmMode?: string | number;
+  ContinuousDrive?: string | number;
+  CanonExposureMode?: string | number;
+  ColorTone?: string | number;
+  AutoISO?: string | number;
+  CameraTemperature?: string | number;
+  CameraType?: string | number;
+  ColorTemperature?: string | number;
+  PictureStyle?: string | number;
+  AFAreaMode?: string | number;
+  Saturation?: string | number;
+  Contrast?: string | number;
+  Brightness?: string | number;
+  FileFormat?: string | number;
+  PictureEffect?: string | number;
+  FocusLocation?: string | number;
+  Shadows?: string | number;
+  Highlights?: string | number;
+  ImageQuality?: string | number;
+  ImageStabilization?: string | number;
+  ShootingMode?: string | number;
+  FacesDetected?: string | number;
+  JPEGQuality?: string | number;
+  ColorTempKelvin?: string | number;
+  WBShiftAB?: string | number;
+  WBShiftGM?: string | number;
+  AFPointPosition?: string | number;
+  RollAngle?: string | number;
+  PitchAngle?: string | number;
+  MonochromeGrainEffect?: string | number;
+  AFSubjectDetection?: string | number;
+  LUT1Name?: string | number;
+  LUT1Opacity?: string | number;
+  LUT2Name?: string | number;
+  LUT2Opacity?: string | number;
 }
 
 @Injectable()

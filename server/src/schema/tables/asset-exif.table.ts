@@ -110,6 +110,179 @@ export class AssetExifTable {
   @Column({ type: 'character varying', array: true, nullable: true })
   tags!: string[] | null;
 
+  // General EXIF fields (Sorted alphabetically)
+  @Column({ type: 'character varying', nullable: true })
+  exifVersion!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  exposureCompensation!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  exposureMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  exposureProgram!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  meteringMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  sensitivityType!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  whiteBalance!: string | null;
+
+  // Brand-Specific Fields (Sorted alphabetically)
+  @Column({ type: 'character varying', nullable: true })
+  afAreaMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  afPointPosition!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  afSubjectDetection!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  autoISO!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  brightness!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  cameraTemperature!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  cameraType!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  canonExposureMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  clarity!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  colorChromeEffect!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  colorChromeFXBlue!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  colorTempKelvin!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  colorTemperature!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  colorTone!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  continuousDrive!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  contrast!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  driveMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  facesDetected!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  fileFormat!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  filmMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  focusLocation!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  focusMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  focusMode2!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  focusPixel!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  highlightTone!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  highlights!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  imageQuality!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  imageStabilization!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  jpegQuality!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  lut1Name!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  lut1Opacity!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  lut2Name!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  lut2Opacity!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  monochromeGrainEffect!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  noiseReduction!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  pictureEffect!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  pictureMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  pictureStyle!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  pitchAngle!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  quality!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  rollAngle!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  saturation!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  shadowTone!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  shadows!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  sharpness!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  shootingMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  shutterType!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  wbShiftAB!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  wbShiftGM!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  whiteBalanceFineTune!: string | null;
+
   @UpdateDateColumn({ default: () => 'clock_timestamp()' })
   updatedAt!: Generated<Timestamp>;
 
