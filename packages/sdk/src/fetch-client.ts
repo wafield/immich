@@ -785,50 +785,164 @@ export type AssetMetadataBulkResponseDto = {
     };
 };
 export type ExifResponseDto = {
+    /** AF area mode */
+    afAreaMode?: string | null;
+    /** AF point position */
+    afPointPosition?: string | null;
+    /** AF subject detection */
+    afSubjectDetection?: string | null;
+    /** Auto ISO */
+    autoISO?: string | null;
+    /** Brightness */
+    brightness?: string | null;
+    /** Camera temperature */
+    cameraTemperature?: string | null;
+    /** Camera type */
+    cameraType?: string | null;
+    /** Canon exposure mode */
+    canonExposureMode?: string | null;
     /** City name */
     city?: string | null;
+    /** Clarity */
+    clarity?: string | null;
+    /** Color chrome effect */
+    colorChromeEffect?: string | null;
+    /** Color chrome FX blue */
+    colorChromeFXBlue?: string | null;
+    /** Color temperature in Kelvin */
+    colorTempKelvin?: string | null;
+    /** Color temperature */
+    colorTemperature?: string | null;
+    /** Color tone */
+    colorTone?: string | null;
+    /** Continuous drive mode */
+    continuousDrive?: string | null;
+    /** Contrast */
+    contrast?: string | null;
     /** Country name */
     country?: string | null;
     /** Original date/time */
     dateTimeOriginal?: string | null;
     /** Image description */
     description?: string | null;
+    /** Drive mode */
+    driveMode?: string | null;
     /** Image height in pixels */
     exifImageHeight?: number | null;
     /** Image width in pixels */
     exifImageWidth?: number | null;
+    /** EXIF version */
+    exifVersion?: string | null;
+    /** Exposure compensation */
+    exposureCompensation?: string | null;
+    /** Exposure mode */
+    exposureMode?: string | null;
+    /** Exposure program */
+    exposureProgram?: string | null;
     /** Exposure time */
     exposureTime?: string | null;
     /** F-number (aperture) */
     fNumber?: number | null;
+    /** Faces detected */
+    facesDetected?: string | null;
+    /** File format */
+    fileFormat?: string | null;
     /** File size in bytes */
     fileSizeInByte?: number | null;
+    /** Film mode */
+    filmMode?: string | null;
     /** Focal length in mm */
     focalLength?: number | null;
+    /** Focus location */
+    focusLocation?: string | null;
+    /** Focus mode */
+    focusMode?: string | null;
+    /** Focus mode 2 */
+    focusMode2?: string | null;
+    /** Focus pixel */
+    focusPixel?: string | null;
+    /** Highlight tone */
+    highlightTone?: string | null;
+    /** Highlights */
+    highlights?: string | null;
+    /** Image quality */
+    imageQuality?: string | null;
+    /** Image stabilization */
+    imageStabilization?: string | null;
     /** ISO sensitivity */
     iso?: number | null;
+    /** JPEG quality */
+    jpegQuality?: string | null;
     /** GPS latitude */
     latitude?: number | null;
     /** Lens model */
     lensModel?: string | null;
     /** GPS longitude */
     longitude?: number | null;
+    /** LUT 1 name */
+    lut1Name?: string | null;
+    /** LUT 1 opacity */
+    lut1Opacity?: string | null;
+    /** LUT 2 name */
+    lut2Name?: string | null;
+    /** LUT 2 opacity */
+    lut2Opacity?: string | null;
     /** Camera make */
     make?: string | null;
+    /** Metering mode */
+    meteringMode?: string | null;
     /** Camera model */
     model?: string | null;
     /** Modification date/time */
     modifyDate?: string | null;
+    /** Monochrome grain effect */
+    monochromeGrainEffect?: string | null;
+    /** Noise reduction */
+    noiseReduction?: string | null;
     /** Image orientation */
     orientation?: string | null;
+    /** Picture effect */
+    pictureEffect?: string | null;
+    /** Picture mode */
+    pictureMode?: string | null;
+    /** Picture style */
+    pictureStyle?: string | null;
+    /** Pitch angle */
+    pitchAngle?: string | null;
     /** Projection type */
     projectionType?: string | null;
+    /** Quality */
+    quality?: string | null;
     /** Rating */
     rating?: number | null;
+    /** Roll angle */
+    rollAngle?: string | null;
+    /** Saturation */
+    saturation?: string | null;
+    /** Sensitivity type */
+    sensitivityType?: string | null;
+    /** Shadow tone */
+    shadowTone?: string | null;
+    /** Shadows */
+    shadows?: string | null;
+    /** Sharpness */
+    sharpness?: string | null;
+    /** Shooting mode */
+    shootingMode?: string | null;
+    /** Shutter type */
+    shutterType?: string | null;
     /** State/province name */
     state?: string | null;
     /** Time zone */
     timeZone?: string | null;
+    /** White balance shift AB */
+    wbShiftAB?: string | null;
+    /** White balance shift GM */
+    wbShiftGM?: string | null;
+    /** White balance */
+    whiteBalance?: string | null;
+    /** White balance fine tune */
+    whiteBalanceFineTune?: string | null;
 };
 export type PersonResponseDto = {
     /** Person date of birth */
@@ -2943,56 +3057,170 @@ export type SyncAssetEditV1 = {
     sequence: number;
 };
 export type SyncAssetExifV1 = {
+    /** AF area mode */
+    afAreaMode: string | null;
+    /** AF point position */
+    afPointPosition: string | null;
+    /** AF subject detection */
+    afSubjectDetection: string | null;
     /** Asset ID */
     assetId: string;
+    /** Auto ISO */
+    autoISO: string | null;
+    /** Brightness */
+    brightness: string | null;
+    /** Camera temperature */
+    cameraTemperature: string | null;
+    /** Camera type */
+    cameraType: string | null;
+    /** Canon exposure mode */
+    canonExposureMode: string | null;
     /** City */
     city: string | null;
+    /** Clarity */
+    clarity: string | null;
+    /** Color chrome effect */
+    colorChromeEffect: string | null;
+    /** Color chrome FX blue */
+    colorChromeFXBlue: string | null;
+    /** Color temperature in Kelvin */
+    colorTempKelvin: string | null;
+    /** Color temperature */
+    colorTemperature: string | null;
+    /** Color tone */
+    colorTone: string | null;
+    /** Continuous drive mode */
+    continuousDrive: string | null;
+    /** Contrast */
+    contrast: string | null;
     /** Country */
     country: string | null;
     /** Date time original */
     dateTimeOriginal: string | null;
     /** Description */
     description: string | null;
+    /** Drive mode */
+    driveMode: string | null;
     /** Exif image height */
     exifImageHeight: number | null;
     /** Exif image width */
     exifImageWidth: number | null;
+    /** EXIF version */
+    exifVersion: string | null;
+    /** Exposure compensation */
+    exposureCompensation: string | null;
+    /** Exposure mode */
+    exposureMode: string | null;
+    /** Exposure program */
+    exposureProgram: string | null;
     /** Exposure time */
     exposureTime: string | null;
     /** F number */
     fNumber: number | null;
+    /** Faces detected */
+    facesDetected: string | null;
+    /** File format */
+    fileFormat: string | null;
     /** File size in byte */
     fileSizeInByte: number | null;
+    /** Film mode */
+    filmMode: string | null;
     /** Focal length */
     focalLength: number | null;
+    /** Focus location */
+    focusLocation: string | null;
+    /** Focus mode */
+    focusMode: string | null;
+    /** Focus mode 2 */
+    focusMode2: string | null;
+    /** Focus pixel */
+    focusPixel: string | null;
     /** FPS */
     fps: number | null;
+    /** Highlight tone */
+    highlightTone: string | null;
+    /** Highlights */
+    highlights: string | null;
+    /** Image quality */
+    imageQuality: string | null;
+    /** Image stabilization */
+    imageStabilization: string | null;
     /** ISO */
     iso: number | null;
+    /** JPEG quality */
+    jpegQuality: string | null;
     /** Latitude */
     latitude: number | null;
     /** Lens model */
     lensModel: string | null;
     /** Longitude */
     longitude: number | null;
+    /** LUT 1 name */
+    lut1Name: string | null;
+    /** LUT 1 opacity */
+    lut1Opacity: string | null;
+    /** LUT 2 name */
+    lut2Name: string | null;
+    /** LUT 2 opacity */
+    lut2Opacity: string | null;
     /** Make */
     make: string | null;
+    /** Metering mode */
+    meteringMode: string | null;
     /** Model */
     model: string | null;
     /** Modify date */
     modifyDate: string | null;
+    /** Monochrome grain effect */
+    monochromeGrainEffect: string | null;
+    /** Noise reduction */
+    noiseReduction: string | null;
     /** Orientation */
     orientation: string | null;
+    /** Picture effect */
+    pictureEffect: string | null;
+    /** Picture mode */
+    pictureMode: string | null;
+    /** Picture style */
+    pictureStyle: string | null;
+    /** Pitch angle */
+    pitchAngle: string | null;
     /** Profile description */
     profileDescription: string | null;
     /** Projection type */
     projectionType: string | null;
+    /** Quality */
+    quality: string | null;
     /** Rating */
     rating: number | null;
+    /** Roll angle */
+    rollAngle: string | null;
+    /** Saturation */
+    saturation: string | null;
+    /** Sensitivity type */
+    sensitivityType: string | null;
+    /** Shadow tone */
+    shadowTone: string | null;
+    /** Shadows */
+    shadows: string | null;
+    /** Sharpness */
+    sharpness: string | null;
+    /** Shooting mode */
+    shootingMode: string | null;
+    /** Shutter type */
+    shutterType: string | null;
     /** State */
     state: string | null;
     /** Time zone */
     timeZone: string | null;
+    /** White balance shift AB */
+    wbShiftAB: string | null;
+    /** White balance shift GM */
+    wbShiftGM: string | null;
+    /** White balance */
+    whiteBalance: string | null;
+    /** White balance fine tune */
+    whiteBalanceFineTune: string | null;
 };
 export type SyncAssetFaceDeleteV1 = {
     /** Asset face ID */

@@ -56,6 +56,85 @@
   let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
   let activeTab: 'details' | 'more' = $state('details');
 
+  let extraExifFields = $derived(
+    (() => {
+      if (!asset.exifInfo) {
+        return [];
+      }
+      const info = asset.exifInfo as Record<string, any>;
+      const fields: { label: string; value: string | number }[] = [];
+
+      const keys: { key: string; label: string }[] = [
+        { key: 'exifVersion', label: 'EXIF Version' },
+        { key: 'fileFormat', label: 'File Format' },
+        { key: 'exposureProgram', label: 'Exposure Program' },
+        { key: 'exposureMode', label: 'Exposure Mode' },
+        { key: 'exposureCompensation', label: 'Exposure Compensation' },
+        { key: 'brightness', label: 'Brightness' },
+        { key: 'whiteBalance', label: 'White Balance' },
+        { key: 'whiteBalanceFineTune', label: 'White Balance Fine Tune' },
+        { key: 'wbShiftAB', label: 'White Balance Shift AB' },
+        { key: 'wbShiftGM', label: 'White Balance Shift GM' },
+        { key: 'colorTemperature', label: 'Color Temperature' },
+        { key: 'colorTempKelvin', label: 'Color Temperature (Kelvin)' },
+        { key: 'meteringMode', label: 'Metering Mode' },
+        { key: 'sensitivityType', label: 'Sensitivity Type' },
+        { key: 'autoISO', label: 'Auto ISO' },
+        { key: 'contrast', label: 'Contrast' },
+        { key: 'saturation', label: 'Saturation' },
+        { key: 'sharpness', label: 'Sharpness' },
+        { key: 'clarity', label: 'Clarity' },
+        { key: 'highlights', label: 'Highlights' },
+        { key: 'shadows', label: 'Shadows' },
+        { key: 'highlightTone', label: 'Highlight Tone' },
+        { key: 'shadowTone', label: 'Shadow Tone' },
+        { key: 'cameraType', label: 'Camera Type' },
+        { key: 'cameraTemperature', label: 'Camera Temperature' },
+        { key: 'imageQuality', label: 'Image Quality' },
+        { key: 'jpegQuality', label: 'JPEG Quality' },
+        { key: 'quality', label: 'Quality' },
+        { key: 'imageStabilization', label: 'Image Stabilization' },
+        { key: 'shutterType', label: 'Shutter Type' },
+        { key: 'shootingMode', label: 'Shooting Mode' },
+        { key: 'driveMode', label: 'Drive Mode' },
+        { key: 'continuousDrive', label: 'Continuous Drive' },
+        { key: 'focusMode', label: 'Focus Mode' },
+        { key: 'focusMode2', label: 'Focus Mode 2' },
+        { key: 'focusPixel', label: 'Focus Pixel' },
+        { key: 'focusLocation', label: 'Focus Location' },
+        { key: 'afAreaMode', label: 'AF Area Mode' },
+        { key: 'afPointPosition', label: 'AF Point Position' },
+        { key: 'afSubjectDetection', label: 'AF Subject Detection' },
+        { key: 'facesDetected', label: 'Faces Detected' },
+        { key: 'pictureMode', label: 'Picture Mode' },
+        { key: 'pictureStyle', label: 'Picture Style' },
+        { key: 'pictureEffect', label: 'Picture Effect' },
+        { key: 'filmMode', label: 'Film Mode' },
+        { key: 'colorChromeEffect', label: 'Color Chrome Effect' },
+        { key: 'colorChromeFXBlue', label: 'Color Chrome FX Blue' },
+        { key: 'monochromeGrainEffect', label: 'Monochrome Grain Effect' },
+        { key: 'colorTone', label: 'Color Tone' },
+        { key: 'noiseReduction', label: 'Noise Reduction' },
+        { key: 'canonExposureMode', label: 'Canon Exposure Mode' },
+        { key: 'lut1Name', label: 'LUT 1 Name' },
+        { key: 'lut1Opacity', label: 'LUT 1 Opacity' },
+        { key: 'lut2Name', label: 'LUT 2 Name' },
+        { key: 'lut2Opacity', label: 'LUT 2 Opacity' },
+        { key: 'pitchAngle', label: 'Pitch Angle' },
+        { key: 'rollAngle', label: 'Roll Angle' },
+      ];
+
+      for (const { key, label } of keys) {
+        const val = info[key];
+        if (val !== undefined && val !== null && val !== '') {
+          fields.push({ label, value: val });
+        }
+      }
+
+      return fields;
+    })(),
+  );
+
   const refreshAlbums = async () => {
     if (authManager.isSharedLink) {
       return [];
@@ -314,6 +393,19 @@
             {/if}
           </div>
         </div>
+
+        {#if extraExifFields.length > 0}
+          <hr class="my-4 border-immich-fg/10 dark:border-immich-dark-fg/10" />
+          <div class="flex h-10 w-full items-center justify-between text-sm">
+            <Text size="small" color="muted">EXIF Tags</Text>
+          </div>
+          <div class="mt-2 grid grid-cols-[140px_1fr] gap-x-4 gap-y-3 text-sm text-immich-fg dark:text-immich-dark-fg">
+            {#each extraExifFields as { label, value }}
+              <div class="text-immich-fg/60 dark:text-immich-dark-fg/60 font-medium select-none">{label}</div>
+              <div class="break-all whitespace-pre-wrap font-mono text-xs text-immich-fg opacity-75 dark:text-immich-dark-fg select-text">{value}</div>
+            {/each}
+          </div>
+        {/if}
       </div>
     {/if}
   </section>
