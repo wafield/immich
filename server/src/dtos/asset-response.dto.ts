@@ -15,9 +15,6 @@ import {
   AssetVisibility,
   AssetVisibilitySchema,
   ChecksumAlgorithm,
-  ColorMatrix,
-  ColorPrimaries,
-  ColorTransfer,
 } from 'src/enum';
 import { MaybeDehydrated, VideoStreamInfo } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';

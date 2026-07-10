@@ -61,7 +61,7 @@
       if (!asset.exifInfo) {
         return [];
       }
-      const info = asset.exifInfo as Record<string, any>;
+      const info = asset.exifInfo as Record<string, unknown>;
       const fields: { label: string; value: string | number }[] = [];
 
       const keys: { key: string; label: string }[] = [
@@ -127,13 +127,116 @@
       for (const { key, label } of keys) {
         const val = info[key];
         if (val !== undefined && val !== null && val !== '') {
-          fields.push({ label, value: val });
+          fields.push({ label, value: val as string | number });
         }
       }
 
       return fields;
     })(),
   );
+
+  const getProfileName = (codec?: string | null, profile?: number | null): string => {
+    if (profile == null) {
+      return 'Unknown';
+    }
+    const c = codec?.toLowerCase() || '';
+    if (c === 'h264' || c === 'avc') {
+      const map: Record<number, string> = {
+        66: 'Baseline',
+        77: 'Main',
+        88: 'Extended',
+        100: 'High',
+        110: 'High 10',
+        122: 'High 4:2:2',
+        244: 'High 4:4:4 Predictive',
+      };
+      return map[profile] || `Profile ${profile}`;
+    }
+    if (c === 'hevc' || c === 'h265') {
+      const map: Record<number, string> = {
+        1: 'Main',
+        2: 'Main 10',
+        3: 'Main Still Picture',
+        4: 'Rext',
+      };
+      return map[profile] || `Profile ${profile}`;
+    }
+    if (c === 'av1') {
+      const map: Record<number, string> = {
+        0: 'Main',
+        1: 'High',
+        2: 'Professional',
+      };
+      return map[profile] || `Profile ${profile}`;
+    }
+    if (c === 'aac') {
+      const map: Record<number, string> = {
+        1: 'Main',
+        2: 'LC',
+        3: 'SSR',
+        4: 'LTP',
+        5: 'HE-AAC',
+        23: 'LD',
+        29: 'HE-AAC v2',
+        39: 'ELD',
+        42: 'xHE-AAC',
+      };
+      return map[profile] || `Profile ${profile}`;
+    }
+    return `Profile ${profile}`;
+  };
+
+  const getColorPrimariesName = (primaries?: number | null): string => {
+    if (primaries == null) {
+      return 'Unknown';
+    }
+    const map: Record<number, string> = {
+      0: 'Reserved',
+      1: 'BT.709',
+      2: 'Unknown',
+      4: 'BT.470 M',
+      5: 'BT.470 B/G',
+      6: 'SMPTE 170M',
+      7: 'SMPTE 240M',
+      8: 'Film',
+      9: 'BT.2020',
+      10: 'SMPTE 428',
+      11: 'SMPTE 431',
+      12: 'SMPTE 432',
+      22: 'EBU 3213',
+    };
+    return map[primaries] || `Unknown (${primaries})`;
+  };
+
+  const getFrameRateString = (fps?: number | null): string => {
+    if (fps == null) {
+      return 'Unknown';
+    }
+    return `${Math.round(fps * 100) / 100} fps`;
+  };
+
+  const getCodecNameString = (codec?: string | null): string => {
+    if (!codec) {
+      return 'Unknown';
+    }
+    const lower = codec.toLowerCase();
+    if (lower === 'h264') {
+      return 'H.264';
+    }
+    if (lower === 'hevc') {
+      return 'HEVC';
+    }
+    if (lower === 'av1') {
+      return 'AV1';
+    }
+    if (lower === 'vp9') {
+      return 'VP9';
+    }
+    if (lower === 'aac') {
+      return 'AAC';
+    }
+    return codec.toUpperCase();
+  };
 
   const refreshAlbums = async () => {
     if (authManager.isSharedLink) {
@@ -393,6 +496,56 @@
             {/if}
           </div>
         </div>
+
+        {#if asset.videoStreamInfo}
+          <hr class="my-4 border-immich-fg/10 dark:border-immich-dark-fg/10" />
+          <div class="flex h-10 w-full items-center justify-between text-sm">
+            <Text size="small" color="muted">Video Stream</Text>
+          </div>
+          <div class="mt-2 grid grid-cols-[140px_1fr] gap-x-4 gap-y-3 text-sm text-immich-fg dark:text-immich-dark-fg">
+            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Codec</div>
+            <div
+              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+            >
+              {getCodecNameString(asset.videoStreamInfo.codecName)}
+            </div>
+
+            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Profile</div>
+            <div
+              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+            >
+              {getProfileName(asset.videoStreamInfo.codecName, asset.videoStreamInfo.profile)}
+            </div>
+
+            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Bit Rate</div>
+            <div
+              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+            >
+              {(asset.videoStreamInfo.bitrate / 1_000_000).toFixed(2)} Mbps
+            </div>
+
+            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Frame Rate</div>
+            <div
+              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+            >
+              {getFrameRateString(asset.videoStreamInfo.frameRate)}
+            </div>
+
+            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Pixel Format</div>
+            <div
+              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+            >
+              {asset.videoStreamInfo.pixelFormat}
+            </div>
+
+            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Color Primaries</div>
+            <div
+              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+            >
+              {getColorPrimariesName(asset.videoStreamInfo.colorPrimaries)}
+            </div>
+          </div>
+        {/if}
 
         {#if extraExifFields.length > 0}
           <hr class="my-4 border-immich-fg/10 dark:border-immich-dark-fg/10" />
