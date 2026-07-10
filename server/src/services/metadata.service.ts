@@ -382,7 +382,8 @@ export class MetadataService extends BaseService {
       rollAngle = exifTags.RollAngle === undefined ? null : String(exifTags.RollAngle);
       pitchAngle = exifTags.PitchAngle === undefined ? null : String(exifTags.PitchAngle);
       shutterType = exifTags.ShutterType === undefined ? null : String(exifTags.ShutterType);
-      monochromeGrainEffect = exifTags.MonochromeGrainEffect === undefined ? null : String(exifTags.MonochromeGrainEffect);
+      monochromeGrainEffect =
+        exifTags.MonochromeGrainEffect === undefined ? null : String(exifTags.MonochromeGrainEffect);
       afSubjectDetection = exifTags.AFSubjectDetection === undefined ? null : String(exifTags.AFSubjectDetection);
       lut1Name = exifTags.LUT1Name === undefined ? null : String(exifTags.LUT1Name);
       lut1Opacity = exifTags.LUT1Opacity === undefined ? null : String(exifTags.LUT1Opacity);

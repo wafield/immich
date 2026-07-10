@@ -5,8 +5,8 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
-  import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
-  import { NavbarGroup, NavbarItem } from '@immich/ui';
+  import { recentAlbumsDropdown, hideScreenshots } from '$lib/stores/preferences.store';
+  import { NavbarGroup, NavbarItem, Switch } from '@immich/ui';
   import {
     mdiAccount,
     mdiAccountMultiple,
@@ -110,6 +110,14 @@
   {#if featureFlagsManager.value.trash}
     <NavbarItem title={$t('trash')} href={Route.trash()} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />
   {/if}
+
+  <NavbarGroup title="View Options" size="tiny" />
+  <div
+    class="px-6 py-2 flex items-center justify-between text-sm text-immich-text-gray dark:text-immich-dark-text-gray"
+  >
+    <span class="font-medium">Hide Screenshots</span>
+    <Switch bind:checked={$hideScreenshots} />
+  </div>
 
   <BottomInfo />
 </Sidebar>

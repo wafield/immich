@@ -13,6 +13,9 @@ const TimeBucketQueryBaseSchema = z
     isFavorite: stringToBool
       .optional()
       .describe('Filter by favorite status (true for favorites only, false for non-favorites only)'),
+    isScreenshot: stringToBool
+      .optional()
+      .describe('Filter by screenshot status (true for screenshots only, false for non-screenshots only)'),
     isTrashed: stringToBool
       .optional()
       .describe('Filter by trash status (true for trashed assets only, false for non-trashed only)'),

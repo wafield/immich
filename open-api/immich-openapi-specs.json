@@ -14304,6 +14304,15 @@
             }
           },
           {
+            "name": "isScreenshot",
+            "required": false,
+            "in": "query",
+            "description": "Filter by screenshot status (true for screenshots only, false for non-screenshots only)",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "isTrashed",
             "required": false,
             "in": "query",
@@ -14498,6 +14507,15 @@
             "required": false,
             "in": "query",
             "description": "Filter by favorite status (true for favorites only, false for non-favorites only)",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isScreenshot",
+            "required": false,
+            "in": "query",
+            "description": "Filter by screenshot status (true for screenshots only, false for non-screenshots only)",
             "schema": {
               "type": "boolean"
             }

@@ -82,6 +82,7 @@ interface LivePhotoSearchOptions {
 
 interface AssetBuilderOptions {
   isFavorite?: boolean;
+  isScreenshot?: boolean;
   isTrashed?: boolean;
   isDuplicate?: boolean;
   albumId?: string;
@@ -869,6 +870,7 @@ export class AssetRepository {
           )
           .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
+          .$if(options.isScreenshot !== undefined, (qb) => qb.where('asset.isScreenshot', '=', options.isScreenshot!))
           .$if(!!options.assetType, (qb) => qb.where('asset.type', '=', options.assetType!))
           .$if(options.isDuplicate !== undefined, (qb) =>
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
@@ -955,6 +957,7 @@ export class AssetRepository {
           .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
           .$if(!!options.userIds, (qb) => qb.where('asset.ownerId', '=', anyUuid(options.userIds!)))
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
+          .$if(options.isScreenshot !== undefined, (qb) => qb.where('asset.isScreenshot', '=', options.isScreenshot!))
           .$if(!!options.withStacked, (qb) =>
             qb
               .where((eb) =>

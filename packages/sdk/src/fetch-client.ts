@@ -6889,10 +6889,11 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isScreenshot, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
+    isScreenshot?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
@@ -6914,6 +6915,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
         albumId,
         bbox,
         isFavorite,
+        isScreenshot,
         isTrashed,
         key,
         order,
@@ -6934,10 +6936,11 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isTrashed, key, order
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isScreenshot, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
+    isScreenshot?: boolean;
     isTrashed?: boolean;
     key?: string;
     order?: AssetOrder;
@@ -6958,6 +6961,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isTrashed, key, orde
         albumId,
         bbox,
         isFavorite,
+        isScreenshot,
         isTrashed,
         key,
         order,

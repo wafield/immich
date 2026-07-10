@@ -22,9 +22,7 @@
       : fromISODateTimeUTC(asset.localDateTime),
   );
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
-  const uploadedDate = $derived(
-    asset.createdAt ? DateTime.fromISO(asset.createdAt) : undefined,
-  );
+  const uploadedDate = $derived(asset.createdAt ? DateTime.fromISO(asset.createdAt) : undefined);
 
   const handleChangeDate = async () => {
     if (!isOwner) {
@@ -89,10 +87,7 @@
 {/if}
 
 {#if uploadedDate}
-  <div
-    class="flex w-full place-items-start justify-between gap-4 py-4 text-start"
-    title={$t('upload_status_uploaded')}
-  >
+  <div class="flex w-full place-items-start justify-between gap-4 py-4 text-start" title={$t('upload_status_uploaded')}>
     <div class="flex gap-4">
       <Icon icon={mdiCloudUploadOutline} size="24" />
 
