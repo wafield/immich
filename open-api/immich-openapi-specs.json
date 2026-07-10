@@ -18019,6 +18019,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "videoStreamInfo": {
+            "$ref": "#/components/schemas/VideoStreamInfoResponseDto"
+          },
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
           },
@@ -28527,6 +28530,129 @@
           "webm"
         ],
         "type": "string"
+      },
+      "VideoStreamInfoResponseDto": {
+        "properties": {
+          "bitrate": {
+            "description": "Bitrate",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "codecName": {
+            "description": "Codec name",
+            "nullable": true,
+            "type": "string"
+          },
+          "colorMatrix": {
+            "description": "Color matrix",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "colorPrimaries": {
+            "description": "Color primaries",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "colorTransfer": {
+            "description": "Color transfer",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "dvBlSignalCompatibilityId": {
+            "description": "Dolby Vision compatibility ID",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "dvLevel": {
+            "description": "Dolby Vision level",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "dvProfile": {
+            "description": "Dolby Vision profile",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "frameCount": {
+            "description": "Frame count",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "frameRate": {
+            "description": "Frame rate",
+            "nullable": true,
+            "type": "number"
+          },
+          "height": {
+            "description": "Video height",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "index": {
+            "description": "Stream index",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "level": {
+            "description": "Level",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "pixelFormat": {
+            "description": "Pixel format",
+            "type": "string"
+          },
+          "profile": {
+            "description": "Profile",
+            "nullable": true,
+            "type": "number"
+          },
+          "rotation": {
+            "description": "Video rotation angle",
+            "type": "number"
+          },
+          "timeBase": {
+            "description": "Time base den",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "nullable": true,
+            "type": "integer"
+          },
+          "width": {
+            "description": "Video width",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "bitrate",
+          "colorMatrix",
+          "colorPrimaries",
+          "colorTransfer",
+          "frameCount",
+          "height",
+          "index",
+          "pixelFormat",
+          "rotation",
+          "width"
+        ],
+        "type": "object"
       },
       "WorkflowCreateDto": {
         "properties": {

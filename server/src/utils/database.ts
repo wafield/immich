@@ -114,10 +114,11 @@ export function withAudioStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_
   );
 }
 
-export function withVideoStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_video'>) {
+export function withVideoStream(eb: ExpressionBuilder<DB, any>) {
   return jsonObjectFrom(
     eb
-      .selectFrom(dummy)
+      .selectFrom('asset_video')
+      .leftJoin('asset_exif', 'asset_video.assetId', 'asset_exif.assetId')
       .select((eb) => [
         'asset_video.index',
         'asset_video.codecName',
@@ -148,15 +149,12 @@ export function withVideoStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_
         'asset_video.dvLevel',
         'asset_video.dvBlSignalCompatibilityId',
       ])
-      .where('asset_video.assetId', 'is not', sql.lit(null)),
+      .whereRef('asset_video.assetId', '=', 'asset.id'),
   ).$castTo<(VideoStreamInfo & { timeBase: number }) | null>();
 }
 
 export function withVideoStreamInfo<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
-  return qb
-    .leftJoin('asset_video', 'asset.id', 'asset_video.assetId')
-    .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-    .select((eb) => withVideoStream(eb).as('videoStreamInfo'));
+  return qb.select((eb) => withVideoStream(eb).as('videoStreamInfo'));
 }
 
 

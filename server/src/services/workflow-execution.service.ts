@@ -333,7 +333,7 @@ export class WorkflowExecutionService extends BaseService {
                 authUserId: asset.ownerId,
               };
             },
-            write: async (auth, changes) => {
+            write: async (auth, changes: any) => {
               const asset = changes.asset;
               if (!asset) {
                 return;

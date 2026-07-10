@@ -986,6 +986,44 @@ export type TagResponseDto = {
     /** Tag value (full path) */
     value: string;
 };
+export type VideoStreamInfoResponseDto = {
+    /** Bitrate */
+    bitrate: number;
+    /** Codec name */
+    codecName?: string | null;
+    /** Color matrix */
+    colorMatrix: number;
+    /** Color primaries */
+    colorPrimaries: number;
+    /** Color transfer */
+    colorTransfer: number;
+    /** Dolby Vision compatibility ID */
+    dvBlSignalCompatibilityId?: number | null;
+    /** Dolby Vision level */
+    dvLevel?: number | null;
+    /** Dolby Vision profile */
+    dvProfile?: number | null;
+    /** Frame count */
+    frameCount: number;
+    /** Frame rate */
+    frameRate?: number | null;
+    /** Video height */
+    height: number;
+    /** Stream index */
+    index: number;
+    /** Level */
+    level?: number | null;
+    /** Pixel format */
+    pixelFormat: string;
+    /** Profile */
+    profile?: number | null;
+    /** Video rotation angle */
+    rotation: number;
+    /** Time base den */
+    timeBase?: number | null;
+    /** Video width */
+    width: number;
+};
 export type AssetResponseDto = {
     /** Base64 encoded SHA1 hash */
     checksum: string;
@@ -1041,6 +1079,7 @@ export type AssetResponseDto = {
     "type": AssetTypeEnum;
     /** The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified. */
     updatedAt: string;
+    videoStreamInfo?: VideoStreamInfoResponseDto;
     visibility: AssetVisibility;
     /** Asset width */
     width: number | null;
