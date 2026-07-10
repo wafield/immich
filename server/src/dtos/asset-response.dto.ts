@@ -15,8 +15,11 @@ import {
   AssetVisibility,
   AssetVisibilitySchema,
   ChecksumAlgorithm,
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
 } from 'src/enum';
-import { MaybeDehydrated } from 'src/types';
+import { MaybeDehydrated, VideoStreamInfo } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
 import { asDateTimeString } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -49,6 +52,31 @@ const SanitizedAssetResponseSchema = z
   .meta({ id: 'SanitizedAssetResponseDto' });
 
 export class SanitizedAssetResponseDto extends createZodDto(SanitizedAssetResponseSchema) {}
+
+export const VideoStreamInfoResponseSchema = z
+  .object({
+    index: z.int().describe('Stream index'),
+    height: z.int().describe('Video height'),
+    width: z.int().describe('Video width'),
+    rotation: z.number().describe('Video rotation angle'),
+    codecName: z.string().nullish().describe('Codec name'),
+    profile: z.number().nullish().describe('Profile'),
+    level: z.int().nullish().describe('Level'),
+    frameCount: z.int().describe('Frame count'),
+    frameRate: z.number().nullish().describe('Frame rate'),
+    timeBase: z.int().nullish().describe('Time base den'),
+    bitrate: z.int().describe('Bitrate'),
+    pixelFormat: z.string().describe('Pixel format'),
+    colorPrimaries: z.nativeEnum(ColorPrimaries).describe('Color primaries'),
+    colorMatrix: z.nativeEnum(ColorMatrix).describe('Color matrix'),
+    colorTransfer: z.nativeEnum(ColorTransfer).describe('Color transfer'),
+    dvProfile: z.int().nullish().describe('Dolby Vision profile'),
+    dvLevel: z.int().nullish().describe('Dolby Vision level'),
+    dvBlSignalCompatibilityId: z.int().nullish().describe('Dolby Vision compatibility ID'),
+  })
+  .meta({ id: 'VideoStreamInfoResponseDto' });
+
+export class VideoStreamInfoResponseDto extends createZodDto(VideoStreamInfoResponseSchema) {}
 
 const AssetStackResponseSchema = z
   .object({
@@ -113,6 +141,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .boolean()
       .describe('Is edited')
       .meta(new HistoryBuilder().added('v2.5.0').beta('v2.5.0').getExtensions()),
+    videoStreamInfo: VideoStreamInfoResponseSchema.optional(),
   }).shape,
 ).meta({ id: 'AssetResponseDto' });
 
@@ -154,6 +183,7 @@ export type MapAsset = {
   width: number | null;
   height: number | null;
   isEdited: boolean;
+  videoStreamInfo?: (VideoStreamInfo & { timeBase: number }) | null;
 };
 
 export type AssetMapOptions = {
@@ -242,5 +272,6 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     width: entity.width,
     height: entity.height,
     isEdited: entity.isEdited,
+    videoStreamInfo: entity.videoStreamInfo || undefined,
   };
 }

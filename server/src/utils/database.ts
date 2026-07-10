@@ -152,6 +152,14 @@ export function withVideoStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_
   ).$castTo<(VideoStreamInfo & { timeBase: number }) | null>();
 }
 
+export function withVideoStreamInfo<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
+  return qb
+    .leftJoin('asset_video', 'asset.id', 'asset_video.assetId')
+    .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+    .select((eb) => withVideoStream(eb).as('videoStreamInfo'));
+}
+
+
 export function withVideoFormat(eb: ExpressionBuilder<DB, 'asset' | 'asset_video'>) {
   return jsonObjectFrom(
     eb

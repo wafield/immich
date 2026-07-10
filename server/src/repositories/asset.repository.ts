@@ -52,6 +52,7 @@ import {
   withSmartSearch,
   withTagId,
   withTags,
+  withVideoStreamInfo,
 } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 
@@ -132,6 +133,7 @@ interface GetByIdsRelations {
   stack?: { assets?: boolean };
   tags?: boolean;
   edits?: boolean;
+  videoStreamInfo?: boolean;
 }
 
 type UpsertExifOptions = {
@@ -626,7 +628,7 @@ export class AssetRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(
     id: string,
-    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, edits }: GetByIdsRelations = {},
+    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, edits, videoStreamInfo }: GetByIdsRelations = {},
   ) {
     return this.db
       .selectFrom('asset')
@@ -669,6 +671,7 @@ export class AssetRepository {
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
       .$if(!!edits, (qb) => qb.select(withEdits))
+      .$if(!!videoStreamInfo, withVideoStreamInfo)
       .limit(1)
       .executeTakeFirst();
   }
