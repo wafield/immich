@@ -60,6 +60,7 @@ export class AssetFactory {
       fileModifiedAt: new Date(now++),
       isExternal: false,
       isFavorite: false,
+      isScreenshot: dto.isScreenshot ?? originalFileName.toLowerCase().endsWith('.png'),
       isOffline: false,
       libraryId: null,
       livePhotoVideoId: null,

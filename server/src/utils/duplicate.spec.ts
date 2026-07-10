@@ -32,6 +32,7 @@ const createAsset = (
   isTrashed: false,
   isOffline: false,
   isEdited: false,
+  isScreenshot: false,
   visibility: AssetVisibility.Timeline,
   checksum: 'checksum',
   exifInfo:

@@ -141,6 +141,7 @@ export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']
   isEdited: asset.isEdited,
   width: asset.width,
   height: asset.height,
+  isScreenshot: asset.isScreenshot,
   faces: asset.faces.map((face) => getDehydrated(face)),
   files: asset.files.map((file) => getDehydrated(file)),
 });

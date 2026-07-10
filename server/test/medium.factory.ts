@@ -570,6 +570,7 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
     originalPath: '/path/to/something.jpg',
     ownerId: 'not-a-valid-uuid',
     isFavorite: false,
+    isScreenshot: false,
     fileCreatedAt: now,
     fileModifiedAt: now,
     localDateTime: now,

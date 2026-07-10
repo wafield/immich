@@ -54,6 +54,7 @@ import {
   withTags,
   withVideoStreamInfo,
 } from 'src/utils/database';
+import { mimeTypes } from 'src/utils/mime-types';
 import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
@@ -504,12 +505,27 @@ export class AssetRepository {
   }
 
   create(asset: Insertable<AssetTable>) {
-    return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
+    const originalPath = typeof asset.originalPath === 'string' ? asset.originalPath : '';
+    const originalFileName = typeof asset.originalFileName === 'string' ? asset.originalFileName : '';
+    const isScreenshot = asset.isScreenshot ?? mimeTypes.lookup(originalPath || originalFileName) === 'image/png';
+    return this.db
+      .insertInto('asset')
+      .values({ ...asset, isScreenshot })
+      .returningAll()
+      .executeTakeFirstOrThrow();
   }
 
   @ChunkedArray({ chunkSize: 4000 })
   async createAll(assets: Insertable<AssetTable>[]) {
-    const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
+    const assetsWithScreenshot = assets.map((asset) => {
+      const originalPath = typeof asset.originalPath === 'string' ? asset.originalPath : '';
+      const originalFileName = typeof asset.originalFileName === 'string' ? asset.originalFileName : '';
+      return {
+        ...asset,
+        isScreenshot: asset.isScreenshot ?? mimeTypes.lookup(originalPath || originalFileName) === 'image/png',
+      };
+    });
+    const ids = await this.db.insertInto('asset').values(assetsWithScreenshot).returning('id').execute();
     return ids.map(({ id }) => id);
   }
 
@@ -628,7 +644,18 @@ export class AssetRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getById(
     id: string,
-    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, edits, videoStreamInfo }: GetByIdsRelations = {},
+    {
+      exifInfo,
+      faces,
+      files,
+      library,
+      owner,
+      smartSearch,
+      stack,
+      tags,
+      edits,
+      videoStreamInfo,
+    }: GetByIdsRelations = {},
   ) {
     return this.db
       .selectFrom('asset')

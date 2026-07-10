@@ -83,6 +83,9 @@ export class AssetTable {
   @Column({ type: 'boolean', default: false })
   isFavorite!: Generated<boolean>;
 
+  @Column({ type: 'boolean', default: false })
+  isScreenshot!: Generated<boolean>;
+
   @Column({ type: 'integer', nullable: true })
   duration!: number | null;
 
