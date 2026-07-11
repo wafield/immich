@@ -141,3 +141,19 @@ export const alwaysLoadOriginalVideo = persisted<boolean>('always-load-original-
 export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});
 
 export const hideScreenshots = persisted<boolean>('hide-screenshots', false, {});
+
+export enum FolderAssetsSortBy {
+  CaptureTime = 'capture-time',
+  AddedTime = 'added-time',
+  FileName = 'file-name',
+}
+
+export interface FolderViewSettings {
+  sortBy: FolderAssetsSortBy;
+  sortOrder: SortOrder;
+}
+
+export const folderViewSettings = persisted<FolderViewSettings>('folder-view-settings', {
+  sortBy: FolderAssetsSortBy.FileName,
+  sortOrder: SortOrder.Asc,
+});

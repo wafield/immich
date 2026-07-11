@@ -594,6 +594,7 @@
             zoom={12.5}
             simplified
             useLocationPin
+            rounded={false}
             showSimpleControls={!assetViewerManager.isEditFacesPanelOpen}
             onOpenInMapView={() => goto(Route.map({ ...latlng, zoom: 12.5 }))}
           >
