@@ -241,8 +241,8 @@
     <div
       class={[
         'absolute size-full bg-transparent transition-transform select-none',
-        { 'scale-[0.85]': selected },
-        { 'rounded-xl': selected },
+        { 'scale-[0.95]': selected },
+        { 'rounded-xl ring-4 ring-primary': selected },
       ]}
     >
       <ImageThumbnail

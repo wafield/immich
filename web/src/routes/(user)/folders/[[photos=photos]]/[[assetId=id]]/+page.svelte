@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
@@ -44,10 +44,6 @@
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
   const getLinkForPath = (path: string) => Route.folders({ path });
-
-  afterNavigate(() => {
-    assetMultiSelectManager.clear();
-  });
 
   const navigateToView = (path: string) => {
     return goto(getLinkForPath(path), { keepFocus: true, noScroll: true });

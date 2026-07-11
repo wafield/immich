@@ -154,6 +154,8 @@ export function formatGroupTitle(_date: DateTime): string {
 export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
   date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
+// Extract a subset of fields from an asset response DTO to create a lightweight timeline asset struct
+// to optimize performance.
 export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset): TimelineAsset => {
   if (isTimelineAsset(unknownAsset)) {
     return unknownAsset;

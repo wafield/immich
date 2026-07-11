@@ -35,6 +35,8 @@ import {
   mdiShareVariantOutline,
   mdiTagPlusOutline,
   mdiTune,
+  mdiCheckCircle,
+  mdiCheckCircleOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
@@ -54,6 +56,7 @@ import { getAssetMediaUrl, getSharedLink, sleep } from '$lib/utils';
 import { downloadUrl } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
+import { toTimelineAsset } from '$lib/utils/timeline-util';
 
 export const getAssetBulkActions = ($t: MessageFormatter) => {
   const ownedAssets = assetMultiSelectManager.ownedAssets;
@@ -297,6 +300,23 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     $if: () => asset.type === AssetTypeEnum.Video,
   };
 
+  const Select: ActionItem = {
+    title: $t('select'),
+    icon: mdiCheckCircleOutline,
+    $if: () => !sharedLink && !assetMultiSelectManager.hasSelectedAsset(asset.id),
+    onAction: () => assetMultiSelectManager.selectAsset(toTimelineAsset(asset)),
+    shortcuts: { key: 'x' },
+  };
+
+  const Unselect: ActionItem = {
+    title: $t('selected'),
+    icon: mdiCheckCircle,
+    color: 'primary',
+    $if: () => !sharedLink && assetMultiSelectManager.hasSelectedAsset(asset.id),
+    onAction: () => assetMultiSelectManager.removeAssetFromMultiselectGroup(asset.id),
+    shortcuts: { key: 'x' },
+  };
+
   return {
     Share,
     Download,
@@ -323,6 +343,8 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     RefreshMetadataJob,
     RegenerateThumbnailJob,
     TranscodeVideoJob,
+    Select,
+    Unselect,
   };
 };
 
