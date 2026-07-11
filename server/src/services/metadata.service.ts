@@ -270,56 +270,81 @@ export class MetadataService extends BaseService {
       exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null);
     const makeUpper = make ? make.toUpperCase() : '';
 
-    let quality: string | null = null;
-    let sharpness: string | null = null;
-    let whiteBalanceFineTune: string | null = null;
-    let noiseReduction: string | null = null;
-    let clarity: string | null = null;
-    let focusMode: string | null = null;
-    let focusPixel: string | null = null;
-    let focusMode2: string | null = null;
-    let pictureMode: string | null = null;
-    let shadowTone: string | null = null;
-    let highlightTone: string | null = null;
-    let colorChromeEffect: string | null = null;
-    let colorChromeFXBlue: string | null = null;
-    let driveMode: string | null = null;
-    let shutterType: string | null = null;
-    let filmMode: string | null = null;
-    let continuousDrive: string | null = null;
-    let canonExposureMode: string | null = null;
-    let colorTone: string | null = null;
+    let actionsDescription: string | null = null;
+    let actionsSoftwareAgentName: string | null = null;
+    let afAreaMode: string | null = null;
+    let afAreaModeSetting: string | null = null;
+    let afMode: string | null = null;
+    let afPointPosition: string | null = null;
+    let afSubjectDetection: string | null = null;
+    let ambientTemperature: string | null = null;
     let autoISO: string | null = null;
+    let brightness: string | null = null;
     let cameraTemperature: string | null = null;
     let cameraType: string | null = null;
+    let canonExposureMode: string | null = null;
+    let claimGeneratorInfoName: string | null = null;
+    let clarity: string | null = null;
+    let colorChromeEffect: string | null = null;
+    let colorChromeFXBlue: string | null = null;
+    let colorTempKelvin: string | null = null;
     let colorTemperature: string | null = null;
-    let pictureStyle: string | null = null;
-    let afAreaMode: string | null = null;
-    let saturation: string | null = null;
+    let colorTone: string | null = null;
+    let continuousDrive: string | null = null;
     let contrast: string | null = null;
-    let brightness: string | null = null;
+    let creatorTool: string | null = null;
+    let customRendered: string | null = null;
+    let developmentDynamicRange: string | null = null;
+    let driveMode: string | null = null;
+    let dynamicRange: string | null = null;
+    let electronicFrontCurtainShutter: string | null = null;
+    let facesDetected: string | null = null;
+    let fade: string | null = null;
     let fileFormat: string | null = null;
-    let pictureEffect: string | null = null;
+    let filmMode: string | null = null;
+    let flash: string | null = null;
+    let flashAction: string | null = null;
     let focusLocation: string | null = null;
-    let shadows: string | null = null;
+    let focusMode: string | null = null;
+    let focusMode2: string | null = null;
+    let focusPixel: string | null = null;
+    let grainEffectRoughness: string | null = null;
+    let grainEffectSize: string | null = null;
+    let highlightTone: string | null = null;
     let highlights: string | null = null;
+    let historySoftwareAgent: string | null = null;
     let imageQuality: string | null = null;
     let imageStabilization: string | null = null;
-    let shootingMode: string | null = null;
-    let facesDetected: string | null = null;
     let jpegQuality: string | null = null;
-    let colorTempKelvin: string | null = null;
-    let wbShiftAB: string | null = null;
-    let wbShiftGM: string | null = null;
-    let afPointPosition: string | null = null;
-    let rollAngle: string | null = null;
-    let pitchAngle: string | null = null;
-    let monochromeGrainEffect: string | null = null;
-    let afSubjectDetection: string | null = null;
     let lut1Name: string | null = null;
     let lut1Opacity: string | null = null;
     let lut2Name: string | null = null;
     let lut2Opacity: string | null = null;
+    let monochromeGrainEffect: string | null = null;
+    let mpImageLength: string | null = null;
+    let noiseReduction: string | null = null;
+    let numberOfImages: string | null = null;
+    let pictureEffect: string | null = null;
+    let pictureMode: string | null = null;
+    let pictureStyle: string | null = null;
+    let pitchAngle: string | null = null;
+    let quality: string | null = null;
+    let releaseMode: string | null = null;
+    let rollAngle: string | null = null;
+    let saturation: string | null = null;
+    let sceneCaptureType: string | null = null;
+    let shadowTone: string | null = null;
+    let shadows: string | null = null;
+    let sharpness: string | null = null;
+    let sharpnessRange: string | null = null;
+    let shootingMode: string | null = null;
+    let shutter: string | null = null;
+    let shutterType: string | null = null;
+    let software: string | null = null;
+    let userComment: string | null = null;
+    let wbShiftAB: string | null = null;
+    let wbShiftGM: string | null = null;
+    let whiteBalanceFineTune: string | null = null;
 
     if (makeUpper.includes('FUJIFILM')) {
       quality = exifTags.Quality === undefined ? null : String(exifTags.Quality);
@@ -391,6 +416,37 @@ export class MetadataService extends BaseService {
       lut2Opacity = exifTags.LUT2Opacity === undefined ? null : String(exifTags.LUT2Opacity);
     }
 
+    shutter = exifTags.Shutter === undefined ? null : String(exifTags.Shutter);
+    releaseMode = exifTags.ReleaseMode === undefined ? null : String(exifTags.ReleaseMode);
+    flash = exifTags.Flash === undefined ? null : String(exifTags.Flash);
+    flashAction = exifTags.FlashAction === undefined ? null : String(exifTags.FlashAction);
+    electronicFrontCurtainShutter =
+      exifTags.ElectronicFrontCurtainShutter === undefined ? null : String(exifTags.ElectronicFrontCurtainShutter);
+    customRendered = exifTags.CustomRendered === undefined ? null : String(exifTags.CustomRendered);
+    dynamicRange = exifTags.DynamicRange === undefined ? null : String(exifTags.DynamicRange);
+    developmentDynamicRange =
+      exifTags.DevelopmentDynamicRange === undefined ? null : String(exifTags.DevelopmentDynamicRange);
+    afAreaModeSetting = exifTags.AFAreaModeSetting === undefined ? null : String(exifTags.AFAreaModeSetting);
+    afMode = exifTags.AFMode === undefined ? null : String(exifTags.AFMode);
+    sharpnessRange = exifTags.SharpnessRange === undefined ? null : String(exifTags.SharpnessRange);
+    grainEffectSize = exifTags.GrainEffectSize === undefined ? null : String(exifTags.GrainEffectSize);
+    grainEffectRoughness =
+      exifTags.GrainEffectRoughness === undefined ? null : String(exifTags.GrainEffectRoughness);
+    sceneCaptureType = exifTags.SceneCaptureType === undefined ? null : String(exifTags.SceneCaptureType);
+    fade = exifTags.Fade === undefined ? null : String(exifTags.Fade);
+    historySoftwareAgent = exifTags.HistorySoftwareAgent === undefined ? null : String(exifTags.HistorySoftwareAgent);
+    software = exifTags.Software === undefined ? null : String(exifTags.Software);
+    userComment = exifTags.UserComment === undefined ? null : String(exifTags.UserComment);
+    creatorTool = exifTags.CreatorTool === undefined ? null : String(exifTags.CreatorTool);
+    actionsSoftwareAgentName =
+      exifTags.ActionsSoftwareAgentName === undefined ? null : String(exifTags.ActionsSoftwareAgentName);
+    actionsDescription = exifTags.ActionsDescription === undefined ? null : String(exifTags.ActionsDescription);
+    claimGeneratorInfoName =
+      exifTags.Claim_Generator_InfoName === undefined ? null : String(exifTags.Claim_Generator_InfoName);
+    ambientTemperature = exifTags.AmbientTemperature === undefined ? null : String(exifTags.AmbientTemperature);
+    numberOfImages = exifTags.NumberOfImages === undefined ? null : String(exifTags.NumberOfImages);
+    mpImageLength = exifTags.MPImageLength === undefined ? null : String(exifTags.MPImageLength);
+
     const exifData: Insertable<AssetExifTable> = {
       assetId: asset.id,
 
@@ -438,14 +494,20 @@ export class MetadataService extends BaseService {
       tags: tags.length > 0 ? tags : null,
 
       // Extra & Brand-Specific EXIF fields (Sorted alphabetically)
+      actionsDescription,
+      actionsSoftwareAgentName,
       afAreaMode,
+      afAreaModeSetting,
+      afMode,
       afPointPosition,
       afSubjectDetection,
+      ambientTemperature,
       autoISO,
       brightness,
       cameraTemperature,
       cameraType,
       canonExposureMode,
+      claimGeneratorInfoName,
       clarity,
       colorChromeEffect,
       colorChromeFXBlue,
@@ -454,20 +516,31 @@ export class MetadataService extends BaseService {
       colorTone,
       continuousDrive,
       contrast,
+      creatorTool,
+      customRendered,
+      developmentDynamicRange,
       driveMode,
+      dynamicRange,
+      electronicFrontCurtainShutter,
       exifVersion: exifTags.ExifVersion ? String(exifTags.ExifVersion) : null,
       exposureCompensation: exifTags.ExposureCompensation ? String(exifTags.ExposureCompensation) : null,
       exposureMode: exifTags.ExposureMode ? String(exifTags.ExposureMode) : null,
       exposureProgram: exifTags.ExposureProgram ? String(exifTags.ExposureProgram) : null,
       facesDetected,
+      fade,
       fileFormat,
       filmMode,
+      flash,
+      flashAction,
       focusLocation,
       focusMode,
       focusMode2,
       focusPixel,
+      grainEffectRoughness,
+      grainEffectSize,
       highlightTone,
       highlights,
+      historySoftwareAgent,
       imageQuality,
       imageStabilization,
       jpegQuality,
@@ -477,20 +550,28 @@ export class MetadataService extends BaseService {
       lut2Opacity,
       meteringMode: exifTags.MeteringMode ? String(exifTags.MeteringMode) : null,
       monochromeGrainEffect,
+      mpImageLength,
       noiseReduction,
+      numberOfImages,
       pictureEffect,
       pictureMode,
       pictureStyle,
       pitchAngle,
       quality,
+      releaseMode,
       rollAngle,
       saturation,
+      sceneCaptureType,
       sensitivityType: exifTags.SensitivityType ? String(exifTags.SensitivityType) : null,
       shadowTone,
       shadows,
       sharpness,
+      sharpnessRange,
       shootingMode,
+      shutter,
       shutterType,
+      software,
+      userComment,
       wbShiftAB,
       wbShiftGM,
       whiteBalance: exifTags.WhiteBalance ? String(exifTags.WhiteBalance) : null,

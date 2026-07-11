@@ -134,13 +134,28 @@ export class AssetExifTable {
 
   // Brand-Specific Fields (Sorted alphabetically)
   @Column({ type: 'character varying', nullable: true })
+  actionsDescription!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  actionsSoftwareAgentName!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
   afAreaMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  afAreaModeSetting!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  afMode!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   afPointPosition!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   afSubjectDetection!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  ambientTemperature!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   autoISO!: string | null;
@@ -156,6 +171,9 @@ export class AssetExifTable {
 
   @Column({ type: 'character varying', nullable: true })
   canonExposureMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  claimGeneratorInfoName!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   clarity!: string | null;
@@ -182,16 +200,40 @@ export class AssetExifTable {
   contrast!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
+  creatorTool!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  customRendered!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  developmentDynamicRange!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
   driveMode!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
+  dynamicRange!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  electronicFrontCurtainShutter!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
   facesDetected!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  fade!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   fileFormat!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   filmMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  flash!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  flashAction!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   focusLocation!: string | null;
@@ -206,10 +248,19 @@ export class AssetExifTable {
   focusPixel!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
+  grainEffectRoughness!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  grainEffectSize!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
   highlightTone!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   highlights!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  historySoftwareAgent!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   imageQuality!: string | null;
@@ -236,7 +287,13 @@ export class AssetExifTable {
   monochromeGrainEffect!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
+  mpImageLength!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
   noiseReduction!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  numberOfImages!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   pictureEffect!: string | null;
@@ -254,10 +311,16 @@ export class AssetExifTable {
   quality!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
+  releaseMode!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
   rollAngle!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   saturation!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  sceneCaptureType!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   shadowTone!: string | null;
@@ -269,10 +332,22 @@ export class AssetExifTable {
   sharpness!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
+  sharpnessRange!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
   shootingMode!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
+  shutter!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
   shutterType!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  software!: string | null;
+
+  @Column({ type: 'character varying', nullable: true })
+  userComment!: string | null;
 
   @Column({ type: 'character varying', nullable: true })
   wbShiftAB!: string | null;

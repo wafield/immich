@@ -21,63 +21,88 @@ type TagsWithWrongTypes =
   | 'Keywords'
   | 'HierarchicalSubject'
   | 'ISO'
-  | 'ExifVersion'
-  | 'SensitivityType'
-  | 'ExposureProgram'
-  | 'ExposureCompensation'
-  | 'ExposureMode'
-  | 'WhiteBalance'
-  | 'MeteringMode'
-  | 'Quality'
-  | 'Sharpness'
-  | 'WhiteBalanceFineTune'
-  | 'NoiseReduction'
-  | 'Clarity'
-  | 'FocusMode'
-  | 'FocusPixel'
-  | 'FocusMode2'
-  | 'PictureMode'
-  | 'ShadowTone'
-  | 'HighlightTone'
-  | 'ColorChromeEffect'
-  | 'ColorChromeFXBlue'
-  | 'DriveMode'
-  | 'ShutterType'
-  | 'FilmMode'
-  | 'ContinuousDrive'
-  | 'CanonExposureMode'
-  | 'ColorTone'
+  | 'ActionsDescription'
+  | 'ActionsSoftwareAgentName'
+  | 'AFAreaMode'
+  | 'AFAreaModeSetting'
+  | 'AFMode'
+  | 'AFPointPosition'
+  | 'AFSubjectDetection'
+  | 'AmbientTemperature'
   | 'AutoISO'
+  | 'Brightness'
   | 'CameraTemperature'
   | 'CameraType'
+  | 'CanonExposureMode'
+  | 'Claim_Generator_InfoName'
+  | 'Clarity'
+  | 'ColorChromeEffect'
+  | 'ColorChromeFXBlue'
+  | 'ColorTempKelvin'
   | 'ColorTemperature'
-  | 'PictureStyle'
-  | 'AFAreaMode'
-  | 'Saturation'
+  | 'ColorTone'
+  | 'ContinuousDrive'
   | 'Contrast'
-  | 'Brightness'
+  | 'CreatorTool'
+  | 'CustomRendered'
+  | 'DevelopmentDynamicRange'
+  | 'DriveMode'
+  | 'DynamicRange'
+  | 'ElectronicFrontCurtainShutter'
+  | 'ExifVersion'
+  | 'ExposureCompensation'
+  | 'ExposureMode'
+  | 'ExposureProgram'
+  | 'FacesDetected'
+  | 'Fade'
   | 'FileFormat'
-  | 'PictureEffect'
+  | 'FilmMode'
+  | 'Flash'
+  | 'FlashAction'
   | 'FocusLocation'
-  | 'Shadows'
+  | 'FocusMode'
+  | 'FocusMode2'
+  | 'FocusPixel'
+  | 'GrainEffectRoughness'
+  | 'GrainEffectSize'
+  | 'HighlightTone'
   | 'Highlights'
+  | 'HistorySoftwareAgent'
   | 'ImageQuality'
   | 'ImageStabilization'
-  | 'ShootingMode'
-  | 'FacesDetected'
   | 'JPEGQuality'
-  | 'ColorTempKelvin'
-  | 'WBShiftAB'
-  | 'WBShiftGM'
-  | 'AFPointPosition'
-  | 'RollAngle'
-  | 'PitchAngle'
-  | 'MonochromeGrainEffect'
-  | 'AFSubjectDetection'
   | 'LUT1Name'
   | 'LUT1Opacity'
   | 'LUT2Name'
-  | 'LUT2Opacity';
+  | 'LUT2Opacity'
+  | 'MeteringMode'
+  | 'MonochromeGrainEffect'
+  | 'MPImageLength'
+  | 'NoiseReduction'
+  | 'NumberOfImages'
+  | 'PictureEffect'
+  | 'PictureMode'
+  | 'PictureStyle'
+  | 'PitchAngle'
+  | 'Quality'
+  | 'ReleaseMode'
+  | 'RollAngle'
+  | 'Saturation'
+  | 'SceneCaptureType'
+  | 'SensitivityType'
+  | 'ShadowTone'
+  | 'Shadows'
+  | 'Sharpness'
+  | 'SharpnessRange'
+  | 'ShootingMode'
+  | 'Shutter'
+  | 'ShutterType'
+  | 'Software'
+  | 'UserComment'
+  | 'WBShiftAB'
+  | 'WBShiftGM'
+  | 'WhiteBalance'
+  | 'WhiteBalanceFineTune';
 
 export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   ContentIdentifier?: string;
@@ -133,63 +158,88 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   DeviceModelName?: string;
 
   // Extra & Brand-Specific EXIF fields
-  ExifVersion?: string;
-  SensitivityType?: string | number;
-  ExposureProgram?: string | number;
-  ExposureCompensation?: string | number;
-  ExposureMode?: string | number;
-  WhiteBalance?: string | number;
-  MeteringMode?: string | number;
-  Quality?: string | number;
-  Sharpness?: string | number;
-  WhiteBalanceFineTune?: string | number;
-  NoiseReduction?: string | number;
-  Clarity?: string | number;
-  FocusMode?: string | number;
-  FocusPixel?: string | number;
-  FocusMode2?: string | number;
-  PictureMode?: string | number;
-  ShadowTone?: string | number;
-  HighlightTone?: string | number;
-  ColorChromeEffect?: string | number;
-  ColorChromeFXBlue?: string | number;
-  DriveMode?: string | number;
-  ShutterType?: string | number;
-  FilmMode?: string | number;
-  ContinuousDrive?: string | number;
-  CanonExposureMode?: string | number;
-  ColorTone?: string | number;
+  ActionsDescription?: string | number;
+  ActionsSoftwareAgentName?: string | number;
+  AFAreaMode?: string | number;
+  AFAreaModeSetting?: string | number;
+  AFMode?: string | number;
+  AFPointPosition?: string | number;
+  AFSubjectDetection?: string | number;
+  AmbientTemperature?: string | number;
   AutoISO?: string | number;
+  Brightness?: string | number;
   CameraTemperature?: string | number;
   CameraType?: string | number;
+  CanonExposureMode?: string | number;
+  Claim_Generator_InfoName?: string | number;
+  Clarity?: string | number;
+  ColorChromeEffect?: string | number;
+  ColorChromeFXBlue?: string | number;
+  ColorTempKelvin?: string | number;
   ColorTemperature?: string | number;
-  PictureStyle?: string | number;
-  AFAreaMode?: string | number;
-  Saturation?: string | number;
+  ColorTone?: string | number;
+  ContinuousDrive?: string | number;
   Contrast?: string | number;
-  Brightness?: string | number;
+  CreatorTool?: string | number;
+  CustomRendered?: string | number;
+  DevelopmentDynamicRange?: string | number;
+  DriveMode?: string | number;
+  DynamicRange?: string | number;
+  ElectronicFrontCurtainShutter?: string | number;
+  ExifVersion?: string;
+  ExposureCompensation?: string | number;
+  ExposureMode?: string | number;
+  ExposureProgram?: string | number;
+  FacesDetected?: string | number;
+  Fade?: string | number;
   FileFormat?: string | number;
-  PictureEffect?: string | number;
+  FilmMode?: string | number;
+  Flash?: string | number;
+  FlashAction?: string | number;
   FocusLocation?: string | number;
-  Shadows?: string | number;
+  FocusMode?: string | number;
+  FocusMode2?: string | number;
+  FocusPixel?: string | number;
+  GrainEffectRoughness?: string | number;
+  GrainEffectSize?: string | number;
+  HighlightTone?: string | number;
   Highlights?: string | number;
+  HistorySoftwareAgent?: string | number;
   ImageQuality?: string | number;
   ImageStabilization?: string | number;
-  ShootingMode?: string | number;
-  FacesDetected?: string | number;
   JPEGQuality?: string | number;
-  ColorTempKelvin?: string | number;
-  WBShiftAB?: string | number;
-  WBShiftGM?: string | number;
-  AFPointPosition?: string | number;
-  RollAngle?: string | number;
-  PitchAngle?: string | number;
-  MonochromeGrainEffect?: string | number;
-  AFSubjectDetection?: string | number;
   LUT1Name?: string | number;
   LUT1Opacity?: string | number;
   LUT2Name?: string | number;
   LUT2Opacity?: string | number;
+  MeteringMode?: string | number;
+  MonochromeGrainEffect?: string | number;
+  MPImageLength?: string | number;
+  NoiseReduction?: string | number;
+  NumberOfImages?: string | number;
+  PictureEffect?: string | number;
+  PictureMode?: string | number;
+  PictureStyle?: string | number;
+  PitchAngle?: string | number;
+  Quality?: string | number;
+  ReleaseMode?: string | number;
+  RollAngle?: string | number;
+  Saturation?: string | number;
+  SceneCaptureType?: string | number;
+  SensitivityType?: string | number;
+  ShadowTone?: string | number;
+  Shadows?: string | number;
+  Sharpness?: string | number;
+  SharpnessRange?: string | number;
+  ShootingMode?: string | number;
+  Shutter?: string | number;
+  ShutterType?: string | number;
+  Software?: string | number;
+  UserComment?: string | number;
+  WBShiftAB?: string | number;
+  WBShiftGM?: string | number;
+  WhiteBalance?: string | number;
+  WhiteBalanceFineTune?: string | number;
 }
 
 @Injectable()

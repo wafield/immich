@@ -18927,9 +18927,33 @@
       "ExifResponseDto": {
         "description": "EXIF response",
         "properties": {
+          "actionsDescription": {
+            "default": null,
+            "description": "Actions description",
+            "nullable": true,
+            "type": "string"
+          },
+          "actionsSoftwareAgentName": {
+            "default": null,
+            "description": "Actions software agent name",
+            "nullable": true,
+            "type": "string"
+          },
           "afAreaMode": {
             "default": null,
             "description": "AF area mode",
+            "nullable": true,
+            "type": "string"
+          },
+          "afAreaModeSetting": {
+            "default": null,
+            "description": "AF area mode setting",
+            "nullable": true,
+            "type": "string"
+          },
+          "afMode": {
+            "default": null,
+            "description": "AF mode",
             "nullable": true,
             "type": "string"
           },
@@ -18942,6 +18966,12 @@
           "afSubjectDetection": {
             "default": null,
             "description": "AF subject detection",
+            "nullable": true,
+            "type": "string"
+          },
+          "ambientTemperature": {
+            "default": null,
+            "description": "Ambient temperature",
             "nullable": true,
             "type": "string"
           },
@@ -18978,6 +19008,12 @@
           "city": {
             "default": null,
             "description": "City name",
+            "nullable": true,
+            "type": "string"
+          },
+          "claimGeneratorInfoName": {
+            "default": null,
+            "description": "Claim generator info name",
             "nullable": true,
             "type": "string"
           },
@@ -19035,6 +19071,18 @@
             "nullable": true,
             "type": "string"
           },
+          "creatorTool": {
+            "default": null,
+            "description": "Creator tool",
+            "nullable": true,
+            "type": "string"
+          },
+          "customRendered": {
+            "default": null,
+            "description": "Custom rendered",
+            "nullable": true,
+            "type": "string"
+          },
           "dateTimeOriginal": {
             "default": null,
             "description": "Original date/time",
@@ -19048,9 +19096,27 @@
             "nullable": true,
             "type": "string"
           },
+          "developmentDynamicRange": {
+            "default": null,
+            "description": "Development dynamic range",
+            "nullable": true,
+            "type": "string"
+          },
           "driveMode": {
             "default": null,
             "description": "Drive mode",
+            "nullable": true,
+            "type": "string"
+          },
+          "dynamicRange": {
+            "default": null,
+            "description": "Dynamic range",
+            "nullable": true,
+            "type": "string"
+          },
+          "electronicFrontCurtainShutter": {
+            "default": null,
+            "description": "Electronic front curtain shutter",
             "nullable": true,
             "type": "string"
           },
@@ -19112,6 +19178,12 @@
             "nullable": true,
             "type": "string"
           },
+          "fade": {
+            "default": null,
+            "description": "Fade",
+            "nullable": true,
+            "type": "string"
+          },
           "fileFormat": {
             "default": null,
             "description": "File format",
@@ -19129,6 +19201,18 @@
           "filmMode": {
             "default": null,
             "description": "Film mode",
+            "nullable": true,
+            "type": "string"
+          },
+          "flash": {
+            "default": null,
+            "description": "Flash",
+            "nullable": true,
+            "type": "string"
+          },
+          "flashAction": {
+            "default": null,
+            "description": "Flash action",
             "nullable": true,
             "type": "string"
           },
@@ -19162,6 +19246,18 @@
             "nullable": true,
             "type": "string"
           },
+          "grainEffectRoughness": {
+            "default": null,
+            "description": "Grain effect roughness",
+            "nullable": true,
+            "type": "string"
+          },
+          "grainEffectSize": {
+            "default": null,
+            "description": "Grain effect size",
+            "nullable": true,
+            "type": "string"
+          },
           "highlightTone": {
             "default": null,
             "description": "Highlight tone",
@@ -19171,6 +19267,12 @@
           "highlights": {
             "default": null,
             "description": "Highlights",
+            "nullable": true,
+            "type": "string"
+          },
+          "historySoftwareAgent": {
+            "default": null,
+            "description": "History software agent",
             "nullable": true,
             "type": "string"
           },
@@ -19273,9 +19375,21 @@
             "nullable": true,
             "type": "string"
           },
+          "mpImageLength": {
+            "default": null,
+            "description": "MP image length",
+            "nullable": true,
+            "type": "string"
+          },
           "noiseReduction": {
             "default": null,
             "description": "Noise reduction",
+            "nullable": true,
+            "type": "string"
+          },
+          "numberOfImages": {
+            "default": null,
+            "description": "Number of images",
             "nullable": true,
             "type": "string"
           },
@@ -19329,6 +19443,12 @@
             "nullable": true,
             "type": "integer"
           },
+          "releaseMode": {
+            "default": null,
+            "description": "Release mode",
+            "nullable": true,
+            "type": "string"
+          },
           "rollAngle": {
             "default": null,
             "description": "Roll angle",
@@ -19338,6 +19458,12 @@
           "saturation": {
             "default": null,
             "description": "Saturation",
+            "nullable": true,
+            "type": "string"
+          },
+          "sceneCaptureType": {
+            "default": null,
+            "description": "Scene capture type",
             "nullable": true,
             "type": "string"
           },
@@ -19365,15 +19491,33 @@
             "nullable": true,
             "type": "string"
           },
+          "sharpnessRange": {
+            "default": null,
+            "description": "Sharpness range",
+            "nullable": true,
+            "type": "string"
+          },
           "shootingMode": {
             "default": null,
             "description": "Shooting mode",
             "nullable": true,
             "type": "string"
           },
+          "shutter": {
+            "default": null,
+            "description": "Shutter",
+            "nullable": true,
+            "type": "string"
+          },
           "shutterType": {
             "default": null,
             "description": "Shutter type",
+            "nullable": true,
+            "type": "string"
+          },
+          "software": {
+            "default": null,
+            "description": "Software",
             "nullable": true,
             "type": "string"
           },
@@ -19386,6 +19530,12 @@
           "timeZone": {
             "default": null,
             "description": "Time zone",
+            "nullable": true,
+            "type": "string"
+          },
+          "userComment": {
+            "default": null,
+            "description": "User comment",
             "nullable": true,
             "type": "string"
           },
@@ -24439,8 +24589,28 @@
       },
       "SyncAssetExifV1": {
         "properties": {
+          "actionsDescription": {
+            "description": "Actions description",
+            "nullable": true,
+            "type": "string"
+          },
+          "actionsSoftwareAgentName": {
+            "description": "Actions software agent name",
+            "nullable": true,
+            "type": "string"
+          },
           "afAreaMode": {
             "description": "AF area mode",
+            "nullable": true,
+            "type": "string"
+          },
+          "afAreaModeSetting": {
+            "description": "AF area mode setting",
+            "nullable": true,
+            "type": "string"
+          },
+          "afMode": {
+            "description": "AF mode",
             "nullable": true,
             "type": "string"
           },
@@ -24451,6 +24621,11 @@
           },
           "afSubjectDetection": {
             "description": "AF subject detection",
+            "nullable": true,
+            "type": "string"
+          },
+          "ambientTemperature": {
+            "description": "Ambient temperature",
             "nullable": true,
             "type": "string"
           },
@@ -24487,6 +24662,11 @@
           },
           "city": {
             "description": "City",
+            "nullable": true,
+            "type": "string"
+          },
+          "claimGeneratorInfoName": {
+            "description": "Claim generator info name",
             "nullable": true,
             "type": "string"
           },
@@ -24535,6 +24715,16 @@
             "nullable": true,
             "type": "string"
           },
+          "creatorTool": {
+            "description": "Creator tool",
+            "nullable": true,
+            "type": "string"
+          },
+          "customRendered": {
+            "description": "Custom rendered",
+            "nullable": true,
+            "type": "string"
+          },
           "dateTimeOriginal": {
             "description": "Date time original",
             "example": "2024-01-01T00:00:00.000Z",
@@ -24548,8 +24738,23 @@
             "nullable": true,
             "type": "string"
           },
+          "developmentDynamicRange": {
+            "description": "Development dynamic range",
+            "nullable": true,
+            "type": "string"
+          },
           "driveMode": {
             "description": "Drive mode",
+            "nullable": true,
+            "type": "string"
+          },
+          "dynamicRange": {
+            "description": "Dynamic range",
+            "nullable": true,
+            "type": "string"
+          },
+          "electronicFrontCurtainShutter": {
+            "description": "Electronic front curtain shutter",
             "nullable": true,
             "type": "string"
           },
@@ -24603,6 +24808,11 @@
             "nullable": true,
             "type": "string"
           },
+          "fade": {
+            "description": "Fade",
+            "nullable": true,
+            "type": "string"
+          },
           "fileFormat": {
             "description": "File format",
             "nullable": true,
@@ -24617,6 +24827,16 @@
           },
           "filmMode": {
             "description": "Film mode",
+            "nullable": true,
+            "type": "string"
+          },
+          "flash": {
+            "description": "Flash",
+            "nullable": true,
+            "type": "string"
+          },
+          "flashAction": {
+            "description": "Flash action",
             "nullable": true,
             "type": "string"
           },
@@ -24652,6 +24872,16 @@
             "nullable": true,
             "type": "number"
           },
+          "grainEffectRoughness": {
+            "description": "Grain effect roughness",
+            "nullable": true,
+            "type": "string"
+          },
+          "grainEffectSize": {
+            "description": "Grain effect size",
+            "nullable": true,
+            "type": "string"
+          },
           "highlightTone": {
             "description": "Highlight tone",
             "nullable": true,
@@ -24659,6 +24889,11 @@
           },
           "highlights": {
             "description": "Highlights",
+            "nullable": true,
+            "type": "string"
+          },
+          "historySoftwareAgent": {
+            "description": "History software agent",
             "nullable": true,
             "type": "string"
           },
@@ -24749,8 +24984,18 @@
             "nullable": true,
             "type": "string"
           },
+          "mpImageLength": {
+            "description": "MP image length",
+            "nullable": true,
+            "type": "string"
+          },
           "noiseReduction": {
             "description": "Noise reduction",
+            "nullable": true,
+            "type": "string"
+          },
+          "numberOfImages": {
+            "description": "Number of images",
             "nullable": true,
             "type": "string"
           },
@@ -24801,6 +25046,11 @@
             "nullable": true,
             "type": "integer"
           },
+          "releaseMode": {
+            "description": "Release mode",
+            "nullable": true,
+            "type": "string"
+          },
           "rollAngle": {
             "description": "Roll angle",
             "nullable": true,
@@ -24808,6 +25058,11 @@
           },
           "saturation": {
             "description": "Saturation",
+            "nullable": true,
+            "type": "string"
+          },
+          "sceneCaptureType": {
+            "description": "Scene capture type",
             "nullable": true,
             "type": "string"
           },
@@ -24831,13 +25086,28 @@
             "nullable": true,
             "type": "string"
           },
+          "sharpnessRange": {
+            "description": "Sharpness range",
+            "nullable": true,
+            "type": "string"
+          },
           "shootingMode": {
             "description": "Shooting mode",
             "nullable": true,
             "type": "string"
           },
+          "shutter": {
+            "description": "Shutter",
+            "nullable": true,
+            "type": "string"
+          },
           "shutterType": {
             "description": "Shutter type",
+            "nullable": true,
+            "type": "string"
+          },
+          "software": {
+            "description": "Software",
             "nullable": true,
             "type": "string"
           },
@@ -24848,6 +25118,11 @@
           },
           "timeZone": {
             "description": "Time zone",
+            "nullable": true,
+            "type": "string"
+          },
+          "userComment": {
+            "description": "User comment",
             "nullable": true,
             "type": "string"
           },
@@ -24873,9 +25148,14 @@
           }
         },
         "required": [
+          "actionsDescription",
+          "actionsSoftwareAgentName",
           "afAreaMode",
+          "afAreaModeSetting",
+          "afMode",
           "afPointPosition",
           "afSubjectDetection",
+          "ambientTemperature",
           "assetId",
           "autoISO",
           "brightness",
@@ -24883,6 +25163,7 @@
           "cameraType",
           "canonExposureMode",
           "city",
+          "claimGeneratorInfoName",
           "clarity",
           "colorChromeEffect",
           "colorChromeFXBlue",
@@ -24892,9 +25173,14 @@
           "continuousDrive",
           "contrast",
           "country",
+          "creatorTool",
+          "customRendered",
           "dateTimeOriginal",
           "description",
+          "developmentDynamicRange",
           "driveMode",
+          "dynamicRange",
+          "electronicFrontCurtainShutter",
           "exifImageHeight",
           "exifImageWidth",
           "exifVersion",
@@ -24904,17 +25190,23 @@
           "exposureTime",
           "fNumber",
           "facesDetected",
+          "fade",
           "fileFormat",
           "fileSizeInByte",
           "filmMode",
+          "flash",
+          "flashAction",
           "focalLength",
           "focusLocation",
           "focusMode",
           "focusMode2",
           "focusPixel",
           "fps",
+          "grainEffectRoughness",
+          "grainEffectSize",
           "highlightTone",
           "highlights",
+          "historySoftwareAgent",
           "imageQuality",
           "imageStabilization",
           "iso",
@@ -24931,7 +25223,9 @@
           "model",
           "modifyDate",
           "monochromeGrainEffect",
+          "mpImageLength",
           "noiseReduction",
+          "numberOfImages",
           "orientation",
           "pictureEffect",
           "pictureMode",
@@ -24941,16 +25235,22 @@
           "projectionType",
           "quality",
           "rating",
+          "releaseMode",
           "rollAngle",
           "saturation",
+          "sceneCaptureType",
           "sensitivityType",
           "shadowTone",
           "shadows",
           "sharpness",
+          "sharpnessRange",
           "shootingMode",
+          "shutter",
           "shutterType",
+          "software",
           "state",
           "timeZone",
+          "userComment",
           "wbShiftAB",
           "wbShiftGM",
           "whiteBalance",
