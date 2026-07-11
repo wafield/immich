@@ -12,12 +12,27 @@
     leading?: Snippet;
     children?: Snippet;
     trailing?: Snippet;
+    placement?: 'top' | 'bottom';
   }
 
-  let { backIcon = mdiClose, class: className = '', onClose, title, leading, children, trailing }: Props = $props();
+  let {
+    backIcon = mdiClose,
+    class: className = '',
+    onClose,
+    title,
+    leading,
+    children,
+    trailing,
+    placement = 'top',
+  }: Props = $props();
 </script>
 
-<div class="absolute top-0 w-full bg-transparent p-2" id="control-bar">
+<div
+  class="absolute bg-transparent p-2 {placement === 'bottom'
+    ? 'bottom-4 left-1/2 w-fit max-w-full -translate-x-1/2'
+    : 'top-0 w-full'}"
+  id="control-bar"
+>
   <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
     {#if title || leading}
       <ControlBarHeader>

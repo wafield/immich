@@ -52,12 +52,7 @@
 
 <OnEvents {onSessionLocked} />
 
-<UserPageLayout
-  title={data.meta.title}
-  actions={[LockSession]}
-  hideNavbar={assetMultiSelectManager.selectionActive}
-  scrollbar={false}
->
+<UserPageLayout title={data.meta.title} actions={[LockSession]} scrollbar={false}>
   <Timeline
     enableRouting={true}
     bind:timelineManager

@@ -98,7 +98,7 @@
   );
 </script>
 
-<UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>
+<UserPageLayout scrollbar={false}>
   <Timeline
     enableRouting={true}
     bind:timelineManager

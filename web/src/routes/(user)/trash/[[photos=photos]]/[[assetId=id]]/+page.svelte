@@ -43,7 +43,6 @@
 
 {#if featureFlagsManager.value.trash}
   <UserPageLayout
-    hideNavbar={assetMultiSelectManager.selectionActive}
     actions={assetMultiSelectManager.selectionActive ? [] : [Empty, RestoreAll]}
     title={data.meta.title}
     scrollbar={false}

@@ -89,7 +89,7 @@
   };
 </script>
 
-<UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} title={data.meta.title} scrollbar={false}>
+<UserPageLayout title={data.meta.title} scrollbar={false}>
   <Timeline
     enableRouting={true}
     bind:timelineManager
