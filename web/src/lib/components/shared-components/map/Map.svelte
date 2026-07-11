@@ -81,7 +81,7 @@
     onClusterSelect,
     onClickPoint = () => {},
     popup,
-    rounded = false,
+    rounded = true,
     showSimpleControls = true,
     autoFitBounds = true,
   }: Props = $props();
@@ -320,7 +320,7 @@
 <MapLibre
   {hash}
   style=""
-  class="h-full {rounded ? 'rounded-2xl' : 'rounded-none'}"
+  class="h-full {rounded ? 'rounded-lg' : 'rounded-none'}"
   {zoom}
   {center}
   bounds={initialBounds}

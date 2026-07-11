@@ -94,7 +94,7 @@
   });
 </script>
 
-<aside class="flex size-full flex-col overflow-hidden bg-immich-bg contain-content dark:bg-immich-dark-bg">
+<aside class="flex size-full flex-col overflow-hidden">
   <div class="flex items-center justify-between border-b border-gray-200 pe-1 pb-1 dark:border-immich-dark-gray">
     <div class="flex items-center gap-2">
       <Icon icon={mdiImageMultiple} size="20" />

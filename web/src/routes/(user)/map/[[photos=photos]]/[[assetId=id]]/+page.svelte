@@ -58,7 +58,7 @@
       <div
         class={[
           'min-h-0',
-          isTimelinePanelVisible ? 'h-1/2 w-full pb-2 sm:h-full sm:w-2/3 sm:pe-2 sm:pb-0' : 'size-full',
+          isTimelinePanelVisible ? 'h-1/2 w-full pb-2 sm:h-full sm:w-1/2 sm:pe-2 sm:pb-0' : 'size-full',
         ]}
       >
         {#await import('$lib/components/shared-components/map/Map.svelte')}
@@ -74,7 +74,9 @@
       </div>
 
       {#if isTimelinePanelVisible && selectedClusterBBox}
-        <div class="h-1/2 min-h-0 w-full pt-2 sm:h-full sm:w-1/3 sm:ps-2 sm:pt-0">
+        <div
+          class="h-1/2 min-h-0 w-full rounded-lg bg-immich-bg pt-2 contain-content sm:h-full sm:w-1/2 sm:ps-2 sm:pt-0 dark:bg-immich-dark-bg"
+        >
           <MapTimelinePanel
             bbox={selectedClusterBBox}
             {selectedClusterIds}

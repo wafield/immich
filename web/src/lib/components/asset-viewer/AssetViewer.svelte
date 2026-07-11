@@ -487,7 +487,7 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed inset-s-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
