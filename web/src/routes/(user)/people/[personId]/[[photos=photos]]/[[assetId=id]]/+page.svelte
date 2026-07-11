@@ -468,7 +468,7 @@
         removeFavorite={assetMultiSelectManager.isAllFavorite}
         onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
       />
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption
           icon={mdiAccountMultipleCheckOutline}

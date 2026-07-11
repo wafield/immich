@@ -27,38 +27,38 @@
   }: Props = $props();
 </script>
 
-<div
-  class="absolute bg-transparent p-2 {placement === 'bottom'
-    ? 'bottom-4 left-1/2 w-fit max-w-full -translate-x-1/2'
-    : 'top-0 w-full'}"
-  id="control-bar"
->
-  <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
-    {#if title || leading}
-      <ControlBarHeader>
-        {#if title}
-          <ControlBarTitle>
-            {#if typeof title === 'string'}
-              {title}
-            {:else}
-              {@render title()}
-            {/if}
-          </ControlBarTitle>
-        {/if}
-        {@render leading?.()}
-      </ControlBarHeader>
-    {/if}
+<div class="pointer-events-none absolute inset-x-0 flex justify-center {placement === 'bottom' ? 'bottom-4' : 'top-0'}">
+  <div
+    class="pointer-events-auto bg-transparent p-2 {placement === 'bottom' ? 'w-fit max-w-full' : 'w-full'}"
+    id="control-bar"
+  >
+    <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
+      {#if title || leading}
+        <ControlBarHeader>
+          {#if title}
+            <ControlBarTitle>
+              {#if typeof title === 'string'}
+                {title}
+              {:else}
+                {@render title()}
+              {/if}
+            </ControlBarTitle>
+          {/if}
+          {@render leading?.()}
+        </ControlBarHeader>
+      {/if}
 
-    {#if children}
-      <ControlBarContent>
-        {@render children()}
-      </ControlBarContent>
-    {/if}
+      {#if children}
+        <ControlBarContent>
+          {@render children()}
+        </ControlBarContent>
+      {/if}
 
-    {#if trailing}
-      <ControlBarOverflow>
-        {@render trailing()}
-      </ControlBarOverflow>
-    {/if}
-  </ControlBar>
+      {#if trailing}
+        <ControlBarOverflow>
+          {@render trailing()}
+        </ControlBarOverflow>
+      {/if}
+    </ControlBar>
+  </div>
 </div>

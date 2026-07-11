@@ -464,7 +464,7 @@
             onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
           ></FavoriteAction>
         {/if}
-        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} offset={{ x: 175, y: 25 }}>
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up" offset={{ x: 175, y: 0 }}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
           {#if assetMultiSelectManager.isAllUserOwned}
             <ChangeDate menuItem />

@@ -7,16 +7,17 @@
 
   type Props = {
     children?: Snippet;
+    placement?: 'top' | 'bottom';
   };
 
-  let { children }: Props = $props();
+  let { children, placement = 'bottom' }: Props = $props();
 
   const onClose = () => assetMultiSelectManager.clear();
 
   const assets = $derived(assetMultiSelectManager.assets);
 </script>
 
-<ControlAppBar {onClose} backIcon={mdiClose} placement="bottom">
+<ControlAppBar {onClose} backIcon={mdiClose} {placement}>
   {#snippet leading()}
     <div class="font-medium text-primary">
       <p class="block sm:hidden">{assets.length}</p>

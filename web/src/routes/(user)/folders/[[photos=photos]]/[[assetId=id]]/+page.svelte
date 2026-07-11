@@ -202,51 +202,49 @@
 </UserPageLayout>
 
 {#if assetMultiSelectManager.selectionActive}
-  <div class="fixed inset-s-0 top-0 w-full">
-    <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
-      <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-      <CreateSharedLink />
-      <IconButton
-        shape="round"
-        color="secondary"
-        variant="ghost"
-        aria-label={$t('select_all')}
-        icon={mdiSelectAll}
-        onclick={handleSelectAllAssets}
-      />
-      <ActionButton action={Actions.AddToAlbum} />
-      <FavoriteAction
-        removeFavorite={assetMultiSelectManager.isAllFavorite}
-        onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
-          if (data.pathAssets && data.pathAssets.length > 0) {
-            for (const id of ids) {
-              const asset = data.pathAssets.find((asset) => asset.id === id);
-              if (asset) {
-                asset.isFavorite = isFavorite;
-              }
+  <AssetSelectControlBar>
+    {@const Actions = getAssetBulkActions($t)}
+    <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+    <CreateSharedLink />
+    <IconButton
+      shape="round"
+      color="secondary"
+      variant="ghost"
+      aria-label={$t('select_all')}
+      icon={mdiSelectAll}
+      onclick={handleSelectAllAssets}
+    />
+    <ActionButton action={Actions.AddToAlbum} />
+    <FavoriteAction
+      removeFavorite={assetMultiSelectManager.isAllFavorite}
+      onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
+        if (data.pathAssets && data.pathAssets.length > 0) {
+          for (const id of ids) {
+            const asset = data.pathAssets.find((asset) => asset.id === id);
+            if (asset) {
+              asset.isFavorite = isFavorite;
             }
           }
-        }}
-      />
+        }
+      }}
+    />
 
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-        <DownloadAction menuItem />
-        <ChangeDate menuItem />
-        <ChangeDescription menuItem />
-        <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={triggerAssetUpdate} />
-        <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
-        <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} onUndoDelete={triggerAssetUpdate} />
-        <hr />
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
+      <DownloadAction menuItem />
+      <ChangeDate menuItem />
+      <ChangeDescription menuItem />
+      <ChangeLocation menuItem />
+      <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={triggerAssetUpdate} />
+      <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+      {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
+        <TagAction menuItem />
+      {/if}
+      <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} onUndoDelete={triggerAssetUpdate} />
+      <hr />
 
-        <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
-        <ActionMenuItem action={Actions.RefreshMetadataJob} />
-        <ActionMenuItem action={Actions.TranscodeVideoJob} />
-      </ButtonContextMenu>
-    </AssetSelectControlBar>
-  </div>
+      <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
+      <ActionMenuItem action={Actions.RefreshMetadataJob} />
+      <ActionMenuItem action={Actions.TranscodeVideoJob} />
+    </ButtonContextMenu>
+  </AssetSelectControlBar>
 {/if}

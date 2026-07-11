@@ -70,7 +70,7 @@
     <CreateSharedLink />
     <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
     <ActionButton action={Actions.AddToAlbum} />
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
       <DownloadAction menuItem />
       <ChangeDate menuItem />
       <ChangeDescription menuItem />

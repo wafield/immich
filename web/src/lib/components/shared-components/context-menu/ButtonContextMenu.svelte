@@ -25,7 +25,7 @@
      * The direction in which the context menu should open.
      */
     // TODO change to start vs end
-    direction?: 'left' | 'right';
+    direction?: 'left' | 'right' | 'up';
     color?: Color;
     size?: Size | undefined;
     variant?: Variants | undefined;

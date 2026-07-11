@@ -338,56 +338,54 @@
 
   <section>
     {#if assetMultiSelectManager.selectionActive}
-      <div class="fixed inset-s-0 top-0 z-2 w-full">
-        <AssetSelectControlBar>
-          {@const Actions = getAssetBulkActions($t)}
-          <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+      <AssetSelectControlBar>
+        {@const Actions = getAssetBulkActions($t)}
+        <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
 
-          <CreateSharedLink />
-          <IconButton
-            shape="round"
-            color="secondary"
-            variant="ghost"
-            aria-label={$t('select_all')}
-            icon={mdiSelectAll}
-            onclick={handleSelectAll}
-          />
-          <ActionButton action={Actions.AddToAlbum} />
-          {#if assetMultiSelectManager.isAllUserOwned}
-            <FavoriteAction
-              removeFavorite={assetMultiSelectManager.isAllFavorite}
-              onFavorite={(ids, isFavorite) => {
-                for (const id of ids) {
-                  const asset = searchResultAssets.find((asset) => asset.id === id);
-                  if (asset) {
-                    asset.isFavorite = isFavorite;
-                  }
+        <CreateSharedLink />
+        <IconButton
+          shape="round"
+          color="secondary"
+          variant="ghost"
+          aria-label={$t('select_all')}
+          icon={mdiSelectAll}
+          onclick={handleSelectAll}
+        />
+        <ActionButton action={Actions.AddToAlbum} />
+        {#if assetMultiSelectManager.isAllUserOwned}
+          <FavoriteAction
+            removeFavorite={assetMultiSelectManager.isAllFavorite}
+            onFavorite={(ids, isFavorite) => {
+              for (const id of ids) {
+                const asset = searchResultAssets.find((asset) => asset.id === id);
+                if (asset) {
+                  asset.isFavorite = isFavorite;
                 }
-              }}
-            />
+              }
+            }}
+          />
 
-            <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-              <ActionMenuItem action={Actions.AddToAlbum} />
-              <DownloadAction menuItem />
-              <ChangeDate menuItem />
-              <ChangeDescription menuItem />
-              <ChangeLocation menuItem />
-              <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} />
-              <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-              {#if authManager.preferences.tags.enabled}
-                <TagAction menuItem />
-              {/if}
-              <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
-              <hr />
-              <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
-              <ActionMenuItem action={Actions.RefreshMetadataJob} />
-              <ActionMenuItem action={Actions.TranscodeVideoJob} />
-            </ButtonContextMenu>
-          {:else}
-            <DownloadAction />
-          {/if}
-        </AssetSelectControlBar>
-      </div>
+          <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
+            <ActionMenuItem action={Actions.AddToAlbum} />
+            <DownloadAction menuItem />
+            <ChangeDate menuItem />
+            <ChangeDescription menuItem />
+            <ChangeLocation menuItem />
+            <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} />
+            <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+            {#if authManager.preferences.tags.enabled}
+              <TagAction menuItem />
+            {/if}
+            <DeleteAssets menuItem {onAssetDelete} onUndoDelete={onSearchQueryUpdate} />
+            <hr />
+            <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
+            <ActionMenuItem action={Actions.RefreshMetadataJob} />
+            <ActionMenuItem action={Actions.TranscodeVideoJob} />
+          </ButtonContextMenu>
+        {:else}
+          <DownloadAction />
+        {/if}
+      </AssetSelectControlBar>
     {:else}
       <div class="fixed inset-s-0 top-0 z-2 w-full">
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>

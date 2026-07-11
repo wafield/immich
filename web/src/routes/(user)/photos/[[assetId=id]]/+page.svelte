@@ -132,7 +132,7 @@
         onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
       />
 
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
         <DownloadAction menuItem />
         {#if assetMultiSelectManager.assets.length > 1 || isAssetStackSelected}
           <StackAction

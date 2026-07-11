@@ -72,7 +72,7 @@
   <AssetSelectControlBar>
     <SelectAllAssets withText {timelineManager} assetInteraction={assetMultiSelectManager} />
     <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
       <DownloadAction menuItem />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />

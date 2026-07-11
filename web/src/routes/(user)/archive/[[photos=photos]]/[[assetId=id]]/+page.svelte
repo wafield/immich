@@ -59,7 +59,7 @@
 </UserPageLayout>
 
 {#if assetMultiSelectManager.selectionActive}
-  <AssetSelectControlBar>
+  <AssetSelectControlBar placement="bottom">
     {@const Actions = getAssetBulkActions($t)}
     <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
     <ArchiveAction
@@ -73,7 +73,7 @@
       removeFavorite={assetMultiSelectManager.isAllFavorite}
       onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
     />
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
       <DownloadAction menuItem />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />

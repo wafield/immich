@@ -79,25 +79,25 @@
     <GalleryViewer {assets} assetInteraction={assetMultiSelectManager} {viewport} allowDeletion={false} />
   </main>
 
-  <header class="fixed inset-s-0 top-0 w-full">
-    {#if assetMultiSelectManager.selectionActive}
-      <AssetSelectControlBar>
-        <IconButton
-          shape="round"
-          color="secondary"
-          variant="ghost"
-          aria-label={$t('select_all')}
-          icon={mdiSelectAll}
-          onclick={handleSelectAll}
-        />
-        {#if sharedLink?.allowDownload}
-          <DownloadAction filename="immich-shared.zip" />
-        {/if}
-        {#if isOwned}
-          <RemoveFromSharedLink bind:sharedLink />
-        {/if}
-      </AssetSelectControlBar>
-    {:else}
+  {#if assetMultiSelectManager.selectionActive}
+    <AssetSelectControlBar>
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        aria-label={$t('select_all')}
+        icon={mdiSelectAll}
+        onclick={handleSelectAll}
+      />
+      {#if sharedLink?.allowDownload}
+        <DownloadAction filename="immich-shared.zip" />
+      {/if}
+      {#if isOwned}
+        <RemoveFromSharedLink bind:sharedLink />
+      {/if}
+    </AssetSelectControlBar>
+  {:else}
+    <header class="fixed inset-s-0 top-0 w-full">
       <ControlAppBar>
         {#snippet leading()}
           <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
@@ -129,8 +129,8 @@
           {/if}
         {/snippet}
       </ControlAppBar>
-    {/if}
-  </header>
+    </header>
+  {/if}
 {:else if assets.length === 1}
   {#await getAssetInfo({ ...authManager.params, id: assets[0].id }) then asset}
     {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}

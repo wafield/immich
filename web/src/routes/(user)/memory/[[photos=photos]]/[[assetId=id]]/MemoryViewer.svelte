@@ -327,40 +327,38 @@
 />
 
 {#if assetMultiSelectManager.selectionActive}
-  <div class="dark sticky top-0 z-1">
-    <AssetSelectControlBar>
-      {@const Actions = getAssetBulkActions($t)}
-      <CreateSharedLink />
-      <IconButton
-        shape="round"
-        color="secondary"
-        variant="ghost"
-        aria-label={$t('select_all')}
-        icon={mdiSelectAll}
-        onclick={handleSelectAll}
+  <AssetSelectControlBar>
+    {@const Actions = getAssetBulkActions($t)}
+    <CreateSharedLink />
+    <IconButton
+      shape="round"
+      color="secondary"
+      variant="ghost"
+      aria-label={$t('select_all')}
+      icon={mdiSelectAll}
+      onclick={handleSelectAll}
+    />
+
+    <ActionButton action={Actions.AddToAlbum} />
+
+    <FavoriteAction removeFavorite={assetMultiSelectManager.isAllFavorite} />
+
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
+      <DownloadAction menuItem />
+      <ChangeDate menuItem />
+      <ChangeDescription menuItem />
+      <ChangeLocation menuItem />
+      <ArchiveAction
+        menuItem
+        unarchive={assetMultiSelectManager.isAllArchived}
+        onArchive={handleDeleteOrArchiveAssets}
       />
-
-      <ActionButton action={Actions.AddToAlbum} />
-
-      <FavoriteAction removeFavorite={assetMultiSelectManager.isAllFavorite} />
-
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-        <DownloadAction menuItem />
-        <ChangeDate menuItem />
-        <ChangeDescription menuItem />
-        <ChangeLocation menuItem />
-        <ArchiveAction
-          menuItem
-          unarchive={assetMultiSelectManager.isAllArchived}
-          onArchive={handleDeleteOrArchiveAssets}
-        />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
-        <DeleteAssets menuItem onAssetDelete={handleDeleteOrArchiveAssets} />
-      </ButtonContextMenu>
-    </AssetSelectControlBar>
-  </div>
+      {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
+        <TagAction menuItem />
+      {/if}
+      <DeleteAssets menuItem onAssetDelete={handleDeleteOrArchiveAssets} />
+    </ButtonContextMenu>
+  </AssetSelectControlBar>
 {/if}
 
 <section

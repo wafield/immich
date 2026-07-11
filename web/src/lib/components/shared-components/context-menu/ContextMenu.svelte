@@ -5,7 +5,7 @@
 
   interface Props {
     isVisible?: boolean;
-    direction?: 'left' | 'right';
+    direction?: 'left' | 'right' | 'up';
     x?: number;
     y?: number;
     id?: string | undefined;
@@ -33,7 +33,7 @@
     children,
   }: Props = $props();
 
-  const swap = (direction: string) => (direction === 'left' ? 'right' : 'left');
+  const swap = (direction: string) => (direction === 'left' ? 'right' : direction === 'right' ? 'left' : 'up');
 
   const layoutDirection = $derived(languageManager.rtl ? swap(direction) : direction);
   const position = $derived.by(() => {
@@ -47,10 +47,20 @@
     const margin = 8;
 
     const left = Math.max(margin, Math.min(windowInnerWidth - rect.width - margin, x - directionWidth));
-    const top = Math.max(margin, Math.min(windowInnerHeight - menuElement.clientHeight, y));
-    const maxHeight = windowInnerHeight - top - margin;
 
-    const needScrollBar = menuElement.clientHeight > maxHeight;
+    let top: number;
+    let maxHeight: number;
+    let needScrollBar: boolean;
+
+    if (layoutDirection === 'up') {
+      maxHeight = y - margin;
+      needScrollBar = menuElement.clientHeight > maxHeight;
+      top = needScrollBar ? margin : y - menuElement.clientHeight;
+    } else {
+      top = Math.max(margin, Math.min(windowInnerHeight - menuElement.clientHeight, y));
+      maxHeight = windowInnerHeight - top - margin;
+      needScrollBar = menuElement.clientHeight > maxHeight;
+    }
 
     return { left, top, maxHeight, needScrollBar };
   });
@@ -64,7 +74,7 @@
 <div
   bind:this={menuScrollView}
   class={[
-    'fixed z-1 w-max max-w-75 min-w-50 immich-scrollbar rounded-lg bg-slate-100 shadow-lg duration-250 ease-in-out',
+    'fixed z-100 w-max max-w-75 min-w-50 immich-scrollbar rounded-lg bg-slate-100 shadow-lg duration-250 ease-in-out',
     position.needScrollBar ? 'overflow-auto' : 'overflow-hidden',
   ]}
   style:left="{position.left}px"

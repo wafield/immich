@@ -112,37 +112,35 @@
 
 <section>
   {#if assetMultiSelectManager.selectionActive}
-    <div class="fixed inset-s-0 top-0 w-full">
-      <AssetSelectControlBar>
-        {@const Actions = getAssetBulkActions($t)}
-        <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
-        <CreateSharedLink />
-        <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
-        <ActionButton action={Actions.AddToAlbum} />
-        <FavoriteAction
-          removeFavorite={assetMultiSelectManager.isAllFavorite}
-          onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
-        ></FavoriteAction>
-        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-          <DownloadAction menuItem />
-          <ChangeDate menuItem />
-          <ChangeDescription menuItem />
-          <ChangeLocation menuItem />
-          <ArchiveAction
-            menuItem
-            onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
-          />
-          {#if authManager.preferences.tags.enabled}
-            <TagAction menuItem />
-          {/if}
-          <DeleteAssets
-            menuItem
-            onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
-            onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
-          />
-          <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-        </ButtonContextMenu>
-      </AssetSelectControlBar>
-    </div>
+    <AssetSelectControlBar>
+      {@const Actions = getAssetBulkActions($t)}
+      <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+      <CreateSharedLink />
+      <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
+      <ActionButton action={Actions.AddToAlbum} />
+      <FavoriteAction
+        removeFavorite={assetMultiSelectManager.isAllFavorite}
+        onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
+      ></FavoriteAction>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up">
+        <DownloadAction menuItem />
+        <ChangeDate menuItem />
+        <ChangeDescription menuItem />
+        <ChangeLocation menuItem />
+        <ArchiveAction
+          menuItem
+          onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
+        />
+        {#if authManager.preferences.tags.enabled}
+          <TagAction menuItem />
+        {/if}
+        <DeleteAssets
+          menuItem
+          onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
+          onUndoDelete={(assets) => timelineManager.upsertAssets(assets)}
+        />
+        <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+      </ButtonContextMenu>
+    </AssetSelectControlBar>
   {/if}
 </section>
