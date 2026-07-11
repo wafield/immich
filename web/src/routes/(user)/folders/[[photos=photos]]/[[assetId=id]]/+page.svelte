@@ -50,6 +50,12 @@
 
   let { data }: Props = $props();
 
+  $effect(() => {
+    if (data.tree) {
+      data.tree.assetCount = data.pathAssets ? data.pathAssets.length : 0;
+    }
+  });
+
   const viewport: Viewport = $state({ width: 0, height: 0 });
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));

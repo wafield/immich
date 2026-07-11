@@ -61,7 +61,12 @@
 
       <li class="flex items-center gap-2 font-mono text-sm text-nowrap text-primary">
         <Icon icon={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size="16" aria-hidden />
-        <p class="cursor-default whitespace-pre-wrap">{node.value}</p>
+        <p class="cursor-default whitespace-pre-wrap">
+          {node.value}
+          {#if node.assetCount !== undefined}
+            ({node.assetCount} {node.assetCount === 1 ? 'asset' : 'assets'})
+          {/if}
+        </p>
       </li>
     </ol>
   </div>

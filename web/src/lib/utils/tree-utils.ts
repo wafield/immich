@@ -10,6 +10,7 @@ export class TreeNode extends Map<string, TreeNode> {
   hasAssets: boolean;
   id: string | undefined;
   color: string | undefined;
+  assetCount?: number;
   private _parents: TreeNode[] | undefined;
   private _children: TreeNode[] | undefined;
 
