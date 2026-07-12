@@ -24,7 +24,7 @@
     <NavigationBar noBorder />
   </AppShellHeader>
   <AppShellSidebar
-    bind:open={sidebarStore.isOpen}
+    bind:open={sidebarStore.isVisible}
     class="flex h-full flex-col justify-between gap-2 border-none shadow-none"
   >
     <div class="flex flex-col gap-1 pe-4 pt-8">

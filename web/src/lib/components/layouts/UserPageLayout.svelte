@@ -6,6 +6,8 @@
   import { useActions, type ActionArray } from '$lib/actions/use-actions';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
   import UserSidebar from '$lib/components/shared-components/side-bar/UserSidebar.svelte';
+  import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
@@ -46,17 +48,22 @@
   let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
 </script>
 
-<header class="dark:bg-immich-dark-gray">
+<header class="bg-immich-bg dark:bg-immich-dark-gray">
   {#if !hideNavbar}
     <NavigationBar onUploadClick={() => openFileUploadDialog()} />
   {/if}
 </header>
 <div
   tabindex="-1"
-  class="relative z-0 grid grid-cols-[--spacing(0)_auto] overflow-hidden sidebar:grid-cols-[--spacing(64)_auto]
-    {hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))] max-md:h-[calc(100dvh-var(--navbar-height-md))]'}
-    {hideNavbar ? 'pt-(--navbar-height)' : ''}
-    {hideNavbar ? 'max-md:pt-(--navbar-height-md)' : ''}"
+  class={[
+    'relative z-0 grid grid-cols-[--spacing(0)_auto] overflow-hidden',
+    sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar
+      ? 'sidebar:grid-cols-[--spacing(18)_auto]'
+      : 'sidebar:grid-cols-[--spacing(64)_auto]',
+    hideNavbar ? 'h-dvh' : 'h-[calc(100dvh-var(--navbar-height))] max-md:h-[calc(100dvh-var(--navbar-height-md))]',
+    hideNavbar ? 'pt-(--navbar-height)' : '',
+    hideNavbar ? 'max-md:pt-(--navbar-height-md)' : '',
+  ]}
 >
   {#if sidebar}
     {@render sidebar()}
@@ -64,7 +71,7 @@
     <UserSidebar />
   {/if}
 
-  <main class="relative rounded-lg dark:bg-immich-dark-bg">
+  <main class="relative rounded-lg bg-white dark:bg-immich-dark-bg">
     <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto pr-2 pl-4" use:useActions={use}>
       {@render children?.()}
     </div>

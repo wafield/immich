@@ -15,7 +15,15 @@
   import { notificationManager } from '$lib/stores/notification-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { ActionButton, Button, IconButton } from '@immich/ui';
-  import { mdiBellBadge, mdiBellOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
+  import {
+    mdiBellBadge,
+    mdiBellOutline,
+    mdiMagnify,
+    mdiMenu,
+    mdiTrayArrowUp,
+    mdiMenuLeft,
+    mdiMenuRight,
+  } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import ThemeButton from '../ThemeButton.svelte';
@@ -68,16 +76,28 @@
           sidebarStore.toggle();
         }}
         onmousedown={(event: MouseEvent) => {
-          if (sidebarStore.isOpen) {
+          if (sidebarStore.isVisible) {
             // stops event from reaching the default handler when clicking outside of the sidebar
             event.stopPropagation();
           }
         }}
         class="sidebar:hidden"
       />
-      <a data-sveltekit-preload-data="hover" href={Route.photos()}>
-        <img src="/mflogo.png" alt="Immich logo" class="h-12 object-contain max-md:h-14" />
+      <a data-sveltekit-preload-data="hover" href={Route.photos()} class="hidden md:block">
+        <img src="/mflogo.png" alt="Immich logo" class="h-12 object-contain" />
       </a>
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        size="medium"
+        aria-label={sidebarStore.isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+        icon={sidebarStore.isCollapsed ? mdiMenuRight : mdiMenuLeft}
+        onclick={() => {
+          sidebarStore.isCollapsed = !sidebarStore.isCollapsed;
+        }}
+        class="ml-auto hidden md:block"
+      />
     </div>
     <div class="flex justify-between gap-4 pe-6 lg:gap-8">
       <div class="hidden w-full max-w-5xl flex-1 sm:block tall:ps-0">

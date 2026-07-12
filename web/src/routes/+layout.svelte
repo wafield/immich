@@ -178,7 +178,7 @@
   eventManager.emit('AppInit');
 
   beforeNavigate(({ from, to }) => {
-    if (sidebarStore.isOpen) {
+    if (sidebarStore.isVisible) {
       sidebarStore.reset();
     }
 

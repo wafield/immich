@@ -6,6 +6,8 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { recentAlbumsDropdown, hideScreenshots } from '$lib/stores/preferences.store';
+  import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { NavbarGroup, NavbarItem, Switch } from '@immich/ui';
   import {
     mdiAccount,
@@ -63,7 +65,9 @@
     activeIcon={mdiAccountMultiple}
   />
 
-  <NavbarGroup title={$t('library')} size="tiny" />
+  {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
+    <NavbarGroup title={$t('library')} size="tiny" />
+  {/if}
 
   <NavbarItem title={$t('favorites')} href={Route.favorites()} icon={mdiHeartOutline} activeIcon={mdiHeart} />
 
@@ -74,9 +78,11 @@
     bind:expanded={$recentAlbumsDropdown}
   >
     {#snippet items()}
-      <span in:fly={{ y: -20 }} class="hidden md:block">
-        <RecentAlbums />
-      </span>
+      {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
+        <span in:fly={{ y: -20 }} class="hidden md:block">
+          <RecentAlbums />
+        </span>
+      {/if}
     {/snippet}
   </NavbarItem>
 
@@ -111,13 +117,15 @@
     <NavbarItem title={$t('trash')} href={Route.trash()} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />
   {/if}
 
-  <NavbarGroup title="View Options" size="tiny" />
-  <div
-    class="px-6 py-2 flex items-center justify-between text-sm text-immich-text-gray dark:text-immich-dark-text-gray"
-  >
-    <span class="font-medium">Hide Screenshots</span>
-    <Switch bind:checked={$hideScreenshots} />
-  </div>
+  {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
+    <NavbarGroup title="View Options" size="tiny" />
+    <div
+      class="text-immich-text-gray dark:text-immich-dark-text-gray flex items-center justify-between px-6 py-2 text-sm"
+    >
+      <span class="font-medium">Hide Screenshots</span>
+      <Switch bind:checked={$hideScreenshots} />
+    </div>
 
-  <BottomInfo />
+    <BottomInfo />
+  {/if}
 </Sidebar>

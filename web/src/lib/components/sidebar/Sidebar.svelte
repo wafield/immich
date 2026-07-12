@@ -13,8 +13,8 @@
 
   let { ariaLabel, children }: Props = $props();
 
-  const isHidden = $derived(!sidebarStore.isOpen && !mediaQueryManager.isFullSidebar);
-  const isExpanded = $derived(sidebarStore.isOpen && !mediaQueryManager.isFullSidebar);
+  const isHidden = $derived(!sidebarStore.isVisible && !mediaQueryManager.isFullSidebar);
+  const isExpanded = $derived(sidebarStore.isVisible && !mediaQueryManager.isFullSidebar);
 
   onMount(() => {
     closeSidebar();
@@ -35,17 +35,32 @@
   id="sidebar"
   aria-label={ariaLabel}
   tabindex="-1"
-  class="relative z-1 w-0 immich-scrollbar overflow-x-hidden overflow-y-auto pt-8 transition-all duration-200 sidebar:w-64 dark:bg-immich-dark-gray"
+  class={[
+    'relative z-1 w-0 immich-scrollbar overflow-x-hidden overflow-y-auto bg-immich-bg pt-8 transition-all duration-200 dark:bg-immich-dark-gray',
+    sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar ? 'collapsed sidebar:w-18' : 'sidebar:w-64',
+  ]}
   class:shadow-2xl={isExpanded}
-  class:dark:border-e-immich-dark-gray={isExpanded}
-  class:border-r={isExpanded}
-  class:w-[min(100vw,16rem)]={sidebarStore.isOpen}
+  class:w-[min(100vw,16rem)]={sidebarStore.isVisible}
   data-testid="sidebar-parent"
   inert={isHidden}
   use:clickOutside={{ onOutclick: closeSidebar, onEscape: closeSidebar }}
   use:focusTrap={{ active: isExpanded }}
 >
-  <div class="flex h-max min-h-full flex-col gap-1 pe-6">
+  <div
+    class={[
+      'flex h-max min-h-full flex-col gap-1',
+      sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar ? '' : 'px-4',
+    ]}
+  >
     {@render children?.()}
   </div>
 </nav>
+
+<style>
+  :global(#sidebar.collapsed a) {
+    margin-inline-end: calc(var(--spacing) * 2);
+  }
+  :global(#sidebar.collapsed a span) {
+    display: none;
+  }
+</style>

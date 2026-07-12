@@ -17,7 +17,7 @@ vi.mock('$lib/stores/media-query-manager.svelte', () => ({
 
 vi.mock('$lib/stores/sidebar.svelte', () => ({
   sidebarStore: {
-    isOpen: false,
+    isVisible: false,
     reset: vi.fn(),
   },
 }));
@@ -26,7 +26,7 @@ describe('Sidebar component', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.mediaQueryManager.isFullSidebar = false;
-    sidebarStore.isOpen = false;
+    sidebarStore.isVisible = false;
   });
 
   it.each`
@@ -40,7 +40,7 @@ describe('Sidebar component', () => {
     ({ isFullSidebar, isSidebarOpen, expectedInert }) => {
       // setup
       mocks.mediaQueryManager.isFullSidebar = isFullSidebar;
-      sidebarStore.isOpen = isSidebarOpen;
+      sidebarStore.isVisible = isSidebarOpen;
 
       // when
       render(SideBarSection);
@@ -54,7 +54,7 @@ describe('Sidebar component', () => {
   it('should set width when sidebar is expanded', () => {
     // setup
     mocks.mediaQueryManager.isFullSidebar = false;
-    sidebarStore.isOpen = true;
+    sidebarStore.isVisible = true;
 
     // when
     render(SideBarSection);
@@ -69,7 +69,7 @@ describe('Sidebar component', () => {
   it('should close the sidebar if it is open on initial render', () => {
     // setup
     mocks.mediaQueryManager.isFullSidebar = false;
-    sidebarStore.isOpen = true;
+    sidebarStore.isVisible = true;
 
     // when
     render(SideBarSection);

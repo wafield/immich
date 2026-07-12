@@ -12,6 +12,10 @@ export const mediaQueryManager = {
   get maxMd() {
     return maxMd.current;
   },
+
+  /**
+   * Whether full sidebar should be shown.
+   */
   get isFullSidebar() {
     return sidebar.current;
   },

@@ -31,7 +31,7 @@
   --breakpoint-lg: 1023px;
   --breakpoint-md: 767px;
   --breakpoint-sm: 639px;
-  --breakpoint-sidebar: 850px;
+  --breakpoint-sidebar: 1023px;
 }
 
 @utility immich-form-input {
@@ -69,7 +69,7 @@
   :root {
     /* light */
     --immich-primary: 66 80 175;
-    --immich-bg: 255 255 255;
+    --immich-bg: 240 244 249;
     --immich-fg: 0 0 0;
 
     /* dark */
