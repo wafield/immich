@@ -24,7 +24,20 @@
     type AssetResponseDto,
   } from '@immich/sdk';
   import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
-  import { mdiCamera, mdiCameraIris, mdiClose, mdiImageOutline, mdiFingerprint, mdiFolderOutline } from '@mdi/js';
+  import {
+    mdiCamera,
+    mdiCameraIris,
+    mdiClose,
+    mdiImageOutline,
+    mdiFolderOutline,
+    mdiFilm,
+    mdiPaletteOutline,
+    mdiCogOutline,
+    mdiInformationOutline,
+    mdiFocusAuto,
+    mdiCameraMeteringCenter,
+    mdiVideo,
+  } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
@@ -55,110 +68,6 @@
   let previousId: string | undefined = $state();
   let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
   let activeTab: 'details' | 'more' = $state('details');
-
-  let extraExifFields = $derived(
-    (() => {
-      if (!asset.exifInfo) {
-        return [];
-      }
-      const info = asset.exifInfo as Record<string, unknown>;
-      const fields: { label: string; value: string | number }[] = [];
-
-      const keys: { key: string; label: string }[] = [
-        { key: 'actionsDescription', label: 'Actions Description' },
-        { key: 'actionsSoftwareAgentName', label: 'Actions Software Agent Name' },
-        { key: 'afAreaMode', label: 'AF Area Mode' },
-        { key: 'afAreaModeSetting', label: 'AF Area Mode Setting' },
-        { key: 'afMode', label: 'AF Mode' },
-        { key: 'afPointPosition', label: 'AF Point Position' },
-        { key: 'afSubjectDetection', label: 'AF Subject Detection' },
-        { key: 'ambientTemperature', label: 'Ambient Temperature' },
-        { key: 'autoISO', label: 'Auto ISO' },
-        { key: 'brightness', label: 'Brightness' },
-        { key: 'cameraTemperature', label: 'Camera Temperature' },
-        { key: 'cameraType', label: 'Camera Type' },
-        { key: 'canonExposureMode', label: 'Canon Exposure Mode' },
-        { key: 'claimGeneratorInfoName', label: 'Claim Generator Info Name' },
-        { key: 'clarity', label: 'Clarity' },
-        { key: 'colorChromeEffect', label: 'Color Chrome Effect' },
-        { key: 'colorChromeFXBlue', label: 'Color Chrome FX Blue' },
-        { key: 'colorTempKelvin', label: 'Color Temperature (Kelvin)' },
-        { key: 'colorTemperature', label: 'Color Temperature' },
-        { key: 'colorTone', label: 'Color Tone' },
-        { key: 'continuousDrive', label: 'Continuous Drive' },
-        { key: 'contrast', label: 'Contrast' },
-        { key: 'creatorTool', label: 'Creator Tool' },
-        { key: 'customRendered', label: 'Custom Rendered' },
-        { key: 'developmentDynamicRange', label: 'Development Dynamic Range' },
-        { key: 'driveMode', label: 'Drive Mode' },
-        { key: 'dynamicRange', label: 'Dynamic Range' },
-        { key: 'electronicFrontCurtainShutter', label: 'Electronic Front Curtain Shutter' },
-        { key: 'exifVersion', label: 'EXIF Version' },
-        { key: 'exposureCompensation', label: 'Exposure Compensation' },
-        { key: 'exposureMode', label: 'Exposure Mode' },
-        { key: 'exposureProgram', label: 'Exposure Program' },
-        { key: 'facesDetected', label: 'Faces Detected' },
-        { key: 'fade', label: 'Fade' },
-        { key: 'fileFormat', label: 'File Format' },
-        { key: 'filmMode', label: 'Film Mode' },
-        { key: 'flash', label: 'Flash' },
-        { key: 'flashAction', label: 'Flash Action' },
-        { key: 'focusLocation', label: 'Focus Location' },
-        { key: 'focusMode', label: 'Focus Mode' },
-        { key: 'focusMode2', label: 'Focus Mode 2' },
-        { key: 'focusPixel', label: 'Focus Pixel' },
-        { key: 'grainEffectRoughness', label: 'Grain Effect Roughness' },
-        { key: 'grainEffectSize', label: 'Grain Effect Size' },
-        { key: 'highlightTone', label: 'Highlight Tone' },
-        { key: 'highlights', label: 'Highlights' },
-        { key: 'historySoftwareAgent', label: 'History Software Agent' },
-        { key: 'imageQuality', label: 'Image Quality' },
-        { key: 'imageStabilization', label: 'Image Stabilization' },
-        { key: 'jpegQuality', label: 'JPEG Quality' },
-        { key: 'lut1Name', label: 'LUT 1 Name' },
-        { key: 'lut1Opacity', label: 'LUT 1 Opacity' },
-        { key: 'lut2Name', label: 'LUT 2 Name' },
-        { key: 'lut2Opacity', label: 'LUT 2 Opacity' },
-        { key: 'meteringMode', label: 'Metering Mode' },
-        { key: 'monochromeGrainEffect', label: 'Monochrome Grain Effect' },
-        { key: 'mpImageLength', label: 'MP Image Length' },
-        { key: 'noiseReduction', label: 'Noise Reduction' },
-        { key: 'numberOfImages', label: 'Number of Images' },
-        { key: 'pictureEffect', label: 'Picture Effect' },
-        { key: 'pictureMode', label: 'Picture Mode' },
-        { key: 'pictureStyle', label: 'Picture Style' },
-        { key: 'pitchAngle', label: 'Pitch Angle' },
-        { key: 'quality', label: 'Quality' },
-        { key: 'releaseMode', label: 'Release Mode' },
-        { key: 'rollAngle', label: 'Roll Angle' },
-        { key: 'saturation', label: 'Saturation' },
-        { key: 'sceneCaptureType', label: 'Scene Capture Type' },
-        { key: 'sensitivityType', label: 'Sensitivity Type' },
-        { key: 'shadowTone', label: 'Shadow Tone' },
-        { key: 'shadows', label: 'Shadows' },
-        { key: 'sharpness', label: 'Sharpness' },
-        { key: 'sharpnessRange', label: 'Sharpness Range' },
-        { key: 'shootingMode', label: 'Shooting Mode' },
-        { key: 'shutter', label: 'Shutter' },
-        { key: 'shutterType', label: 'Shutter Type' },
-        { key: 'software', label: 'Software' },
-        { key: 'userComment', label: 'User Comment' },
-        { key: 'wbShiftAB', label: 'White Balance Shift AB' },
-        { key: 'wbShiftGM', label: 'White Balance Shift GM' },
-        { key: 'whiteBalance', label: 'White Balance' },
-        { key: 'whiteBalanceFineTune', label: 'White Balance Fine Tune' },
-      ];
-
-      for (const { key, label } of keys) {
-        const val = info[key];
-        if (val !== undefined && val !== null && val !== '') {
-          fields.push({ label, value: val as string | number });
-        }
-      }
-
-      return fields;
-    })(),
-  );
 
   const getProfileName = (codec?: string | null, profile?: number | null): string => {
     if (profile == null) {
@@ -263,6 +172,207 @@
     return codec.toUpperCase();
   };
 
+  interface ExifField {
+    label: string;
+    value: string | number;
+  }
+
+  interface ExifSection {
+    title: string;
+    icon: string;
+    fields: ExifField[];
+  }
+
+  const exifSectionsConfig = [
+    {
+      title: 'Image Settings',
+      icon: mdiCamera,
+      keys: [
+        { key: 'autoISO', label: 'Auto ISO' },
+        { key: 'quality', label: 'Quality' },
+        { key: 'jpegQuality', label: 'JPEG Quality' },
+        { key: 'imageQuality', label: 'Image Quality' },
+        { key: 'continuousDrive', label: 'Continuous Drive' },
+        { key: 'driveMode', label: 'Drive Mode' },
+        { key: 'shootingMode', label: 'Shooting Mode' },
+        { key: 'releaseMode', label: 'Release Mode' },
+        { key: 'shutterType', label: 'Shutter Type' },
+        { key: 'shutter', label: 'Shutter' },
+        { key: 'electronicFrontCurtainShutter', label: 'Electronic Front Curtain Shutter' },
+        { key: 'imageStabilization', label: 'Image Stabilization' },
+        { key: 'flash', label: 'Flash' },
+        { key: 'flashAction', label: 'Flash Action' },
+        { key: 'customRendered', label: 'Custom Rendered' },
+      ],
+    },
+    {
+      title: 'Exposure & Metering',
+      icon: mdiCameraMeteringCenter,
+      keys: [
+        { key: 'exposureMode', label: 'Exposure Mode' },
+        { key: 'exposureProgram', label: 'Exposure Program' },
+        { key: 'canonExposureMode', label: 'Canon Exposure Mode' },
+        { key: 'exposureCompensation', label: 'Exposure Compensation' },
+        { key: 'meteringMode', label: 'Metering Mode' },
+        { key: 'dynamicRange', label: 'Dynamic Range' },
+        { key: 'developmentDynamicRange', label: 'Development Dynamic Range' },
+      ],
+    },
+    {
+      title: 'Focus Data',
+      icon: mdiFocusAuto,
+      keys: [
+        { key: 'afAreaMode', label: 'AF Area Mode' },
+        { key: 'afAreaModeSetting', label: 'AF Area Mode Setting' },
+        { key: 'afPointPosition', label: 'AF Point Position' },
+        { key: 'afSubjectDetection', label: 'AF Subject Detection' },
+        { key: 'afMode', label: 'AF Mode' },
+        { key: 'focusLocation', label: 'Focus Location' },
+        { key: 'focusMode', label: 'Focus Mode' },
+        { key: 'focusMode2', label: 'Focus Mode 2' },
+        { key: 'focusPixel', label: 'Focus Pixel' },
+      ],
+    },
+    {
+      title: 'Picture & Color Settings',
+      icon: mdiPaletteOutline,
+      keys: [
+        { key: 'contrast', label: 'Contrast' },
+        { key: 'saturation', label: 'Saturation' },
+        { key: 'sharpness', label: 'Sharpness' },
+        { key: 'sharpnessRange', label: 'Sharpness Range' },
+        { key: 'brightness', label: 'Brightness' },
+        { key: 'grainEffectSize', label: 'Grain Effect Size' },
+        { key: 'grainEffectRoughness', label: 'Grain Effect Roughness' },
+        { key: 'monochromeGrainEffect', label: 'Monochrome Grain Effect' },
+        { key: 'colorTone', label: 'Color Tone' },
+        { key: 'clarity', label: 'Clarity' },
+        { key: 'colorChromeEffect', label: 'Color Chrome Effect' },
+        { key: 'colorChromeFXBlue', label: 'Color Chrome FX Blue' },
+        { key: 'colorTempKelvin', label: 'Color Temperature (Kelvin)' },
+        { key: 'colorTemperature', label: 'Color Temperature' },
+        { key: 'highlightTone', label: 'Highlight Tone' },
+        { key: 'highlights', label: 'Highlights' },
+        { key: 'shadowTone', label: 'Shadow Tone' },
+        { key: 'shadows', label: 'Shadows' },
+        { key: 'noiseReduction', label: 'Noise Reduction' },
+        { key: 'wbShiftAB', label: 'White Balance Shift AB' },
+        { key: 'wbShiftGM', label: 'White Balance Shift GM' },
+        { key: 'wbShiftAB_GM', label: 'White Balance Shift AB/GM' },
+        { key: 'whiteBalance', label: 'White Balance' },
+        { key: 'whiteBalanceFineTune', label: 'White Balance Fine Tune' },
+        { key: 'sceneCaptureType', label: 'Scene Capture Type' },
+        { key: 'fade', label: 'Fade' },
+      ],
+    },
+    {
+      title: 'Color Profiles',
+      icon: mdiFilm,
+      keys: [
+        { key: 'lut1Name', label: 'LUT 1 Name' },
+        { key: 'lut1Opacity', label: 'LUT 1 Opacity' },
+        { key: 'lut2Name', label: 'LUT 2 Name' },
+        { key: 'lut2Opacity', label: 'LUT 2 Opacity' },
+        { key: 'filmMode', label: 'Film Mode' },
+        { key: 'pictureEffect', label: 'Picture Effect' },
+        { key: 'pictureMode', label: 'Picture Mode' },
+        { key: 'pictureStyle', label: 'Picture Style' },
+        { key: 'creativeStyle', label: 'Creative Style' },
+      ],
+    },
+    {
+      title: 'Software & Post Processing Info',
+      icon: mdiCogOutline,
+      keys: [
+        { key: 'historySoftwareAgent', label: 'History Software Agent' },
+        { key: 'software', label: 'Software' },
+        { key: 'userComment', label: 'User Comment' },
+        { key: 'creatorTool', label: 'Creator Tool' },
+        { key: 'actionsSoftwareAgentName', label: 'Actions Software Agent Name' },
+        { key: 'actionsDescription', label: 'Actions Description' },
+        { key: 'claimGeneratorInfoName', label: 'Claim Generator Info Name' },
+      ],
+    },
+    {
+      title: 'Other Camera Metadata',
+      icon: mdiInformationOutline,
+      keys: [
+        { key: 'autoISO', label: 'Auto ISO' },
+        { key: 'cameraTemperature', label: 'Camera Temperature' },
+        { key: 'ambientTemperature', label: 'Ambient Temperature' },
+        { key: 'exifVersion', label: 'EXIF Version' },
+        { key: 'facesDetected', label: 'Faces Detected' },
+        { key: 'fileFormat', label: 'File Format' },
+        { key: 'pitchAngle', label: 'Pitch Angle' },
+        { key: 'rollAngle', label: 'Roll Angle' },
+        { key: 'sensitivityType', label: 'Sensitivity Type' },
+        { key: 'numberOfImages', label: 'Number of Images' },
+        { key: 'mpImageLength', label: 'MP Image Length' },
+        { key: 'cameraType', label: 'Camera Type' },
+      ],
+    },
+  ];
+
+  let extraExifSections = $derived(
+    (() => {
+      const sections: ExifSection[] = [];
+
+      if (asset.videoStreamInfo) {
+        const vInfo = asset.videoStreamInfo;
+        const fields: ExifField[] = [];
+
+        if (vInfo.codecName) {
+          fields.push({ label: 'Codec', value: getCodecNameString(vInfo.codecName) });
+        }
+        if (vInfo.profile !== undefined && vInfo.profile !== null) {
+          fields.push({ label: 'Profile', value: getProfileName(vInfo.codecName, vInfo.profile) });
+        }
+        if (vInfo.bitrate) {
+          fields.push({ label: 'Bit Rate', value: `${(vInfo.bitrate / 1_000_000).toFixed(2)} Mbps` });
+        }
+        if (vInfo.frameRate) {
+          fields.push({ label: 'Frame Rate', value: getFrameRateString(vInfo.frameRate) });
+        }
+        if (vInfo.pixelFormat) {
+          fields.push({ label: 'Pixel Format', value: vInfo.pixelFormat });
+        }
+        if (vInfo.colorPrimaries !== undefined && vInfo.colorPrimaries !== null) {
+          fields.push({ label: 'Color Primaries', value: getColorPrimariesName(vInfo.colorPrimaries) });
+        }
+
+        if (fields.length > 0) {
+          sections.push({
+            title: 'Video Stream',
+            icon: mdiVideo,
+            fields,
+          });
+        }
+      }
+
+      if (asset.exifInfo) {
+        const info = asset.exifInfo as Record<string, unknown>;
+        for (const section of exifSectionsConfig) {
+          const fields: ExifField[] = [];
+          for (const { key, label } of section.keys) {
+            const val = info[key];
+            if (val !== undefined && val !== null && val !== '') {
+              fields.push({ label, value: val as string | number });
+            }
+          }
+          if (fields.length > 0) {
+            sections.push({
+              title: section.title,
+              icon: section.icon,
+              fields,
+            });
+          }
+        }
+      }
+
+      return sections;
+    })(),
+  );
+
   const refreshAlbums = async () => {
     if (authManager.isSharedLink) {
       return [];
@@ -323,7 +433,7 @@
 
 {#if !assetViewerManager.isEditFacesPanelOpen}
   <section class="relative p-2">
-    <div class="flex place-items-center gap-2">
+    <div class="sticky top-0 z-2 flex place-items-center gap-2 bg-light pt-1 pb-2 dark:bg-immich-dark-bg">
       <IconButton
         icon={mdiClose}
         aria-label={$t('close')}
@@ -490,15 +600,6 @@
           <Text size="small" color="muted">More Info</Text>
         </div>
         <div class="flex gap-4 py-4">
-          <div><Icon icon={mdiFingerprint} size="24" /></div>
-
-          <div>
-            <p class="font-mono text-xs break-all text-immich-fg opacity-70 select-text dark:text-immich-dark-fg">
-              {asset.id}
-            </p>
-          </div>
-        </div>
-        <div class="flex gap-4 py-4">
           <div><Icon icon={mdiFolderOutline} size="24" /></div>
 
           <div>
@@ -522,71 +623,26 @@
           </div>
         </div>
 
-        {#if asset.videoStreamInfo}
-          <hr class="my-4 border-immich-fg/10 dark:border-immich-dark-fg/10" />
-          <div class="flex h-10 w-full items-center justify-between text-sm">
-            <Text size="small" color="muted">Video Stream</Text>
-          </div>
-          <div class="mt-2 grid grid-cols-[140px_1fr] gap-x-4 gap-y-3 text-sm text-immich-fg dark:text-immich-dark-fg">
-            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Codec</div>
-            <div
-              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
-            >
-              {getCodecNameString(asset.videoStreamInfo.codecName)}
+        {#if extraExifSections.length > 0}
+          {#each extraExifSections as { title, icon, fields } (title)}
+            <hr class="my-4 border-immich-fg/10 dark:border-immich-dark-fg/10" />
+            <div class="flex h-10 w-full items-center gap-2 text-sm select-none">
+              <Icon {icon} size="18" class="text-immich-fg/60 dark:text-immich-dark-fg/60" />
+              <Text size="small" color="muted">{title}</Text>
             </div>
-
-            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Profile</div>
             <div
-              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+              class="mt-2 grid grid-cols-[140px_1fr] gap-x-4 gap-y-3 text-sm text-immich-fg dark:text-immich-dark-fg"
             >
-              {getProfileName(asset.videoStreamInfo.codecName, asset.videoStreamInfo.profile)}
+              {#each fields as { label, value } (label)}
+                <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">{label}</div>
+                <div
+                  class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
+                >
+                  {value}
+                </div>
+              {/each}
             </div>
-
-            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Bit Rate</div>
-            <div
-              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
-            >
-              {(asset.videoStreamInfo.bitrate / 1_000_000).toFixed(2)} Mbps
-            </div>
-
-            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Frame Rate</div>
-            <div
-              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
-            >
-              {getFrameRateString(asset.videoStreamInfo.frameRate)}
-            </div>
-
-            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Pixel Format</div>
-            <div
-              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
-            >
-              {asset.videoStreamInfo.pixelFormat}
-            </div>
-
-            <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">Color Primaries</div>
-            <div
-              class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
-            >
-              {getColorPrimariesName(asset.videoStreamInfo.colorPrimaries)}
-            </div>
-          </div>
-        {/if}
-
-        {#if extraExifFields.length > 0}
-          <hr class="my-4 border-immich-fg/10 dark:border-immich-dark-fg/10" />
-          <div class="flex h-10 w-full items-center justify-between text-sm">
-            <Text size="small" color="muted">EXIF Tags</Text>
-          </div>
-          <div class="mt-2 grid grid-cols-[140px_1fr] gap-x-4 gap-y-3 text-sm text-immich-fg dark:text-immich-dark-fg">
-            {#each extraExifFields as { label, value } (label)}
-              <div class="font-medium text-immich-fg/60 select-none dark:text-immich-dark-fg/60">{label}</div>
-              <div
-                class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-75 select-text dark:text-immich-dark-fg"
-              >
-                {value}
-              </div>
-            {/each}
-          </div>
+          {/each}
         {/if}
       </div>
     {/if}
