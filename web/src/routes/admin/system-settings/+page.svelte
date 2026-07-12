@@ -215,7 +215,7 @@
 <CommandPaletteDefaultProvider name={$t('admin.system_settings')} actions={[CopyToClipboard, Upload, Download]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[CopyToClipboard, Download, Upload]}>
-  <Container size="large" center>
+  <Container size="full" class="columns-2xl gap-8 p-4">
     {#if featureFlagsManager.value.configFile}
       <Alert color="warning" class="my-4 text-dark" title={$t('admin.config_set_by_file')} />
     {/if}

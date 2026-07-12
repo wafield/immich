@@ -16,7 +16,7 @@
 </script>
 
 <UserPageLayout title={data.meta.title} actions={[KeyboardShortcuts]}>
-  <Container size="medium" center>
+  <Container size="full" class="columns-2xl gap-8 p-4">
     <UserSettingsList keys={data.keys} sessions={data.sessions} />
   </Container>
 </UserPageLayout>

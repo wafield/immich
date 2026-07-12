@@ -55,7 +55,7 @@
 </script>
 
 <div
-  class="mt-4 rounded-2xl border-2 border-primary/20 px-6 py-4 transition-all {isOpen
+  class="mb-4 break-inside-avoid rounded-2xl border-2 border-primary/20 px-6 py-4 transition-all {isOpen
     ? 'border-primary/60 shadow-md'
     : ''}"
   bind:this={accordionElement}
@@ -101,7 +101,7 @@
   </button>
 
   {#if isOpen}
-    <ul transition:slide={{ duration: 150 }} class="ms-4 mb-2">
+    <ul transition:slide={{ duration: 150 }} class="mb-2">
       {@render children?.()}
     </ul>
   {/if}
