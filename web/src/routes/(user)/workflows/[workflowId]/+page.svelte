@@ -300,7 +300,7 @@
     </ActionBar>
   </AppShellBar>
 
-  <Container size="medium" class="pt-8 pb-24" center>
+  <Container size="medium" class="my-8 rounded-xl bg-immich-bg pt-8 pb-24 dark:bg-immich-dark-lightgray" center>
     <VStack gap={4}>
       <div class="flex gap-1 rounded-full border border-light-200 bg-light p-1" role="group">
         <Button
