@@ -612,7 +612,7 @@
       transition:fly={{ duration: 150 }}
       id="detail-panel"
       class={[
-        'row-span-4 row-start-1 overflow-y-auto bg-light transition-all dark:border-l dark:border-s-immich-dark-gray dark:bg-immich-dark-bg dark:text-immich-dark-fg',
+        'row-span-4 row-start-1 overflow-y-auto bg-light transition-all dark:bg-immich-dark-bg dark:text-immich-dark-fg',
         showDetailPanel ? 'w-90' : 'w-100',
       ]}
       translate="yes"

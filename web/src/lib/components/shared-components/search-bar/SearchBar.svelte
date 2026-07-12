@@ -276,7 +276,7 @@
         id="main-search-bar"
         class="w-full border-2 py-4 ps-14 text-immich-fg/75 transition-all max-md:py-2 dark:text-immich-dark-fg
         {showClearIcon ? 'pe-22.5' : 'pe-14'}
-        {grayTheme ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
+        dark:bg-immich-dark-lightgray
         {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
         {searchStore.isSearchEnabled ? 'border-gray-200 bg-white dark:border-gray-700' : 'border-transparent'}"
         placeholder={$t('search_your_photos')}

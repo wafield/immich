@@ -46,7 +46,7 @@
   let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-(--spacing(16)))]' : 'top-0 h-full');
 </script>
 
-<header>
+<header class="dark:bg-immich-dark-gray">
   {#if !hideNavbar}
     <NavigationBar onUploadClick={() => openFileUploadDialog()} />
   {/if}
@@ -64,13 +64,13 @@
     <UserSidebar />
   {/if}
 
-  <main class="relative">
-    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto p-2" use:useActions={use}>
+  <main class="relative rounded-lg dark:bg-immich-dark-bg">
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto pr-2 pl-4" use:useActions={use}>
       {@render children?.()}
     </div>
 
     {#if title || buttons}
-      <div class="absolute flex h-16 w-full place-items-center justify-between border-b p-2 text-dark">
+      <div class="absolute flex h-16 w-full place-items-center justify-between p-4 text-dark">
         <div class="flex items-center gap-2">
           {#if title}
             <div class="pe-8 outline-none" tabindex="-1" id={headerId}>{title}</div>

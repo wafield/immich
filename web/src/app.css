@@ -16,6 +16,7 @@
   --color-immich-dark-bg: rgb(var(--immich-dark-bg));
   --color-immich-dark-fg: rgb(var(--immich-dark-fg));
   --color-immich-dark-gray: rgb(var(--immich-dark-gray));
+  --color-immich-dark-lightgray: rgb(var(--immich-dark-lightgray));
 }
 
 @theme {
@@ -73,9 +74,10 @@
 
     /* dark */
     --immich-dark-primary: 172 203 250;
-    --immich-dark-bg: 10 10 10;
+    --immich-dark-bg: 19 19 20;
     --immich-dark-fg: 229 231 235;
-    --immich-dark-gray: 33 33 33;
+    --immich-dark-gray: 30 31 32;
+    --immich-dark-lightgray: 40 42 44;
   }
 
   button:not(:disabled),
@@ -146,7 +148,6 @@
 
   body {
     margin: 0;
-    color: var(--immich-ui-dark);
   }
 
   body.asset-viewer-open {
