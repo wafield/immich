@@ -27,7 +27,11 @@
   }: Props = $props();
 </script>
 
-<div class="pointer-events-none absolute inset-x-0 flex justify-center {placement === 'bottom' ? 'bottom-4' : 'top-0'}">
+<div
+  class="pointer-events-none inset-x-0 flex justify-center {placement === 'bottom'
+    ? 'fixed bottom-4 z-2'
+    : 'absolute top-0'}"
+>
   <div
     class="pointer-events-auto bg-transparent p-2 {placement === 'bottom' ? 'w-fit max-w-full' : 'w-full'}"
     id="control-bar"
