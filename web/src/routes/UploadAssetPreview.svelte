@@ -60,7 +60,12 @@
       {/if}
     </div>
     <!-- <span>[{getByteUnitString(uploadAsset.file.size, $locale)}]</span> -->
-    <span class="grow break-all">{uploadAsset.file.name}</span>
+    <span class="grow break-all">
+      {uploadAsset.file.name}
+      {#if uploadAsset.state === UploadState.DUPLICATED && uploadAsset.originalPath}
+        <span class="block text-[10px]">Existing file: {uploadAsset.originalPath}</span>
+      {/if}
+    </span>
 
     {#if uploadAsset.state === UploadState.DUPLICATED && uploadAsset.assetId}
       <div class="flex items-center justify-between gap-1">

@@ -39,6 +39,7 @@ const AssetBulkUploadCheckResultSchema = z
     reason: AssetRejectReasonSchema.optional(),
     assetId: z.uuidv4().optional().describe('Existing asset ID if duplicate'),
     isTrashed: z.boolean().optional().describe('Whether existing asset is trashed'),
+    originalPath: z.string().optional().describe('Existing asset original path if duplicate'),
   })
   .meta({ id: 'AssetBulkUploadCheckResult' });
 

@@ -32,6 +32,7 @@ export type UploadAsset = {
   speed?: number;
   error?: unknown;
   message?: string;
+  originalPath?: string;
 };
 
 export enum OnboardingRole {

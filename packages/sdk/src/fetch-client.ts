@@ -721,6 +721,7 @@ export type AssetBulkUploadCheckResult = {
     id: string;
     /** Whether existing asset is trashed */
     isTrashed?: boolean;
+    originalPath?: string;
     reason?: AssetRejectReason;
 };
 export type AssetBulkUploadCheckResponseDto = {

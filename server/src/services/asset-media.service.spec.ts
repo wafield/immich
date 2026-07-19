@@ -766,8 +766,8 @@ describe(AssetMediaService.name, () => {
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
       mocks.asset.getByChecksums.mockResolvedValue([
-        { id: 'asset-1', checksum: file1, deletedAt: null },
-        { id: 'asset-2', checksum: file2, deletedAt: null },
+        { id: 'asset-1', checksum: file1, deletedAt: null, originalPath: '/path/to/file1.jpg' },
+        { id: 'asset-2', checksum: file2, deletedAt: null, originalPath: '/path/to/file2.jpg' },
       ]);
 
       await expect(
@@ -785,6 +785,7 @@ describe(AssetMediaService.name, () => {
             action: AssetUploadAction.REJECT,
             reason: AssetRejectReason.DUPLICATE,
             isTrashed: false,
+            originalPath: '/path/to/file1.jpg',
           },
           {
             id: '2',
@@ -792,6 +793,7 @@ describe(AssetMediaService.name, () => {
             action: AssetUploadAction.REJECT,
             reason: AssetRejectReason.DUPLICATE,
             isTrashed: false,
+            originalPath: '/path/to/file2.jpg',
           },
         ],
       });
@@ -803,7 +805,7 @@ describe(AssetMediaService.name, () => {
       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
-      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1, deletedAt: null }]);
+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1, deletedAt: null, originalPath: '/path/to/file1.jpg' }]);
 
       await expect(
         sut.bulkUploadCheck(authStub.admin, {
@@ -820,6 +822,7 @@ describe(AssetMediaService.name, () => {
             action: AssetUploadAction.REJECT,
             reason: AssetRejectReason.DUPLICATE,
             isTrashed: false,
+            originalPath: '/path/to/file1.jpg',
           },
           {
             id: '2',

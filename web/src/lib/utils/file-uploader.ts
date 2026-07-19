@@ -188,7 +188,7 @@ async function fileUploader({
       formData.append('visibility', AssetVisibility.Locked);
     }
 
-    let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;
+    let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean; originalPath?: string } | undefined;
     if (!authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
@@ -203,6 +203,7 @@ async function fileUploader({
             status: AssetMediaStatus.Duplicate,
             id: checkUploadResult.assetId,
             isTrashed: checkUploadResult.isTrashed,
+            originalPath: checkUploadResult.originalPath,
           };
         }
       } catch (error) {
@@ -243,6 +244,7 @@ async function fileUploader({
       state: responseData.status === AssetMediaStatus.Duplicate ? UploadState.DUPLICATED : UploadState.DONE,
       assetId: responseData.id,
       isTrashed: responseData.isTrashed,
+      originalPath: responseData.originalPath,
     });
 
     if (responseData.status !== AssetMediaStatus.Duplicate) {

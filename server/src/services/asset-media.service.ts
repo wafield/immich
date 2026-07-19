@@ -314,10 +314,10 @@ export class AssetMediaService extends BaseService {
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
     const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
     const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);
-    const checksumMap: Record<string, { id: string; isTrashed: boolean }> = {};
+    const checksumMap: Record<string, { id: string; isTrashed: boolean; originalPath: string }> = {};
 
-    for (const { id, deletedAt, checksum } of results) {
-      checksumMap[checksum.toString('hex')] = { id, isTrashed: !!deletedAt };
+    for (const { id, deletedAt, checksum, originalPath } of results) {
+      checksumMap[checksum.toString('hex')] = { id, isTrashed: !!deletedAt, originalPath };
     }
 
     return {
@@ -330,6 +330,7 @@ export class AssetMediaService extends BaseService {
             reason: AssetRejectReason.DUPLICATE,
             assetId: duplicate.id,
             isTrashed: duplicate.isTrashed,
+            originalPath: duplicate.originalPath,
           };
         }
 

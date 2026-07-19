@@ -779,7 +779,7 @@ export class AssetRepository {
   getByChecksums(userId: string, checksums: Buffer[]) {
     return this.db
       .selectFrom('asset')
-      .select(['id', 'checksum', 'deletedAt'])
+      .select(['id', 'checksum', 'deletedAt', 'originalPath'])
       .where('ownerId', '=', asUuid(userId))
       .where('checksum', 'in', checksums)
       .execute();

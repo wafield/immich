@@ -10,7 +10,7 @@
   import { fade, scale } from 'svelte/transition';
   import UploadAssetPreview from './UploadAssetPreview.svelte';
 
-  let showDetail = $state(false);
+  let showDetail = $state(true);
   let showOptions = $state(false);
   let concurrency = $state(uploadExecutionQueue.concurrency);
 
@@ -53,7 +53,7 @@
     {#if showDetail}
       <div
         in:scale={{ duration: 250, easing: quartInOut }}
-        class="w-81 rounded-xl border border-gray-200 bg-subtle p-4 text-sm shadow-xs dark:border-subtle"
+        class="w-xl rounded-xl border border-gray-200 bg-subtle p-4 text-sm shadow-xs dark:border-subtle"
       >
         <div class="place-item-center mb-4 flex justify-between">
           <div class="flex flex-col gap-1">
