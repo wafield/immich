@@ -291,7 +291,7 @@ export class LibraryService extends BaseService {
           if (isAssetChecksumConstraint(insertError)) {
             const existingAsset = await this.assetRepository.getByChecksum({
               ownerId: asset.ownerId,
-              libraryId: asset.libraryId,
+              libraryId: asset.libraryId ?? undefined,
               checksum: asset.checksum,
             });
 
