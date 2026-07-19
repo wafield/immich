@@ -605,6 +605,53 @@ describe(LibraryService.name, () => {
 
       expect(mocks.asset.createAll.mock.calls).toEqual([]);
     });
+
+    it('should catch checksum unique constraint errors, insert non-duplicates individually, and create notifications', async () => {
+      const library = factory.library();
+      const duplicateAsset = AssetFactory.create({ originalPath: '/data/user1/existing.jpg' });
+
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: library.id,
+        paths: ['/data/user1/photo1.jpg', '/data/user1/photo2.jpg'],
+      };
+
+      const dbError = new Error('unique constraint');
+      (dbError as any).constraint_name = 'asset_ownerId_libraryId_checksum_idx';
+      mocks.asset.createAll
+        .mockRejectedValueOnce(dbError)
+        .mockResolvedValueOnce(['asset-id-1'])
+        .mockRejectedValueOnce(dbError);
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.asset.getByChecksum.mockResolvedValue(duplicateAsset);
+      mocks.notification.create.mockResolvedValue({ id: 'notification-id' });
+
+      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.createAll).toHaveBeenCalledTimes(3);
+
+      expect(mocks.asset.getByChecksum).toHaveBeenCalledWith({
+        ownerId: library.ownerId,
+        libraryId: library.id,
+        checksum: expect.anything(),
+      });
+
+      expect(mocks.notification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: library.ownerId,
+          type: 'SystemMessage',
+          level: 'warning',
+          title: 'Duplicate File Skipped',
+          description: expect.stringContaining('identical to existing asset "/data/user1/existing.jpg"'),
+        }),
+      );
+
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith(
+        'on_notification',
+        library.ownerId,
+        expect.anything(),
+      );
+    });
   });
 
   describe('delete', () => {

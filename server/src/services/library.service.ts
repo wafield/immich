@@ -17,6 +17,7 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
+import { mapNotification } from 'src/dtos/notification.dto';
 import {
   AssetStatus,
   AssetType,
@@ -26,6 +27,8 @@ import {
   ImmichWorker,
   JobName,
   JobStatus,
+  NotificationLevel,
+  NotificationType,
   QueueName,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
@@ -33,6 +36,7 @@ import { AssetSyncResult } from 'src/repositories/library.repository';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
+import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 
@@ -260,13 +264,60 @@ export class LibraryService extends BaseService {
     const assetImports: Insertable<AssetTable>[] = [];
     await Promise.all(
       job.paths.map((path) =>
+        // processEntity computes checksum and unique key for each asset.
         this.processEntity(path, library.ownerId, job.libraryId)
           .then((asset) => assetImports.push(asset))
           .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`)),
       ),
     );
 
-    const assetIds = await this.assetRepository.createAll(assetImports);
+    let assetIds: string[] = [];
+    try {
+      // createAll performs the actual database insertion action.
+      assetIds = await this.assetRepository.createAll(assetImports);
+    } catch (error: any) {
+      if (!isAssetChecksumConstraint(error)) {
+        throw error;
+      }
+      // Upon any checksum (uniqueness) violation, try inserting the assets one by one to find the culprit.
+      for (const asset of assetImports) {
+        try {
+          const createdIds = await this.assetRepository.createAll([asset]);
+          if (createdIds.length > 0) {
+            assetIds.push(createdIds[0]);
+          }
+        } catch (insertError: any) {
+          // Upon another violation, this asset must be a duplicate of a previously inserted one.
+          if (isAssetChecksumConstraint(insertError)) {
+            const existingAsset = await this.assetRepository.getByChecksum({
+              ownerId: asset.ownerId,
+              libraryId: asset.libraryId,
+              checksum: asset.checksum,
+            });
+
+            if (existingAsset) {
+              const title = 'Duplicate File Skipped';
+              const description = `During external library sync, new file "${asset.originalPath}" in library "${library.name}" was skipped because it is identical to existing asset "${existingAsset.originalPath}" (Asset ID: ${existingAsset.id}).`;
+              this.logger.warn(description);
+
+              const notification = await this.notificationRepository.create({
+                userId: asset.ownerId,
+                type: NotificationType.SystemMessage,
+                level: NotificationLevel.Warning,
+                title,
+                description,
+              });
+
+              this.websocketRepository.clientSend('on_notification', asset.ownerId, mapNotification(notification));
+            } else {
+              this.logger.error(`Failed to locate duplicate for checksum constraint`);
+            }
+          } else {
+            this.logger.error(`Error inserting asset ${asset.originalPath}: ${insertError}`);
+          }
+        }
+      }
+    }
 
     const progressMessage =
       job.progressCounter && job.totalAssets

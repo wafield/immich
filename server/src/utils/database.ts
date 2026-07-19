@@ -70,11 +70,18 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
   return update;
 };
 
+// Uniqueness constraint used in file uploading: owner ID + checksum as the unique key. Handle violations gracefully.
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
+
+// Uniqueness constraint used in external library scan: owner ID + library ID + checksum as the unique key.
+// Handle violations gracefully.
+export const ASSET_LIBRARY_CHECKSUM_CONSTRAINT = 'asset_ownerId_libraryId_checksum_idx';
 export const VIDEO_STREAM_SESSION_PK_CONSTRAINT = 'video_stream_session_pkey';
 
-export const isAssetChecksumConstraint = (error: unknown) =>
-  (error as PostgresError)?.constraint_name === ASSET_CHECKSUM_CONSTRAINT;
+export const isAssetChecksumConstraint = (error: unknown) => {
+  const constraint = (error as PostgresError)?.constraint_name;
+  return constraint === ASSET_CHECKSUM_CONSTRAINT || constraint === ASSET_LIBRARY_CHECKSUM_CONSTRAINT;
+};
 
 export const isVideoStreamSessionPkConstraint = (error: unknown) =>
   (error as PostgresError)?.constraint_name === VIDEO_STREAM_SESSION_PK_CONSTRAINT;

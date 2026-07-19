@@ -28,13 +28,14 @@ import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
-// Checksums must be unique per user and library
+// For the main library, use ownerID + image checksum as the unique key.
 @Index({
   name: ASSET_CHECKSUM_CONSTRAINT,
   columns: ['ownerId', 'checksum'],
   unique: true,
   where: '"libraryId" IS NULL',
 })
+// For external libraries, also add library ID as the unique key.
 @Index({
   columns: ['ownerId', 'libraryId', 'checksum'],
   unique: true,

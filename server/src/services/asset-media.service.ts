@@ -201,7 +201,8 @@ export class AssetMediaService extends BaseService {
         data: { files: [file.originalPath, sidecarFile?.originalPath] },
       });
 
-      // handle duplicates with a success response
+      // Handle duplicated image uploads. AssetChecksumConstraint uses ownerId + checksum for the main library.
+      // Here we return a success response with the duplicated asset info.
       if (isAssetChecksumConstraint(error)) {
         const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
         if (!duplicateId) {
