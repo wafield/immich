@@ -37,6 +37,7 @@
     mdiFocusAuto,
     mdiCameraMeteringCenter,
     mdiVideo,
+    mdiDatabase,
   } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -499,6 +500,16 @@
         {/if}
 
         <DetailPanelDate {asset} />
+
+        <div class="flex gap-4 py-4">
+          <div><Icon icon={mdiDatabase} size="24" /></div>
+          <div>
+            <p class="break-all whitespace-pre-wrap">{asset.library?.name ?? 'Default Library'}</p>
+            {#if asset.library?.refreshedAt}
+              <p class="text-xs opacity-50">Last scanned: {new Date(asset.library.refreshedAt).toLocaleString($locale)}</p>
+            {/if}
+          </div>
+        </div>
 
         <div class="flex gap-4 py-4">
           <div><Icon icon={mdiImageOutline} size="24" /></div>

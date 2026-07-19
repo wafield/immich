@@ -70,6 +70,7 @@ export class AssetService extends BaseService {
       edits: true,
       tags: true,
       videoStreamInfo: true,
+      library: true,
     });
 
     if (!asset) {

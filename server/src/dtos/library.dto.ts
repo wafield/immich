@@ -91,6 +91,24 @@ export class ValidateLibraryImportPathResponseDto extends createZodDto(ValidateL
 export class LibraryResponseDto extends createZodDto(LibraryResponseSchema) {}
 export class LibraryStatsResponseDto extends createZodDto(LibraryStatsResponseSchema) {}
 
+export const LibraryAssetResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Library ID'),
+    name: z.string().describe('Library name'),
+    refreshedAt: isoDatetimeToDate.nullable().describe('Last refresh date'),
+  })
+  .meta({ id: 'LibraryAssetResponseDto' });
+
+export class LibraryAssetResponseDto extends createZodDto(LibraryAssetResponseSchema) {}
+
+export function mapLibraryAsset(entity: any): LibraryAssetResponseDto {
+  return {
+    id: entity.id,
+    name: entity.name,
+    refreshedAt: entity.refreshedAt ? new Date(entity.refreshedAt) : null,
+  };
+}
+
 export function mapLibrary(entity: Library): LibraryResponseDto {
   let assetCount = 0;
   if (entity.assets) {

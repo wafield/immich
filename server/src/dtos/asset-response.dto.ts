@@ -8,6 +8,7 @@ import { ExifResponseSchema, mapExif } from 'src/dtos/exif.dto';
 import { PersonResponseDto, PersonResponseSchema, mapPerson } from 'src/dtos/person.dto';
 import { TagResponseSchema, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
+import { LibraryAssetResponseSchema, mapLibraryAsset } from 'src/dtos/library.dto';
 import {
   AssetStatus,
   AssetType,
@@ -97,6 +98,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .nullish()
       .describe('Library ID')
       .meta(new HistoryBuilder().added('v1').deprecated('v1').getExtensions()),
+    library: LibraryAssetResponseSchema.optional(),
     originalPath: z.string().describe('Original file path'),
     originalFileName: z.string().describe('Original file name'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -166,6 +168,7 @@ export type MapAsset = {
   isOffline: boolean;
   visibility: AssetVisibility;
   libraryId: string | null;
+  library?: any | null;
   livePhotoVideoId: string | null;
   localDateTime: Date;
   originalFileName: string;
@@ -242,6 +245,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     ownerId: entity.ownerId,
     owner: entity.owner ? mapUser(entity.owner) : undefined,
     libraryId: entity.libraryId,
+    library: entity.library ? mapLibraryAsset(entity.library) : undefined,
     type: entity.type,
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
