@@ -792,7 +792,6 @@ export class AssetRepository {
       .select('id')
       .where('ownerId', '=', asUuid(ownerId))
       .where('checksum', '=', checksum)
-      .where('libraryId', 'is', null)
       .limit(1)
       .executeTakeFirst();
 

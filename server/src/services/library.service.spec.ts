@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
+import path from 'node:path';
 import { defaults, SystemConfig } from 'src/config';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
@@ -549,6 +550,7 @@ describe(LibraryService.name, () => {
         mtime: new Date('2023-01-01'),
         ctime: new Date('2023-01-01'),
       } as Stats);
+      mocks.crypto.hashFile.mockResolvedValue(Buffer.from('mock-hash'));
     });
 
     it('should import a new asset', async () => {
@@ -564,18 +566,16 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockResolvedValue(library);
 
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
-
       expect(mocks.asset.createAll).toHaveBeenCalledWith([
         expect.objectContaining({
           ownerId: library.ownerId,
           libraryId: library.id,
-          originalPath: '/data/user1/photo.jpg',
+          originalPath: path.normalize('/data/user1/photo.jpg'),
           type: AssetType.Image,
           originalFileName: 'photo.jpg',
           isExternal: true,
         }),
       ]);
-
       expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', {
         asset: { id: asset.id, ownerId: library.ownerId },
       });
