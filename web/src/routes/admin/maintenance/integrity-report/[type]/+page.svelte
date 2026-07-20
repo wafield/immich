@@ -75,7 +75,7 @@
   actions={[Download, Delete]}
 >
   <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
+    <section class="w-full pb-28">
       <Table striped spacing="tiny">
         <TableHeader>
           <TableHeading class="w-7/8 text-left">{$t('filename')}</TableHeading>

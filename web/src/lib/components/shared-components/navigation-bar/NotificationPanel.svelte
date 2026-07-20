@@ -66,10 +66,10 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="notification-panel"
-  class="absolute top-17.5 right-6 z-1 w-[min(360px,100vw-50px)] rounded-3xl border border-gray-200 bg-gray-100 text-light shadow-lg dark:border dark:border-light dark:bg-immich-dark-gray"
+  class="absolute top-17.5 right-6 z-1 w-[min(600px,100vw-50px)] rounded-3xl border border-gray-200 bg-gray-100 text-light shadow-lg dark:border dark:border-light dark:bg-immich-dark-gray"
   use:focusTrap
 >
-  <Stack class="max-h-125">
+  <Stack>
     <div class="mx-4 mt-4 flex items-center justify-between">
       <Text size="medium" color="secondary" fontWeight="semi-bold">{$t('notifications')}</Text>
       <div>
