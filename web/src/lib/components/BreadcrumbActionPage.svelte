@@ -3,11 +3,9 @@
   import {
     Breadcrumbs,
     Button,
-    Container,
     ContextMenuButton,
     HStack,
     MenuItemType,
-    Scrollable,
     isMenuItemType,
     type BreadcrumbItem,
   } from '@immich/ui';
@@ -30,8 +28,8 @@
   );
 </script>
 
-<div class="flex h-full flex-col">
-  <div class="flex h-16 w-full items-center justify-between border-b px-4 py-2 md:px-2">
+<main class="relative rounded-lg bg-white dark:bg-immich-dark-bg">
+  <div class="absolute flex h-16 w-full place-items-center justify-between p-4 text-dark">
     <Breadcrumbs items={breadcrumbs} separator={mdiSlashForward} />
 
     {#if enabledActions.length > 0}
@@ -55,7 +53,7 @@
       <ContextMenuButton aria-label={$t('open')} items={actions} class="md:hidden" />
     {/if}
   </div>
-  <Scrollable class="grow">
-    <Container class="p-2 pb-16" {children} />
-  </Scrollable>
-</div>
+  <div class="absolute top-16 h-[calc(100%-(--spacing(16)))] w-full immich-scrollbar overflow-y-auto pr-2 pl-4">
+    {@render children?.()}
+  </div>
+</main>

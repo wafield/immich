@@ -38,7 +38,7 @@
 <OnEvents {onQueueUpdate} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[ResumePaused, CreateJob, ManageConcurrency]}>
-  <Container size="medium" center>
+  <Container size="full" class="columns-2xl gap-8 p-4">
     {#if queues}
       <JobsPanel {queues} />
     {/if}

@@ -49,7 +49,7 @@
   <div
     class={[
       'flex h-max min-h-full flex-col gap-1',
-      sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar ? '' : 'px-4',
+      sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar ? '' : 'pe-4',
     ]}
   >
     {@render children?.()}

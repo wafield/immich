@@ -219,7 +219,7 @@
     {#if featureFlagsManager.value.configFile}
       <Alert color="warning" class="my-4 text-dark" title={$t('admin.config_set_by_file')} />
     {/if}
-    <div>
+    <div class="mb-4">
       <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
     </div>
     {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}

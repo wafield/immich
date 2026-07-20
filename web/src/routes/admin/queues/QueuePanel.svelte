@@ -124,7 +124,7 @@
   };
 </script>
 
-<div class="mt-10 flex flex-col gap-7">
+<div class="flex flex-col gap-7">
   {#each queueList as [queueName, props] (queueName)}
     {@const queue = queues.find(({ name }) => name === queueName)}
     {#if queue}
