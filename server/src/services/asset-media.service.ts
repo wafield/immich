@@ -140,6 +140,26 @@ export class AssetMediaService extends BaseService {
 
       this.requireQuota(auth, file.size);
 
+      // Check for duplicate checksum before creating asset.
+      // This serves as a backend safeguard in case x-immich-checksum header is missing/bypassed
+      // and database unique constraint fails to trigger (e.g. if the duplicate is in an external library).
+      // At this point, file.checksum has been populated by file-upload.interceptor.
+      const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
+      if (duplicateId) {
+        // Delete the file just stored.
+        await this.jobRepository.queue({
+          name: JobName.FileDelete,
+          data: { files: [file.originalPath, sidecarFile?.originalPath].filter((p): p is string => !!p) },
+        });
+
+        if (auth.sharedLink) {
+          await this.addToSharedLink(auth.sharedLink, duplicateId);
+        }
+
+        this.logger.debug(`Duplicate asset upload rejected (safeguard check): existing asset ${duplicateId}`);
+        return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
+      }
+
       if (dto.livePhotoVideoId) {
         await onBeforeLink(
           { asset: this.assetRepository, event: this.eventRepository },
