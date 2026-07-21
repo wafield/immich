@@ -196,6 +196,20 @@
     onClose?.(asset.id);
   };
 
+  const handleEscape = () => {
+    if (isFullScreen) {
+      return;
+    }
+    if (
+      assetViewerManager.isFaceEditMode ||
+      assetViewerManager.isEditFacesPanelOpen ||
+      assetViewerManager.isShowEditor
+    ) {
+      return;
+    }
+    onClose?.(stack?.primaryAssetId ?? asset.id);
+  };
+
   const closeEditor = async () => {
     if (editManager.hasAppliedEdits) {
       const refreshedAsset = await getAssetInfo({ id: asset.id });
@@ -493,6 +507,7 @@
   use:shortcuts={[
     { shortcut: { key: 'ArrowUp' }, onShortcut: () => navigateStack('previous') },
     { shortcut: { key: 'ArrowDown' }, onShortcut: () => navigateStack('next') },
+    { shortcut: { key: 'Escape' }, onShortcut: handleEscape },
   ]}
 />
 
