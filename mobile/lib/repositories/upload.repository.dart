@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
+import 'package:crypto/crypto.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -95,6 +96,7 @@ class UploadRepository {
     required Completer<void>? cancelToken,
     void Function(int bytes, int totalBytes)? onProgress,
     required String logContext,
+    String? checksum,
   }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
     final baseRequest = ProgressMultipartRequest(
@@ -110,6 +112,9 @@ class UploadRepository {
 
       baseRequest.fields.addAll(fields);
       baseRequest.files.add(assetRawUploadData);
+
+      final finalChecksum = checksum ?? base64.encode((await sha1.bind(file.openRead()).first).bytes);
+      baseRequest.headers['x-immich-checksum'] = finalChecksum;
 
       final response = await NetworkRepository.client.send(baseRequest);
       final responseBodyString = await response.stream.bytesToString();

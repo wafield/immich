@@ -385,6 +385,7 @@ class ForegroundUploadService {
             ? (bytes, totalBytes) => onProgress(asset.localId!, originalFileName, bytes, totalBytes)
             : null,
         logContext: 'asset[${asset.localId}]',
+        checksum: asset.checksum,
       );
 
       if (result.isSuccess && result.remoteAssetId != null) {
