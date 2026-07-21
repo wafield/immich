@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor } from '@nestjs/common';
 import { Response } from 'express';
 import { of } from 'rxjs';
 import { AssetMediaResponseDto, AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
@@ -9,6 +9,8 @@ import { fromMaybeArray } from 'src/utils/request';
 
 @Injectable()
 export class AssetUploadInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(AssetUploadInterceptor.name);
+
   constructor(private service: AssetMediaService) {}
 
   async intercept(context: ExecutionContext, next: CallHandler<any>) {
@@ -16,12 +18,16 @@ export class AssetUploadInterceptor implements NestInterceptor {
     const res = context.switchToHttp().getResponse<Response<AssetMediaResponseDto>>();
 
     const checksum = fromMaybeArray(req.headers[ImmichHeader.Checksum]);
+    this.logger.log(`Asset upload request received: userId=${req.user?.user?.id}, checksum=${checksum ?? 'undefined'}`);
+
     const response = await this.service.getUploadAssetIdByChecksum(req.user, checksum);
     if (response) {
+      this.logger.log(`Duplicate asset found in database: assetId=${response.id} for checksum=${checksum}`);
       res.status(200);
       return of({ status: AssetMediaStatus.DUPLICATE, id: response.id });
     }
 
+    this.logger.log(`No duplicate found for checksum=${checksum ?? 'undefined'}`);
     return next.handle();
   }
 }
