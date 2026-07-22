@@ -110,10 +110,7 @@ export function mapLibraryAsset(entity: any): LibraryAssetResponseDto {
 }
 
 export function mapLibrary(entity: Library): LibraryResponseDto {
-  let assetCount = 0;
-  if (entity.assets) {
-    assetCount = entity.assets.length;
-  }
+  const assetCount = entity.assets ? entity.assets.length : 0;
   return {
     id: entity.id,
     ownerId: entity.ownerId,

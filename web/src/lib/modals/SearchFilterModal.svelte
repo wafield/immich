@@ -45,10 +45,8 @@
   }
 
   const asFilter = (searchQuery: SmartSearchDto | MetadataSearchDto): SearchFilter => {
-    let query = '';
-    if ('query' in searchQuery && searchQuery.query) {
-      query = searchQuery.query;
-    }
+    let query = 'query' in searchQuery && searchQuery.query ? searchQuery.query : '';
+
     if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
       query = searchQuery.originalFileName;
     }
@@ -142,7 +140,7 @@
       city: emptyStringToNull(filter.location.city),
       make: emptyStringToNull(filter.camera.make),
       model: emptyStringToNull(filter.camera.model),
-      lensModel: filter.camera.lensModel,
+      lensModel: emptyStringToNull(filter.camera.lensModel),
       takenAfter: filter.date.takenAfter
         ? asLocalTimeISO(filter.date.takenAfter.startOf('day') as DateTime<true>)
         : undefined,

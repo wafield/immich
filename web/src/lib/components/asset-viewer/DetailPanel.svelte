@@ -506,7 +506,9 @@
           <div>
             <p class="break-all whitespace-pre-wrap">{asset.library?.name ?? 'Default Library'}</p>
             {#if asset.library?.refreshedAt}
-              <p class="text-xs opacity-50">Last scanned: {new Date(asset.library.refreshedAt).toLocaleString($locale)}</p>
+              <p class="text-xs opacity-50">
+                Last scanned: {new Date(asset.library.refreshedAt).toLocaleString($locale)}
+              </p>
             {/if}
           </div>
         </div>
@@ -517,10 +519,29 @@
           <div>
             <p class="flex place-items-center gap-2 break-all whitespace-pre-wrap">
               {asset.originalFileName}
+              {#if isOwner}
+                <IconButton
+                  icon={mdiInformationOutline}
+                  aria-label={$t('show_file_location')}
+                  size="small"
+                  shape="round"
+                  color="secondary"
+                  variant="ghost"
+                  onclick={() => assetViewerManager.toggleAssetPath()}
+                />
+              {/if}
             </p>
-            {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
+            {#if assetViewerManager.isShowAssetPath}
+              <p class="pb-2 text-xs break-all opacity-50 hover:text-primary" transition:slide={{ duration: 250 }}>
+                <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
+                <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
+                  {asset.originalPath}
+                </a>
+              </p>
+            {/if}
+            {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
               <div class="flex gap-2 text-sm">
-                {#if asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth}
+                {#if asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth}
                   {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
                     <p>
                       {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP

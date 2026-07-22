@@ -166,10 +166,12 @@ export class LibraryService extends BaseService {
   }
 
   async unwatch(id: string) {
-    if (this.watchers[id]) {
-      await this.watchers[id]();
-      delete this.watchers[id];
+    if (!Object.hasOwn(this.watchers, id)) {
+      return;
     }
+
+    await this.watchers[id]();
+    delete this.watchers[id];
   }
 
   @OnEvent({ name: 'AppShutdown' })
@@ -256,19 +258,23 @@ export class LibraryService extends BaseService {
     if (!library) {
       this.logger.debug(`Library ${job.libraryId} not found, skipping file import`);
       return JobStatus.Failed;
-    } else if (library.deletedAt) {
+    }
+    if (library.deletedAt) {
       this.logger.debug(`Library ${job.libraryId} is deleted, won't import assets into it`);
       return JobStatus.Failed;
     }
 
     const assetImports: Insertable<AssetTable>[] = [];
     await Promise.all(
-      job.paths.map((path) =>
-        // processEntity computes checksum and unique key for each asset.
-        this.processEntity(path, library.ownerId, job.libraryId)
-          .then((asset) => assetImports.push(asset))
-          .catch((error: any) => this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`)),
-      ),
+      job.paths.map(async (path) => {
+        try {
+          // processEntity computes checksum and unique key for each asset.
+          const asset = await this.processEntity(path, library.ownerId, job.libraryId);
+          assetImports.push(asset);
+        } catch (error: any) {
+          this.logger.error(`Error processing ${path} for library ${job.libraryId}: ${error}`);
+        }
+      }),
     );
 
     let assetIds: string[] = [];
@@ -367,9 +373,9 @@ export class LibraryService extends BaseService {
       return validation;
     }
 
-    const access = await this.storageRepository.checkFileExists(importPath, R_OK);
+    const isAccess = await this.storageRepository.checkFileExists(importPath, R_OK);
 
-    if (!access) {
+    if (!isAccess) {
       validation.message = 'Lacking read permission for folder';
       return validation;
     }
@@ -420,18 +426,20 @@ export class LibraryService extends BaseService {
 
     await this.assetRepository.updateByLibraryId(libraryId, { deletedAt: new Date() });
 
-    let assetsFound = false;
+    let isAssetsFound = false;
     let chunk: string[] = [];
 
     const queueChunk = async () => {
-      if (chunk.length > 0) {
-        assetsFound = true;
-        this.logger.debug(`Queueing deletion of ${chunk.length} asset(s) in library ${libraryId}`);
-        await this.jobRepository.queueAll(
-          chunk.map((id) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: false } })),
-        );
-        chunk = [];
+      if (chunk.length === 0) {
+        return;
       }
+
+      isAssetsFound = true;
+      this.logger.debug(`Queueing deletion of ${chunk.length} asset(s) in library ${libraryId}`);
+      await this.jobRepository.queueAll(
+        chunk.map((id) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: false } })),
+      );
+      chunk = [];
     };
 
     this.logger.debug(`Will delete all assets in library ${libraryId}`);
@@ -446,7 +454,7 @@ export class LibraryService extends BaseService {
 
     await queueChunk();
 
-    if (!assetsFound) {
+    if (!isAssetsFound) {
       this.logger.log(`Deleting library ${libraryId}`);
       await this.libraryRepository.delete(libraryId);
     }
@@ -571,7 +579,7 @@ export class LibraryService extends BaseService {
           break;
         }
         case AssetSyncResult.CHECK_OFFLINE: {
-          const isInImportPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
+          const isInImportPath = job.importPaths.some((path) => asset.originalPath.startsWith(path));
 
           if (!isInImportPath) {
             this.logger.verbose(
@@ -793,28 +801,30 @@ export class LibraryService extends BaseService {
     let count = 0;
 
     const queueChunk = async () => {
-      if (chunk.length > 0) {
-        count += chunk.length;
-
-        await this.jobRepository.queue({
-          name: JobName.LibrarySyncAssets,
-          data: {
-            libraryId: library.id,
-            importPaths: library.importPaths,
-            exclusionPatterns: library.exclusionPatterns,
-            assetIds: chunk.map((id) => id),
-            progressCounter: count,
-            totalAssets: assetCount,
-          },
-        });
-        chunk = [];
-
-        const completePercentage = ((100 * count) / assetCount).toFixed(1);
-
-        this.logger.log(
-          `Queued check of ${count} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
-        );
+      if (chunk.length === 0) {
+        return;
       }
+
+      count += chunk.length;
+
+      await this.jobRepository.queue({
+        name: JobName.LibrarySyncAssets,
+        data: {
+          libraryId: library.id,
+          importPaths: library.importPaths,
+          exclusionPatterns: library.exclusionPatterns,
+          assetIds: chunk.map((id) => id),
+          progressCounter: count,
+          totalAssets: assetCount,
+        },
+      });
+      chunk = [];
+
+      const completePercentage = ((100 * count) / assetCount).toFixed(1);
+
+      this.logger.log(
+        `Queued check of ${count} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
+      );
     };
 
     this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
