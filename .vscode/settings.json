@@ -75,5 +75,18 @@
     "web/src/app.css": "web/src/**"
   },
   "js/ts.preferences.importModuleSpecifier": "non-relative",
-  "vitest.maximumConfigs": 10
+  "vitest.maximumConfigs": 10,
+  "sqltools.connections": [
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "immich",
+      "database": "immich",
+      "username": "postgres",
+      "password": "postgres"
+    }
+  ]
 }
