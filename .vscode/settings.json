@@ -37,7 +37,7 @@
     {
       "ssh": "Disabled",
       "previewLimit": 50,
-      "server": "localhost",
+      "server": "172.19.0.4",
       "port": 5432,
       "driver": "PostgreSQL",
       "name": "immich",
@@ -45,7 +45,7 @@
       "username": "postgres",
       "password": "postgres"
     }
-  ]
+  ],
   "cSpell.words": ["immich"],
   "css.lint.unknownAtRules": "ignore",
   "editor.bracketPairColorization.enabled": true,
