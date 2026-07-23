@@ -23,14 +23,14 @@
     assets: AssetResponseDto[];
     suggestedKeepAssetIds: string[];
     showMore: boolean;
+    imageSize: 'S' | 'M' | 'L' | 'Full';
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable() }: Props = $props();
+  let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable(), imageSize }: Props = $props();
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
-  let imageSize = $state<'S' | 'M' | 'L'>('M');
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   const InitialVisibleCount = 5;
@@ -134,33 +134,6 @@
       >
     </div>
 
-    <!-- IMAGE SIZE TOGGLE BUTTONS -->
-    <div class="flex text-xs text-black">
-      <Button
-        class="rounded-s-full"
-        size="small"
-        color={imageSize === 'S' ? 'primary' : 'secondary'}
-        onclick={() => (imageSize = 'S')}
-      >
-        S
-      </Button>
-      <Button
-        class="rounded-none"
-        size="small"
-        color={imageSize === 'M' ? 'primary' : 'secondary'}
-        onclick={() => (imageSize = 'M')}
-      >
-        M
-      </Button>
-      <Button
-        class="rounded-e-full"
-        size="small"
-        color={imageSize === 'L' ? 'primary' : 'secondary'}
-        onclick={() => (imageSize = 'L')}
-      >
-        L
-      </Button>
-    </div>
 
     <!-- CONFIRM BUTTONS -->
     <div class="flex text-xs text-black">

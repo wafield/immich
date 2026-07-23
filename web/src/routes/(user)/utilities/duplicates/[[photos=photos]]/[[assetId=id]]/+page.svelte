@@ -56,6 +56,7 @@
 
   let duplicates = $state(data.duplicates);
   let showMore = $state(false);
+  let imageSize = $state<'S' | 'M' | 'L' | 'Full'>('M');
 
   onMount(async () => {
     await loadLibraryCache();
@@ -245,6 +246,40 @@
       >
         <Text class="hidden md:block">{$t('keep_all')}</Text>
       </Button>
+      <div class="mx-2 flex text-xs text-black">
+        <Button
+          class="rounded-s-full"
+          size="small"
+          color={imageSize === 'S' ? 'primary' : 'secondary'}
+          onclick={() => (imageSize = 'S')}
+        >
+          S
+        </Button>
+        <Button
+          class="rounded-none"
+          size="small"
+          color={imageSize === 'M' ? 'primary' : 'secondary'}
+          onclick={() => (imageSize = 'M')}
+        >
+          M
+        </Button>
+        <Button
+          class="rounded-none"
+          size="small"
+          color={imageSize === 'L' ? 'primary' : 'secondary'}
+          onclick={() => (imageSize = 'L')}
+        >
+          L
+        </Button>
+        <Button
+          class="rounded-e-full"
+          size="small"
+          color={imageSize === 'Full' ? 'primary' : 'secondary'}
+          onclick={() => (imageSize = 'Full')}
+        >
+          Full
+        </Button>
+      </div>
       <IconButton
         shape="round"
         variant="ghost"
@@ -264,6 +299,7 @@
           assets={duplicates[duplicatesIndex].assets}
           suggestedKeepAssetIds={duplicates[duplicatesIndex].suggestedKeepAssetIds}
           bind:showMore
+          {imageSize}
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}

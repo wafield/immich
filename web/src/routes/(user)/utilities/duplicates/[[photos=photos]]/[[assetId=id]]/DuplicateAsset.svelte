@@ -26,7 +26,7 @@
     differingMetadataFields: DifferingMetadataFields;
     showMore?: boolean;
     initialVisibleCount?: number;
-    imageSize?: 'S' | 'M' | 'L';
+    imageSize?: 'S' | 'M' | 'L' | 'Full';
   }
 
   let {
@@ -40,7 +40,9 @@
     imageSize = 'M',
   }: Props = $props();
 
-  const imageSizeClass = $derived(imageSize === 'S' ? 'h-60' : imageSize === 'L' ? 'h-full' : 'h-120');
+  const imageSizeClass = $derived(
+    imageSize === 'S' ? 'h-60' : imageSize === 'M' ? 'h-120' : imageSize === 'L' ? 'h-200' : 'h-full',
+  );
 
   const listFormat = $derived(new Intl.ListFormat($lang));
   const isFromExternalLibrary = $derived(!!asset.libraryId);
