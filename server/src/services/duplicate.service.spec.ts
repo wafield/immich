@@ -34,6 +34,7 @@ describe(DuplicateService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(DuplicateService));
+    mocks.library.getAll.mockResolvedValue([]);
   });
 
   it('should work', () => {

@@ -71,12 +71,20 @@ export class DuplicateService extends BaseService {
     await this.duplicateRepository.cleanupSingletonGroups(auth.user.id);
 
     const duplicates = await this.duplicateRepository.getAll(auth.user.id);
+    const libraries = await this.libraryRepository.getAll();
+    const libraryCreatedMap: Record<string, Date | string> = {};
+    for (const lib of libraries) {
+      if (lib.createdAt) {
+        libraryCreatedMap[lib.id] = lib.createdAt;
+      }
+    }
+
     return duplicates.map(({ duplicateId, assets }) => {
       const mappedAssets = assets.map((asset) => mapAsset(asset, { auth }));
       return {
         duplicateId,
         assets: mappedAssets,
-        suggestedKeepAssetIds: suggestDuplicateKeepAssetIds(mappedAssets),
+        suggestedKeepAssetIds: suggestDuplicateKeepAssetIds(mappedAssets, libraryCreatedMap),
       };
     });
   }

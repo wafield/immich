@@ -10,6 +10,11 @@ export const load = (async ({ url }) => {
   for (const group of duplicates) {
     if (group.assets && group.assets.length >= 2) {
       group.assets.sort((a, b) => {
+        const isSuggestedA = group.suggestedKeepAssetIds?.includes(a.id) || false;
+        const isSuggestedB = group.suggestedKeepAssetIds?.includes(b.id) || false;
+        if (isSuggestedA !== isSuggestedB) {
+          return isSuggestedA ? 1 : -1;
+        }
         const libA = a.libraryId || '';
         const libB = b.libraryId || '';
         if (libA !== libB) {

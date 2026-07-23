@@ -161,6 +161,43 @@ describe('duplicate utils', () => {
 
       expect(suggestDuplicate([largeWithLessExif, smallWithMoreExif])?.id).toBe('large-less-exif');
     });
+
+    it('should prioritize the asset whose library is created most recently if libraries are different', () => {
+      const assetOld = Object.assign(createAsset('old-lib-asset', 5000), { libraryId: 'lib-old' });
+      const assetNew = Object.assign(createAsset('new-lib-asset', 1000), { libraryId: 'lib-new' });
+      const libraryCreatedMap = {
+        'lib-old': '2020-01-01T00:00:00.000Z',
+        'lib-new': '2021-01-01T00:00:00.000Z',
+      };
+
+      expect(suggestDuplicate([assetOld, assetNew], libraryCreatedMap)?.id).toBe('new-lib-asset');
+    });
+
+    it('should prioritize asset whose original path does NOT contain "selected" if they are from the same library', () => {
+      const assetSelected = Object.assign(createAsset('selected-asset', 5000), {
+        libraryId: 'lib-1',
+        originalPath: '/path/to/selected/photo.jpg',
+      });
+      const assetNormal = Object.assign(createAsset('normal-asset', 1000), {
+        libraryId: 'lib-1',
+        originalPath: '/path/to/normal/photo.jpg',
+      });
+
+      expect(suggestDuplicate([assetSelected, assetNormal])?.id).toBe('normal-asset');
+    });
+
+    it('should fall back to file size/EXIF if both contain "selected" or neither does', () => {
+      const asset1 = Object.assign(createAsset('small-selected', 1000), {
+        libraryId: 'lib-1',
+        originalPath: '/path/to/selected/photo1.jpg',
+      });
+      const asset2 = Object.assign(createAsset('large-selected', 5000), {
+        libraryId: 'lib-1',
+        originalPath: '/path/to/selected/photo2.jpg',
+      });
+
+      expect(suggestDuplicate([asset1, asset2])?.id).toBe('large-selected');
+    });
   });
 
   describe('suggestDuplicateKeepAssetIds', () => {
