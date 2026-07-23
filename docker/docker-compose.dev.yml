@@ -74,6 +74,9 @@ services:
       - ${UPLOAD_LOCATION}/photos:/data
       - /etc/localtime:/etc/localtime:ro
       - ../packages/plugin-core:/build/plugins/immich-plugin-core
+
+      # External library.
+      - /c/Users/wafie/workspace/Photos:/mnt/PhotoLibrary
     env_file:
       - .env
     environment:
@@ -128,33 +131,33 @@ services:
       immich-server:
         condition: service_started
 
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: immich-machine-learning-dev:latest
-    # extends:
-    #   file: hwaccel.ml.yml
-    #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
-    build:
-      context: ../machine-learning
-      dockerfile: Dockerfile
-      args:
-        - DEVICE=cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
-    ports:
-      - 3003:3003
-    volumes:
-      - ../machine-learning/immich_ml:/usr/src/immich_ml
-      - model_cache:/cache
-    env_file:
-      - .env
-    depends_on:
-      - database
-    restart: unless-stopped
-    healthcheck:
-      disable: false
+  # immich-machine-learning:
+  #   container_name: immich_machine_learning
+  #   image: immich-machine-learning-dev:latest
+  #   # extends:
+  #   #   file: hwaccel.ml.yml
+  #   #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
+  #   build:
+  #     context: ../machine-learning
+  #     dockerfile: Dockerfile
+  #     args:
+  #       - DEVICE=cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
+  #   ports:
+  #     - 3003:3003
+  #   volumes:
+  #     - ../machine-learning/immich_ml:/usr/src/immich_ml
+  #     - model_cache:/cache
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - database
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     disable: false
 
   redis:
     container_name: immich_redis
-    image: docker.io/valkey/valkey:9@sha256:4963247afc4cd33c7d3b2d2816b9f7f8eeebab148d29056c2ca4d7cbc966f2d9
+    image: docker.io/valkey/valkey:9@sha256:8e8d64b405ce18f41b8e5ee20aa4687a8ed0022d1298f2ce31cdcf3a76e09411
     healthcheck:
       test: redis-cli ping || exit 1
 

@@ -1,13 +1,23 @@
 <script lang="ts">
   import { lang, locale } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl } from '$lib/utils';
-  import { getAllMetadataItems, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
+  import { getLibrary, AssetMediaSize, getAllAlbums, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
-  import { mdiBookmarkOutline, mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
+  import {
+    mdiBookmarkOutline,
+    mdiHeart,
+    mdiImageMultipleOutline,
+    mdiMagnifyPlus,
+    mdiFileImageOutline,
+    mdiDatabase,
+    mdiClockOutline,
+    mdiCalendar,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
+  import { getAllMetadataItems, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
   import InfoRow from './InfoRow.svelte';
 
   interface Props {
@@ -25,7 +35,7 @@
     isSelected,
     onSelectAsset,
     onViewAsset,
-    differingMetadataFields,
+    differingMetadataFields = {},
     showMore = false,
     initialVisibleCount = 5,
   }: Props = $props();
@@ -36,8 +46,31 @@
   const visibleMetadataItems = $derived(
     getAllMetadataItems(asset, $t, $locale)
       .filter(({ keys }) => keys.some((k) => differingMetadataFields[k]))
+      .filter(
+        ({ keys }) =>
+          !keys.some((k) =>
+            ['originalFileName', 'libraryId', 'createdAt', 'dateTimeOriginal', 'localDateTime'].includes(k),
+          ),
+      )
       .slice(0, showMore ? undefined : initialVisibleCount),
   );
+
+  const formatDateTime = (isoString: string | undefined, timeZone?: string | null) => {
+    if (!isoString) return $t('unknown');
+    const dateTime = timeZone ? fromISODateTime(isoString, timeZone) : fromISODateTimeUTC(isoString);
+    return dateTime.toLocaleString(
+      {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'shortOffset',
+      },
+      { locale: $locale },
+    );
+  };
 </script>
 
 <div class="min-w-60 flex-1 rounded-lg border transition-colors">
@@ -51,9 +84,9 @@
     >
       <!-- THUMBNAIL-->
       <img
-        src={getAssetMediaUrl({ id: asset.id })}
+        src={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview })}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-60 w-full rounded-t-md object-cover"
+        class="h-120 w-full rounded-t-md object-contain"
         draggable="false"
       />
 
@@ -111,6 +144,38 @@
         {render}
       </InfoRow>
     {/each}
+
+    <!-- File's original name -->
+    <InfoRow icon={mdiFileImageOutline} title={$t('file_name_text', { default: 'Original Name' })}>
+      {asset.originalFileName}
+    </InfoRow>
+
+    <!-- Library name the asset belongs to -->
+    <InfoRow icon={mdiDatabase} title={$t('library', { default: 'Library' })}>
+      {#if asset.libraryId}
+        {#await getLibrary({ id: asset.libraryId })}
+          Loading...
+        {:then library}
+          {library.name}
+        {:catch}
+          Default Library
+        {/await}
+      {:else}
+        Default Library
+      {/if}
+    </InfoRow>
+
+    <!-- Date and time at which it was added to the database -->
+    <InfoRow icon={mdiClockOutline} title="Added to database">
+      {formatDateTime(asset.createdAt)}
+    </InfoRow>
+
+    <!-- Date and time at which the image was taken / created -->
+    <InfoRow icon={mdiCalendar} title={$t('date_time_original', { default: 'Date taken' })}>
+      {asset.exifInfo?.dateTimeOriginal
+        ? formatDateTime(asset.exifInfo.dateTimeOriginal, asset.exifInfo.timeZone)
+        : formatDateTime(asset.localDateTime)}
+    </InfoRow>
 
     <!-- Albums always shown -->
     <InfoRow icon={mdiBookmarkOutline} borderBottom={false} title={$t('albums')}>

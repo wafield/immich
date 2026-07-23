@@ -173,10 +173,12 @@
     });
 
     const slideshowNavigationUnsubscribe = slideshowNavigation.subscribe((value) => {
-      if (value === SlideshowNavigation.Shuffle) {
-        slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
+      if (value !== SlideshowNavigation.Shuffle) {
+        return;
       }
+
+      slideshowHistory.reset();
+      slideshowHistory.queue(toTimelineAsset(asset));
     });
 
     return () => {
@@ -491,9 +493,7 @@
 
     if (event.detail.direction === 'left') {
       navigateAsset('next');
-    }
-
-    if (event.detail.direction === 'right') {
+    } else if (event.detail.direction === 'right') {
       navigateAsset('previous');
     }
   };

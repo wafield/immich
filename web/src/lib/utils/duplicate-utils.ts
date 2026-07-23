@@ -1,4 +1,4 @@
-import type { AssetResponseDto } from '@immich/sdk';
+import { type AssetResponseDto, getAllLibraries } from '@immich/sdk';
 import {
   mdiBrightness6,
   mdiCalendar,
@@ -21,27 +21,29 @@ import {
   mdiTextBox,
   mdiTimerOutline,
   mdiWeightKilogram,
+  mdiDatabase,
+  mdiClockOutline,
 } from '@mdi/js';
 import { DateTime } from 'luxon';
 import type { MessageFormatter } from 'svelte-i18n';
 import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
 import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
 
-const truncateMiddle = (path: string, maxLength = 50): string => {
-  if (path.length <= maxLength) {
-    return path;
+const libraryCache = new Map<string, string>();
+
+export const loadLibraryCache = async () => {
+  try {
+    const libraries = await getAllLibraries();
+    for (const lib of libraries) {
+      libraryCache.set(lib.id, lib.name);
+    }
+  } catch (e) {
+    // ignore
   }
+};
 
-  const lastSlash = path.lastIndexOf('/');
-  const tail = lastSlash === -1 ? path : path.slice(lastSlash);
-
-  if (tail.length >= maxLength - 3) {
-    const half = Math.floor((maxLength - 3) / 2);
-    return path.slice(0, half) + '...' + path.slice(-half);
-  }
-
-  const headLength = maxLength - 3 - tail.length;
-  return path.slice(0, headLength) + '...' + tail;
+export const getLibraryName = (libraryId: string): string => {
+  return libraryCache.get(libraryId) || 'Default Library';
 };
 
 const formatISODateToLocale = (iso: string, locale: string | undefined): string =>
@@ -72,7 +74,7 @@ const metadataFields = [
     icon: mdiFolderOutline,
     titleKey: 'path',
     keys: ['originalPath'],
-    render: (asset, $t) => truncateMiddle(asset.originalPath) || $t('unknown'),
+    render: (asset, $t) => asset.originalPath || $t('unknown'),
   },
   {
     icon: mdiWeightKilogram,
@@ -209,13 +211,43 @@ const metadataFields = [
     icon: mdiPhoneRotateLandscape,
     titleKey: 'orientation',
     keys: ['orientation'],
-    render: (asset, $t) => String(asset.exifInfo?.orientation || $t('unknown')),
+    render: (asset, $t) => asset.exifInfo?.orientation || $t('unknown'),
   },
   {
     icon: mdiPanorama,
     titleKey: 'projection_type',
     keys: ['projectionType'],
     render: (asset, $t) => asset.exifInfo?.projectionType || $t('unknown'),
+  },
+  {
+    icon: mdiDatabase,
+    titleKey: 'library',
+    keys: ['libraryId'],
+    render: (asset, $t) => {
+      if (asset.libraryId) {
+        return getLibraryName(asset.libraryId);
+      }
+      return 'Default Library';
+    },
+  },
+  {
+    icon: mdiClockOutline,
+    titleKey: 'added_at',
+    keys: ['createdAt'],
+    render: (asset, _t, locale) => {
+      return fromISODateTimeUTC(asset.createdAt).toLocaleString(
+        {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          second: '2-digit',
+          timeZoneName: 'shortOffset',
+        },
+        { locale },
+      );
+    },
   },
 ] as const satisfies readonly MetadataFieldDefinition[];
 
@@ -240,7 +272,7 @@ const normalizeForComparison = (key: MetadataFieldKey, value: unknown): unknown 
     return value;
   }
 
-  if (key === 'fileCreatedAt' || key === 'fileModifiedAt' || key === 'dateTimeOriginal' || key === 'modifyDate') {
+  if (['fileCreatedAt', 'fileModifiedAt', 'dateTimeOriginal', 'modifyDate', 'createdAt'].includes(key)) {
     const dateTime = DateTime.fromISO(String(value));
     return dateTime.isValid ? dateTime.toISO() : String(value);
   }
@@ -263,7 +295,9 @@ const getValueForAsset = (asset: AssetResponseDto, key: MetadataFieldKey): unkno
     case 'fileCreatedAt':
     case 'fileModifiedAt':
     case 'originalFileName':
-    case 'originalPath': {
+    case 'originalPath':
+    case 'libraryId':
+    case 'createdAt': {
       return asset[key];
     }
     case 'fileSize': {
@@ -273,7 +307,7 @@ const getValueForAsset = (asset: AssetResponseDto, key: MetadataFieldKey): unkno
       return getAssetResolution(asset);
     }
     default: {
-      if (asset.exifInfo && key in asset.exifInfo) {
+      if (asset.exifInfo && Object.hasOwn(asset.exifInfo, key)) {
         return asset.exifInfo[key as keyof typeof asset.exifInfo];
       }
       return undefined;
