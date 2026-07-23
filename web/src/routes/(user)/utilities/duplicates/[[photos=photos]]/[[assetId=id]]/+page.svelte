@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
+  import { onMount } from 'svelte';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import LinkToDocs from './LinkToDocs.svelte';
   import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
@@ -11,6 +11,7 @@
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
+  import { loadLibraryCache } from '$lib/utils/duplicate-utils';
   import type { AssetResponseDto } from '@immich/sdk';
   import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
@@ -55,6 +56,10 @@
 
   let duplicates = $state(data.duplicates);
   let showMore = $state(false);
+
+  onMount(async () => {
+    await loadLibraryCache();
+  });
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -254,10 +259,6 @@
 
   <div>
     {#if duplicates && duplicates.length > 0}
-      <Text size="small" color="muted" class="mb-4">
-        <p>{$t('duplicates_description')} <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" /></p>
-      </Text>
-
       {#key duplicates[duplicatesIndex].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[duplicatesIndex].assets}
@@ -267,7 +268,7 @@
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
         />
-        <div class="mx-auto mb-16 max-w-5xl">
+        <div class="mx-auto mb-16 w-full">
           <div class="mb-4 flex w-full place-content-center place-items-center items-center justify-between sm:px-6">
             <div class="flex text-xs text-black">
               <Button

@@ -117,7 +117,7 @@
   ]}
 />
 
-<div class="px-0.2 mx-auto mb-4 max-w-5xl rounded-3xl border border-gray-300 py-6 dark:border-2 dark:border-gray-700">
+<div class="px-0.2 mx-auto mb-4 w-full rounded-3xl border border-gray-300 py-6 dark:border-2 dark:border-gray-700">
   <div class="mb-4 flex w-full flex-wrap place-content-end justify-between gap-y-6 px-6">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
