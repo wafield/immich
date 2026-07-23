@@ -30,6 +30,7 @@
   let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable() }: Props = $props();
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
+  let imageSize = $state<'S' | 'M' | 'L'>('M');
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   const InitialVisibleCount = 5;
@@ -117,8 +118,8 @@
   ]}
 />
 
-<div class="px-0.2 mx-auto mb-4 w-full rounded-3xl border border-gray-300 py-6 dark:border-2 dark:border-gray-700">
-  <div class="mb-4 flex w-full flex-wrap place-content-end justify-between gap-y-6 px-6">
+<div class="px-0.2 mx-auto mb-4 w-full rounded-xl py-6">
+  <div class="flex w-full flex-wrap place-content-end justify-between gap-y-6 p-2">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
       <Button class="rounded-s-full" size="small" color="primary" leadingIcon={mdiCheck} onclick={onSelectAll}
@@ -131,6 +132,34 @@
         leadingIcon={mdiTrashCanOutline}
         onclick={onSelectNone}>{$t('select_trash_all')}</Button
       >
+    </div>
+
+    <!-- IMAGE SIZE TOGGLE BUTTONS -->
+    <div class="flex text-xs text-black">
+      <Button
+        class="rounded-s-full"
+        size="small"
+        color={imageSize === 'S' ? 'primary' : 'secondary'}
+        onclick={() => (imageSize = 'S')}
+      >
+        S
+      </Button>
+      <Button
+        class="rounded-none"
+        size="small"
+        color={imageSize === 'M' ? 'primary' : 'secondary'}
+        onclick={() => (imageSize = 'M')}
+      >
+        M
+      </Button>
+      <Button
+        class="rounded-e-full"
+        size="small"
+        color={imageSize === 'L' ? 'primary' : 'secondary'}
+        onclick={() => (imageSize = 'L')}
+      >
+        L
+      </Button>
     </div>
 
     <!-- CONFIRM BUTTONS -->
@@ -180,6 +209,7 @@
           {differingMetadataFields}
           {showMore}
           initialVisibleCount={InitialVisibleCount}
+          {imageSize}
         />
       {/each}
     </div>

@@ -72,7 +72,7 @@
   {/if}
 
   <main class="relative rounded-lg bg-white dark:bg-immich-dark-bg">
-    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto pr-2 pl-4" use:useActions={use}>
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto md:pr-2 md:pl-4" use:useActions={use}>
       {@render children?.()}
     </div>
 

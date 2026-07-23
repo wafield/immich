@@ -10,14 +10,12 @@
     mdiHeart,
     mdiImageMultipleOutline,
     mdiMagnifyPlus,
-    mdiFileImageOutline,
     mdiDatabase,
     mdiClockOutline,
     mdiCalendar,
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
-  import { getAllMetadataItems, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
+  import { getAllMetadataItems, formatISODateToLocale, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
   import InfoRow from './InfoRow.svelte';
 
   interface Props {
@@ -28,6 +26,7 @@
     differingMetadataFields: DifferingMetadataFields;
     showMore?: boolean;
     initialVisibleCount?: number;
+    imageSize?: 'S' | 'M' | 'L';
   }
 
   let {
@@ -38,7 +37,10 @@
     differingMetadataFields = {},
     showMore = false,
     initialVisibleCount = 5,
+    imageSize = 'M',
   }: Props = $props();
+
+  const imageSizeClass = $derived(imageSize === 'S' ? 'h-60' : imageSize === 'L' ? 'h-full' : 'h-120');
 
   const listFormat = $derived(new Intl.ListFormat($lang));
   const isFromExternalLibrary = $derived(!!asset.libraryId);
@@ -54,23 +56,6 @@
       )
       .slice(0, showMore ? undefined : initialVisibleCount),
   );
-
-  const formatDateTime = (isoString: string | undefined, timeZone?: string | null) => {
-    if (!isoString) return $t('unknown');
-    const dateTime = timeZone ? fromISODateTime(isoString, timeZone) : fromISODateTimeUTC(isoString);
-    return dateTime.toLocaleString(
-      {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        second: '2-digit',
-        timeZoneName: 'shortOffset',
-      },
-      { locale: $locale },
-    );
-  };
 </script>
 
 <div class="min-w-60 flex-1 rounded-lg border transition-colors">
@@ -86,7 +71,7 @@
       <img
         src={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview })}
         alt={$getAltText(toTimelineAsset(asset))}
-        class="h-120 w-full rounded-t-md object-contain"
+        class="{imageSizeClass} w-full rounded-t-md object-contain"
         draggable="false"
       />
 
@@ -139,17 +124,6 @@
       ? 'bg-success/15 dark:bg-[#001a06]'
       : 'bg-transparent'}"
   >
-    {#each visibleMetadataItems as { icon, title, render, keys } (keys[0])}
-      <InfoRow {icon} {title}>
-        {render}
-      </InfoRow>
-    {/each}
-
-    <!-- File's original name -->
-    <InfoRow icon={mdiFileImageOutline} title={$t('file_name_text', { default: 'Original Name' })}>
-      {asset.originalFileName}
-    </InfoRow>
-
     <!-- Library name the asset belongs to -->
     <InfoRow icon={mdiDatabase} title={$t('library', { default: 'Library' })}>
       {#if asset.libraryId}
@@ -167,15 +141,14 @@
 
     <!-- Date and time at which it was added to the database -->
     <InfoRow icon={mdiClockOutline} title="Added to database">
-      {formatDateTime(asset.createdAt)}
+      {formatISODateToLocale(asset.createdAt, $locale)}
     </InfoRow>
 
-    <!-- Date and time at which the image was taken / created -->
-    <InfoRow icon={mdiCalendar} title={$t('date_time_original', { default: 'Date taken' })}>
-      {asset.exifInfo?.dateTimeOriginal
-        ? formatDateTime(asset.exifInfo.dateTimeOriginal, asset.exifInfo.timeZone)
-        : formatDateTime(asset.localDateTime)}
-    </InfoRow>
+    {#each visibleMetadataItems as { icon, title, render, keys } (keys[0])}
+      <InfoRow {icon} {title}>
+        {render}
+      </InfoRow>
+    {/each}
 
     <!-- Albums always shown -->
     <InfoRow icon={mdiBookmarkOutline} borderBottom={false} title={$t('albums')}>

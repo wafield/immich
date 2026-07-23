@@ -20,7 +20,11 @@
       try {
         const preference = JSON.parse(localStorage.getItem('immich-ui-theme'));
         const prefersDark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (preference === 'light' || (preference !== 'dark' && !prefersDark)) {
+        const theme = preference === 'dark' || (preference !== 'light' && prefersDark) ? 'dark' : 'light';
+        if (theme === 'dark') {
+          document.documentElement.classList.remove('light');
+          document.documentElement.classList.add('dark');
+        } else {
           document.documentElement.classList.remove('dark');
           document.documentElement.classList.add('light');
         }

@@ -46,8 +46,19 @@ export const getLibraryName = (libraryId: string): string => {
   return libraryCache.get(libraryId) || 'Default Library';
 };
 
-const formatISODateToLocale = (iso: string, locale: string | undefined): string =>
-  fromISODateTimeUTC(iso).toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale });
+export const formatISODateToLocale = (iso: string, locale: string | undefined): string =>
+  fromISODateTimeUTC(iso).toLocaleString(
+    {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'shortOffset',
+    },
+    { locale },
+  );
 
 const getDateTime = (asset: AssetResponseDto) => {
   const timeZone = asset.exifInfo?.timeZone;
@@ -104,23 +115,8 @@ const metadataFields = [
     icon: mdiCalendar,
     titleKey: 'date_time_original',
     keys: ['dateTimeOriginal'],
-    render: (asset, $t, locale) => {
-      const dateTime = getDateTime(asset);
-      return dateTime
-        ? dateTime.toLocaleString(
-            {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-              hour: 'numeric',
-              minute: '2-digit',
-              second: '2-digit',
-              timeZoneName: 'shortOffset',
-            },
-            { locale },
-          )
-        : $t('unknown');
-    },
+    render: (asset, $t, locale) =>
+      asset.exifInfo?.dateTimeOriginal ? formatISODateToLocale(asset.exifInfo.dateTimeOriginal, locale) : $t('unknown'),
   },
   {
     icon: mdiEarth,
