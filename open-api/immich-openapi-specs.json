@@ -6500,7 +6500,6 @@
         "tags": [
           "Libraries"
         ],
-        "x-immich-admin-only": true,
         "x-immich-history": [
           {
             "version": "v1",
@@ -14348,6 +14347,30 @@
             }
           },
           {
+            "name": "libraryIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets by library IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "null"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          {
             "name": "order",
             "required": false,
             "in": "query",
@@ -14553,6 +14576,30 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "libraryIds",
+            "required": false,
+            "in": "query",
+            "description": "Filter assets by library IDs",
+            "schema": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "null"
+                    ]
+                  }
+                ]
+              }
             }
           },
           {

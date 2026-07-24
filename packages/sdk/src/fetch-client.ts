@@ -721,6 +721,7 @@ export type AssetBulkUploadCheckResult = {
     id: string;
     /** Whether existing asset is trashed */
     isTrashed?: boolean;
+    /** Existing asset original path if duplicate */
     originalPath?: string;
     reason?: AssetRejectReason;
 };
@@ -786,12 +787,22 @@ export type AssetMetadataBulkResponseDto = {
     };
 };
 export type ExifResponseDto = {
+    /** Actions description */
+    actionsDescription?: string | null;
+    /** Actions software agent name */
+    actionsSoftwareAgentName?: string | null;
     /** AF area mode */
     afAreaMode?: string | null;
+    /** AF area mode setting */
+    afAreaModeSetting?: string | null;
+    /** AF mode */
+    afMode?: string | null;
     /** AF point position */
     afPointPosition?: string | null;
     /** AF subject detection */
     afSubjectDetection?: string | null;
+    /** Ambient temperature */
+    ambientTemperature?: string | null;
     /** Auto ISO */
     autoISO?: string | null;
     /** Brightness */
@@ -804,6 +815,8 @@ export type ExifResponseDto = {
     canonExposureMode?: string | null;
     /** City name */
     city?: string | null;
+    /** Claim generator info name */
+    claimGeneratorInfoName?: string | null;
     /** Clarity */
     clarity?: string | null;
     /** Color chrome effect */
@@ -822,12 +835,22 @@ export type ExifResponseDto = {
     contrast?: string | null;
     /** Country name */
     country?: string | null;
+    /** Creator tool */
+    creatorTool?: string | null;
+    /** Custom rendered */
+    customRendered?: string | null;
     /** Original date/time */
     dateTimeOriginal?: string | null;
     /** Image description */
     description?: string | null;
+    /** Development dynamic range */
+    developmentDynamicRange?: string | null;
     /** Drive mode */
     driveMode?: string | null;
+    /** Dynamic range */
+    dynamicRange?: string | null;
+    /** Electronic front curtain shutter */
+    electronicFrontCurtainShutter?: string | null;
     /** Image height in pixels */
     exifImageHeight?: number | null;
     /** Image width in pixels */
@@ -846,12 +869,18 @@ export type ExifResponseDto = {
     fNumber?: number | null;
     /** Faces detected */
     facesDetected?: string | null;
+    /** Fade */
+    fade?: string | null;
     /** File format */
     fileFormat?: string | null;
     /** File size in bytes */
     fileSizeInByte?: number | null;
     /** Film mode */
     filmMode?: string | null;
+    /** Flash */
+    flash?: string | null;
+    /** Flash action */
+    flashAction?: string | null;
     /** Focal length in mm */
     focalLength?: number | null;
     /** Focus location */
@@ -862,10 +891,16 @@ export type ExifResponseDto = {
     focusMode2?: string | null;
     /** Focus pixel */
     focusPixel?: string | null;
+    /** Grain effect roughness */
+    grainEffectRoughness?: string | null;
+    /** Grain effect size */
+    grainEffectSize?: string | null;
     /** Highlight tone */
     highlightTone?: string | null;
     /** Highlights */
     highlights?: string | null;
+    /** History software agent */
+    historySoftwareAgent?: string | null;
     /** Image quality */
     imageQuality?: string | null;
     /** Image stabilization */
@@ -898,8 +933,12 @@ export type ExifResponseDto = {
     modifyDate?: string | null;
     /** Monochrome grain effect */
     monochromeGrainEffect?: string | null;
+    /** MP image length */
+    mpImageLength?: string | null;
     /** Noise reduction */
     noiseReduction?: string | null;
+    /** Number of images */
+    numberOfImages?: string | null;
     /** Image orientation */
     orientation?: string | null;
     /** Picture effect */
@@ -916,10 +955,14 @@ export type ExifResponseDto = {
     quality?: string | null;
     /** Rating */
     rating?: number | null;
+    /** Release mode */
+    releaseMode?: string | null;
     /** Roll angle */
     rollAngle?: string | null;
     /** Saturation */
     saturation?: string | null;
+    /** Scene capture type */
+    sceneCaptureType?: string | null;
     /** Sensitivity type */
     sensitivityType?: string | null;
     /** Shadow tone */
@@ -928,14 +971,22 @@ export type ExifResponseDto = {
     shadows?: string | null;
     /** Sharpness */
     sharpness?: string | null;
+    /** Sharpness range */
+    sharpnessRange?: string | null;
     /** Shooting mode */
     shootingMode?: string | null;
+    /** Shutter */
+    shutter?: string | null;
     /** Shutter type */
     shutterType?: string | null;
+    /** Software */
+    software?: string | null;
     /** State/province name */
     state?: string | null;
     /** Time zone */
     timeZone?: string | null;
+    /** User comment */
+    userComment?: string | null;
     /** White balance shift AB */
     wbShiftAB?: string | null;
     /** White balance shift GM */
@@ -944,6 +995,14 @@ export type ExifResponseDto = {
     whiteBalance?: string | null;
     /** White balance fine tune */
     whiteBalanceFineTune?: string | null;
+};
+export type LibraryAssetResponseDto = {
+    /** Library ID */
+    id: string;
+    /** Library name */
+    name: string;
+    /** Last refresh date */
+    refreshedAt: string | null;
 };
 export type PersonResponseDto = {
     /** Person date of birth */
@@ -1055,6 +1114,7 @@ export type AssetResponseDto = {
     isOffline: boolean;
     /** Is trashed */
     isTrashed: boolean;
+    library?: LibraryAssetResponseDto;
     /** Library ID */
     libraryId?: string | null;
     /** Live photo video ID */
@@ -3101,12 +3161,22 @@ export type SyncAssetEditV1 = {
     sequence: number;
 };
 export type SyncAssetExifV1 = {
+    /** Actions description */
+    actionsDescription: string | null;
+    /** Actions software agent name */
+    actionsSoftwareAgentName: string | null;
     /** AF area mode */
     afAreaMode: string | null;
+    /** AF area mode setting */
+    afAreaModeSetting: string | null;
+    /** AF mode */
+    afMode: string | null;
     /** AF point position */
     afPointPosition: string | null;
     /** AF subject detection */
     afSubjectDetection: string | null;
+    /** Ambient temperature */
+    ambientTemperature: string | null;
     /** Asset ID */
     assetId: string;
     /** Auto ISO */
@@ -3121,6 +3191,8 @@ export type SyncAssetExifV1 = {
     canonExposureMode: string | null;
     /** City */
     city: string | null;
+    /** Claim generator info name */
+    claimGeneratorInfoName: string | null;
     /** Clarity */
     clarity: string | null;
     /** Color chrome effect */
@@ -3139,12 +3211,22 @@ export type SyncAssetExifV1 = {
     contrast: string | null;
     /** Country */
     country: string | null;
+    /** Creator tool */
+    creatorTool: string | null;
+    /** Custom rendered */
+    customRendered: string | null;
     /** Date time original */
     dateTimeOriginal: string | null;
     /** Description */
     description: string | null;
+    /** Development dynamic range */
+    developmentDynamicRange: string | null;
     /** Drive mode */
     driveMode: string | null;
+    /** Dynamic range */
+    dynamicRange: string | null;
+    /** Electronic front curtain shutter */
+    electronicFrontCurtainShutter: string | null;
     /** Exif image height */
     exifImageHeight: number | null;
     /** Exif image width */
@@ -3163,12 +3245,18 @@ export type SyncAssetExifV1 = {
     fNumber: number | null;
     /** Faces detected */
     facesDetected: string | null;
+    /** Fade */
+    fade: string | null;
     /** File format */
     fileFormat: string | null;
     /** File size in byte */
     fileSizeInByte: number | null;
     /** Film mode */
     filmMode: string | null;
+    /** Flash */
+    flash: string | null;
+    /** Flash action */
+    flashAction: string | null;
     /** Focal length */
     focalLength: number | null;
     /** Focus location */
@@ -3181,10 +3269,16 @@ export type SyncAssetExifV1 = {
     focusPixel: string | null;
     /** FPS */
     fps: number | null;
+    /** Grain effect roughness */
+    grainEffectRoughness: string | null;
+    /** Grain effect size */
+    grainEffectSize: string | null;
     /** Highlight tone */
     highlightTone: string | null;
     /** Highlights */
     highlights: string | null;
+    /** History software agent */
+    historySoftwareAgent: string | null;
     /** Image quality */
     imageQuality: string | null;
     /** Image stabilization */
@@ -3217,8 +3311,12 @@ export type SyncAssetExifV1 = {
     modifyDate: string | null;
     /** Monochrome grain effect */
     monochromeGrainEffect: string | null;
+    /** MP image length */
+    mpImageLength: string | null;
     /** Noise reduction */
     noiseReduction: string | null;
+    /** Number of images */
+    numberOfImages: string | null;
     /** Orientation */
     orientation: string | null;
     /** Picture effect */
@@ -3237,10 +3335,14 @@ export type SyncAssetExifV1 = {
     quality: string | null;
     /** Rating */
     rating: number | null;
+    /** Release mode */
+    releaseMode: string | null;
     /** Roll angle */
     rollAngle: string | null;
     /** Saturation */
     saturation: string | null;
+    /** Scene capture type */
+    sceneCaptureType: string | null;
     /** Sensitivity type */
     sensitivityType: string | null;
     /** Shadow tone */
@@ -3249,14 +3351,22 @@ export type SyncAssetExifV1 = {
     shadows: string | null;
     /** Sharpness */
     sharpness: string | null;
+    /** Sharpness range */
+    sharpnessRange: string | null;
     /** Shooting mode */
     shootingMode: string | null;
+    /** Shutter */
+    shutter: string | null;
     /** Shutter type */
     shutterType: string | null;
+    /** Software */
+    software: string | null;
     /** State */
     state: string | null;
     /** Time zone */
     timeZone: string | null;
+    /** User comment */
+    userComment: string | null;
     /** White balance shift AB */
     wbShiftAB: string | null;
     /** White balance shift GM */
@@ -6890,13 +7000,14 @@ export function tagAssets({ id, bulkIdsDto }: {
 /**
  * Get time bucket
  */
-export function getTimeBucket({ albumId, bbox, isFavorite, isScreenshot, isTrashed, key, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, bbox, isFavorite, isScreenshot, isTrashed, key, libraryIds, order, orderBy, personId, slug, tagId, timeBucket, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
     isScreenshot?: boolean;
     isTrashed?: boolean;
     key?: string;
+    libraryIds?: string[];
     order?: AssetOrder;
     orderBy?: AssetOrderBy;
     personId?: string;
@@ -6919,6 +7030,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isScreenshot, isTrash
         isScreenshot,
         isTrashed,
         key,
+        libraryIds,
         order,
         orderBy,
         personId,
@@ -6937,13 +7049,14 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isScreenshot, isTrash
 /**
  * Get time buckets
  */
-export function getTimeBuckets({ albumId, bbox, isFavorite, isScreenshot, isTrashed, key, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, bbox, isFavorite, isScreenshot, isTrashed, key, libraryIds, order, orderBy, personId, slug, tagId, userId, visibility, withCoordinates, withPartners, withStacked }: {
     albumId?: string;
     bbox?: string;
     isFavorite?: boolean;
     isScreenshot?: boolean;
     isTrashed?: boolean;
     key?: string;
+    libraryIds?: string[];
     order?: AssetOrder;
     orderBy?: AssetOrderBy;
     personId?: string;
@@ -6965,6 +7078,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isScreenshot, isTras
         isScreenshot,
         isTrashed,
         key,
+        libraryIds,
         order,
         orderBy,
         personId,

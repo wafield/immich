@@ -10,6 +10,21 @@ const TimeBucketQueryBaseSchema = z
     albumId: z.uuidv4().optional().describe('Filter assets belonging to a specific album'),
     personId: z.uuidv4().optional().describe('Filter assets containing a specific person (face recognition)'),
     tagId: z.uuidv4().optional().describe('Filter assets with a specific tag'),
+    libraryIds: z
+      .preprocess(
+        (val) => {
+          if (typeof val === 'string') {
+            return val.split(',').map((s) => s.trim());
+          }
+          if (Array.isArray(val)) {
+            return val;
+          }
+          return val;
+        },
+        z.array(z.union([z.uuidv4(), z.literal('null')])),
+      )
+      .optional()
+      .describe('Filter assets by library IDs'),
     isFavorite: stringToBool
       .optional()
       .describe('Filter by favorite status (true for favorites only, false for non-favorites only)'),

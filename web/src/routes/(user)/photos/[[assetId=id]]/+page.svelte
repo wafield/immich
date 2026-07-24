@@ -25,7 +25,7 @@
   import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
-  import { hideScreenshots } from '$lib/stores/preferences.store';
+  import { hideScreenshots, selectedLibraries } from '$lib/stores/preferences.store';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import {
@@ -41,13 +41,14 @@
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
-
+  
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let options = $derived({
     visibility: AssetVisibility.Timeline,
     withStacked: true,
     withPartners: true,
     isScreenshot: $hideScreenshots ? false : undefined,
+    libraryIds: $selectedLibraries.length > 0 ? $selectedLibraries : undefined,
   });
 
   let selectedAssets = $derived(assetMultiSelectManager.assets);

@@ -142,6 +142,8 @@ export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', tru
 
 export const hideScreenshots = persisted<boolean>('hide-screenshots', false, {});
 
+export const selectedLibraries = persisted<string[]>('selected-libraries', [], {});
+
 export enum FolderAssetsSortBy {
   CaptureTime = 'capture-time',
   AddedTime = 'added-time',

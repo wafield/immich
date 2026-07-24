@@ -89,6 +89,7 @@ interface AssetBuilderOptions {
   tagId?: string;
   personId?: string;
   userIds?: string[];
+  libraryIds?: string[];
   withStacked?: boolean;
   exifInfo?: boolean;
   status?: AssetStatus;
@@ -899,7 +900,22 @@ export class AssetRepository {
           .$if(options.isDuplicate !== undefined, (qb) =>
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
-          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
+          .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .where((eb) => {
+            if (!options.libraryIds || options.libraryIds.length === 0) {
+              return eb.val(false);
+            }
+            const hasNull = options.libraryIds.includes('null');
+            const ids = options.libraryIds.filter((id) => id !== 'null');
+            const conds = [];
+            if (ids.length > 0) {
+              conds.push(eb('asset.libraryId', 'in', ids));
+            }
+            if (hasNull) {
+              conds.push(eb('asset.libraryId', 'is', null));
+            }
+            return eb.or(conds);
+          }),
       )
       .selectFrom('asset')
       .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
@@ -1014,6 +1030,21 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+          .where((eb) => {
+            if (!options.libraryIds || options.libraryIds.length === 0) {
+              return eb.val(false);
+            }
+            const hasNull = options.libraryIds.includes('null');
+            const ids = options.libraryIds.filter((id) => id !== 'null');
+            const conds = [];
+            if (ids.length > 0) {
+              conds.push(eb('asset.libraryId', 'in', ids));
+            }
+            if (hasNull) {
+              conds.push(eb('asset.libraryId', 'is', null));
+            }
+            return eb.or(conds);
+          })
           .orderBy(
             options.orderBy == AssetOrderBy.CreatedAt
               ? sql`"createdAt"`

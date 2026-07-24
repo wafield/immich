@@ -20,7 +20,7 @@ export class LibraryController {
   constructor(private service: LibraryService) {}
 
   @Get()
-  @Authenticated({ permission: Permission.LibraryRead, admin: true })
+  @Authenticated({ permission: Permission.LibraryRead })
   @Endpoint({
     summary: 'Retrieve libraries',
     description: 'Retrieve a list of external libraries.',
