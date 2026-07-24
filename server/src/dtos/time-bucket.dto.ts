@@ -13,6 +13,10 @@ const TimeBucketQueryBaseSchema = z
     libraryIds: z
       .preprocess(
         (val) => {
+          // Map to library IDs. If parameter exists but value is explicitly empty, match no libraries.
+          if (val === '') {
+            return [];
+          }
           if (typeof val === 'string') {
             return val.split(',').map((s) => s.trim());
           }

@@ -48,7 +48,7 @@
     withStacked: true,
     withPartners: true,
     isScreenshot: $hideScreenshots ? false : undefined,
-    libraryIds: $selectedLibraries.length > 0 ? $selectedLibraries : undefined,
+    libraryIds: $selectedLibraries,
   });
 
   let selectedAssets = $derived(assetMultiSelectManager.assets);

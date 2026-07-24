@@ -108,8 +108,8 @@
     letter-spacing: 0.1px;
 
     /* Used by layouts to ensure proper spacing between navbar and content */
-    --navbar-height: calc(4.5rem + 4px);
-    --navbar-height-md: calc(4.5rem + 4px - 14px);
+    --navbar-height: 4rem;
+    --navbar-height-md: 3.5rem;
   }
 
   :root.dark {

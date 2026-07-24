@@ -178,24 +178,6 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
   );
 };
 
-/**
- * Check if the given options suggest that this request comes from the overall Timeline photos
- * route. If so, the libraryIDs filters are effective. Otherwise they are ignored, because
- * the library IDs filter doesn't apply to Favorites, Tags, Albums, Trash, etc.
- * @param options
- * @returns
- */
-const isTimelinePhotosRoute = (options: TimeBucketOptions): boolean => {
-  return (
-    options.albumId === undefined &&
-    options.personId === undefined &&
-    options.tagId === undefined &&
-    options.isFavorite === undefined &&
-    options.isTrashed === undefined &&
-    (options.visibility === undefined || options.visibility === AssetVisibility.Timeline)
-  );
-};
-
 @Injectable()
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -919,13 +901,15 @@ export class AssetRepository {
             qb.where('asset.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
           )
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .$if(isTimelinePhotosRoute(options), (qb) =>
-            qb.where((eb) => {
-              if (!options.libraryIds || options.libraryIds.length === 0) {
+          .$if(options.libraryIds !== undefined, (qb) => {
+            // Do library-based filtering only if this parameter exists. If it's empty, match no library.
+            const libraryIds = options.libraryIds!;
+            return qb.where((eb) => {
+              if (libraryIds.length === 0) {
                 return eb.val(false);
               }
-              const hasNull = options.libraryIds.includes('null');
-              const ids = options.libraryIds.filter((id) => id !== 'null');
+              const hasNull = libraryIds.includes('null');
+              const ids = libraryIds.filter((id) => id !== 'null');
               const conds = [];
               if (ids.length > 0) {
                 conds.push(eb('asset.libraryId', 'in', ids));
@@ -934,8 +918,8 @@ export class AssetRepository {
                 conds.push(eb('asset.libraryId', 'is', null));
               }
               return eb.or(conds);
-            }),
-          ),
+            });
+          }),
       )
       .selectFrom('asset')
       .select(sql<string>`("timeBucket" AT TIME ZONE 'UTC')::date::text`.as('timeBucket'))
@@ -1050,13 +1034,14 @@ export class AssetRepository {
           )
           .$if(!!options.isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
           .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-          .$if(isTimelinePhotosRoute(options), (qb) =>
-            qb.where((eb) => {
-              if (!options.libraryIds || options.libraryIds.length === 0) {
+          .$if(options.libraryIds !== undefined, (qb) => {
+            const libraryIds = options.libraryIds!;
+            return qb.where((eb) => {
+              if (libraryIds.length === 0) {
                 return eb.val(false);
               }
-              const hasNull = options.libraryIds.includes('null');
-              const ids = options.libraryIds.filter((id) => id !== 'null');
+              const hasNull = libraryIds.includes('null');
+              const ids = libraryIds.filter((id) => id !== 'null');
               const conds = [];
               if (ids.length > 0) {
                 conds.push(eb('asset.libraryId', 'in', ids));
@@ -1065,8 +1050,8 @@ export class AssetRepository {
                 conds.push(eb('asset.libraryId', 'is', null));
               }
               return eb.or(conds);
-            }),
-          )
+            });
+          })
           .orderBy(
             options.orderBy == AssetOrderBy.CreatedAt
               ? sql`"createdAt"`

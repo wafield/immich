@@ -83,7 +83,7 @@
         }}
         class="sidebar:hidden"
       />
-      <a data-sveltekit-preload-data="hover" href={Route.photos()} class="hidden md:block">
+      <a data-sveltekit-preload-data="hover" href={Route.photos()} class="hidden lg:block">
         <img src="/mflogo.png" alt="Immich logo" class="h-12 object-contain" />
       </a>
       <IconButton
@@ -96,7 +96,7 @@
         onclick={() => {
           sidebarStore.isCollapsed = !sidebarStore.isCollapsed;
         }}
-        class="ml-auto hidden md:block"
+        class="ml-auto hidden lg:block"
       />
     </div>
     <div class="flex justify-between gap-4 pe-6 lg:gap-8">

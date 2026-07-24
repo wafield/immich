@@ -8,7 +8,7 @@
   import { recentAlbumsDropdown, hideScreenshots, selectedLibraries } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { NavbarGroup, NavbarItem, Switch, Checkbox, Label } from '@immich/ui';
+  import { NavbarGroup, NavbarItem, Checkbox, Label, Icon, Button } from '@immich/ui';
   import { getAllLibraries, type LibraryResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import {
@@ -18,6 +18,8 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiCellphone,
+    mdiDatabaseOutline,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -48,17 +50,15 @@
       if (localStorage.getItem('selected-libraries') === null) {
         $selectedLibraries = [...libraries.map((lib) => lib.id), 'null'];
       }
-    } catch (e) {
-      console.error('Failed to load libraries', e);
+    } catch (error) {
+      console.error('Failed to load libraries', error);
     }
   });
 
   function handleLibraryChange(id: string) {
-    if ($selectedLibraries.includes(id)) {
-      $selectedLibraries = $selectedLibraries.filter((item) => item !== id);
-    } else {
-      $selectedLibraries = [...$selectedLibraries, id];
-    }
+    $selectedLibraries = $selectedLibraries.includes(id)
+      ? $selectedLibraries.filter((item) => item !== id)
+      : [...$selectedLibraries, id];
   }
 </script>
 
@@ -142,40 +142,50 @@
 
   {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
     <NavbarGroup title="View Options" size="tiny" />
-    <div
-      class="text-immich-text-gray dark:text-immich-dark-text-gray flex items-center justify-between px-6 py-2 text-sm"
-    >
-      <span class="font-medium">Hide Screenshots</span>
-      <Switch bind:checked={$hideScreenshots} />
+    <NavbarItem title="Screenshots" href="" icon={mdiCellphone} />
+
+    <div class="flex ps-5 pb-4 text-xs">
+      <Button
+        class="flex-1 rounded-s-full"
+        size="small"
+        color={$hideScreenshots === false ? 'primary' : 'secondary'}
+        onclick={() => ($hideScreenshots = false)}
+      >
+        Show
+      </Button>
+      <Button
+        class="flex-1 rounded-e-full"
+        size="small"
+        color={$hideScreenshots === true ? 'primary' : 'secondary'}
+        onclick={() => ($hideScreenshots = true)}
+      >
+        Hide
+      </Button>
     </div>
 
-    {#if libraries.length > 0}
-      <div class="px-6 py-2 text-sm flex flex-col gap-2">
-        <span class="font-medium text-immich-text-gray dark:text-immich-dark-text-gray">Show Libraries</span>
-        <div class="flex flex-col gap-2 max-h-40 overflow-y-auto pr-2 select-none">
-          <div class="flex items-center gap-2">
-            <Checkbox
-              size="tiny"
-              id="library-checkbox-default"
-              checked={$selectedLibraries.includes('null')}
-              onCheckedChange={() => handleLibraryChange('null')}
-            />
-            <Label label="Default Library" for="library-checkbox-default" size="small" />
-          </div>
-          {#each libraries as library (library.id)}
-            <div class="flex items-center gap-2">
-              <Checkbox
-                size="tiny"
-                id="library-checkbox-{library.id}"
-                checked={$selectedLibraries.includes(library.id)}
-                onCheckedChange={() => handleLibraryChange(library.id)}
-              />
-              <Label label={library.name} for="library-checkbox-{library.id}" size="small" />
-            </div>
-          {/each}
-        </div>
+    <NavbarItem title="Libraries" href="" icon={mdiDatabaseOutline} />
+    <div class="flex flex-col gap-4 ps-5 pb-4">
+      <div class="flex items-start gap-2">
+        <Checkbox
+          size="tiny"
+          id="library-checkbox-default"
+          checked={$selectedLibraries.includes('null')}
+          onCheckedChange={() => handleLibraryChange('null')}
+        />
+        <Label label="Default Library" for="library-checkbox-default" size="tiny" />
       </div>
-    {/if}
+      {#each libraries as library (library.id)}
+        <div class="flex items-start gap-2">
+          <Checkbox
+            size="tiny"
+            id="library-checkbox-{library.id}"
+            checked={$selectedLibraries.includes(library.id)}
+            onCheckedChange={() => handleLibraryChange(library.id)}
+          />
+          <Label label={library.name} for="library-checkbox-{library.id}" size="tiny" />
+        </div>
+      {/each}
+    </div>
 
     <BottomInfo />
   {/if}
