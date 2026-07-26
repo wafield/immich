@@ -37,6 +37,10 @@ services:
     restart: always
     healthcheck:
       disable: false
+    deploy:
+      resources:
+        limits:
+          memory: 8G    # Hard RAM cap (adjust to 1G, 2G, 4G, etc.)
 
   immich-machine-learning:
     container_name: immich_machine_learning
