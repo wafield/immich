@@ -14,6 +14,7 @@ const TimeBucketQueryBaseSchema = z
       .preprocess(
         (val) => {
           // Map to library IDs. If parameter exists but value is explicitly empty, match no libraries.
+          // This is because some routes (overall timeline, recently added, etc) set this parameter while others don't.
           if (val === '') {
             return [];
           }

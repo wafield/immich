@@ -14,6 +14,7 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
   import { getTrashActions } from '$lib/services/trash.service';
+  import { selectedLibraries } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -25,7 +26,7 @@
   let { data }: Props = $props();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = { isTrashed: true };
+  let options = $derived({ isTrashed: true, libraryIds: $selectedLibraries });
 
   if (!featureFlagsManager.value.trash) {
     handlePromiseError(goto(Route.photos()));
