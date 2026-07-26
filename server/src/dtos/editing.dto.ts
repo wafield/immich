@@ -1,4 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
+import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
 export enum AssetEditAction {
@@ -119,6 +120,7 @@ const AssetEditsCreateSchema = z
 
 const AssetEditActionItemResponseSchema = AssetEditActionItemSchema.extend({
   id: z.uuidv4().describe('Asset edit ID'),
+  updatedAt: isoDatetimeToDate.describe('The last time the edit was updated'),
 }).meta({ id: 'AssetEditActionItemResponseDto' });
 
 const AssetEditsResponseSchema = z

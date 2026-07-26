@@ -19,7 +19,7 @@ export class AssetEditRepository {
         return trx
           .insertInto('asset_edit')
           .values(edits.map((edit, i) => ({ assetId, sequence: i, ...edit })))
-          .returning(['id', 'action', 'parameters'])
+          .returning(['id', 'action', 'parameters', 'updatedAt'])
           .execute();
       }
 
@@ -31,7 +31,7 @@ export class AssetEditRepository {
   getAll(assetId: string): Promise<AssetEditActionItemResponseDto[]> {
     return this.db
       .selectFrom('asset_edit')
-      .select(['id', 'action', 'parameters'])
+      .select(['id', 'action', 'parameters', 'updatedAt'])
       .where('assetId', '=', assetId)
       .orderBy('sequence', 'asc')
       .execute();

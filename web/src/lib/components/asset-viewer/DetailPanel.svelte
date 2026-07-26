@@ -16,12 +16,15 @@
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { getParentPath } from '$lib/utils/tree-utils';
+  import { DateTime } from 'luxon';
   import {
     AssetMediaSize,
     getAllAlbums,
     getAssetInfo,
+    getAssetEdits,
     type AlbumResponseDto,
     type AssetResponseDto,
+    type AssetEditActionItemResponseDto,
   } from '@immich/sdk';
   import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
   import {
@@ -30,8 +33,9 @@
     mdiClose,
     mdiImageOutline,
     mdiFolderOutline,
-    mdiFilm,
     mdiPaletteOutline,
+    mdiFilm,
+    mdiImageEditOutline,
     mdiCogOutline,
     mdiInformationOutline,
     mdiFocusAuto,
@@ -69,6 +73,28 @@
   let previousId: string | undefined = $state();
   let previousRoute = $derived(currentAlbum?.id ? Route.viewAlbum(currentAlbum) : Route.photos());
   let activeTab: 'details' | 'more' = $state('details');
+
+  let edits: AssetEditActionItemResponseDto[] = $state([]);
+  let lastEditedAt = $derived(
+    (() => {
+      if (edits.length === 0) {
+        return null;
+      }
+      const max = Math.max(...edits.map((edit) => new Date(edit.updatedAt).getTime()));
+      return DateTime.fromMillis(max) as DateTime<true>;
+    })(),
+  );
+  let editTypes = $derived(edits.map((edit) => JSON.stringify(edit.parameters)));
+
+  $effect(() => {
+    getAssetEdits({ id: asset.id })
+      .then((res) => {
+        edits = res.edits;
+      })
+      .catch(() => {
+        edits = [];
+      });
+  });
 
   const getProfileName = (codec?: string | null, profile?: number | null): string => {
     if (profile == null) {
@@ -500,6 +526,36 @@
         {/if}
 
         <DetailPanelDate {asset} />
+
+        {#if lastEditedAt}
+          <div class="flex gap-4 py-4">
+            <div><Icon icon={mdiImageEditOutline} size="24" /></div>
+            <div>
+              <p class="break-all whitespace-pre-wrap">
+                {lastEditedAt.toLocaleString({ month: 'short', day: 'numeric', year: 'numeric' }, { locale: $locale })}
+              </p>
+              <div class="flex gap-2 text-sm">
+                <p>
+                  {lastEditedAt.toLocaleString(
+                    {
+                      weekday: 'short',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      second: '2-digit',
+                    },
+                    { locale: $locale },
+                  )}
+                </p>
+              </div>
+              {#if editTypes.length > 0}
+                <p class="text-xs">
+                  {editTypes.join(', ')}
+                </p>
+              {/if}
+              <p class="text-xs opacity-50">These are user edits made on Immich.</p>
+            </div>
+          </div>
+        {/if}
 
         <div class="flex gap-4 py-4">
           <div><Icon icon={mdiDatabase} size="24" /></div>

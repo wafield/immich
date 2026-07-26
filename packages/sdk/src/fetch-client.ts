@@ -1185,6 +1185,8 @@ export type AssetEditActionItemResponseDto = {
     id: string;
     /** List of edit actions to apply (crop, rotate, or mirror) */
     parameters: CropParameters | RotateParameters | MirrorParameters;
+    /** The last time the edit was updated */
+    updatedAt: string;
 };
 export type AssetEditsResponseDto = {
     /** Asset ID these edits belong to */
