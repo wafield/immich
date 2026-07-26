@@ -100,6 +100,11 @@ const TimeBucketAssetResponseSchema = z
     ownerId: z.array(z.string()).describe('Array of owner IDs for each asset'),
     ratio: z.array(z.number()).describe('Array of aspect ratios (width/height) for each asset'),
     isFavorite: z.array(z.boolean()).describe('Array indicating whether each asset is favorited'),
+    isEdited: z.array(z.boolean()).describe('Array indicating whether each asset has been edited within Immich'),
+    hasSidecar: z.array(z.boolean()).describe('Array indicating whether each asset has an XMP sidecar file'),
+    libraryId: z
+      .array(z.string().nullable())
+      .describe('Array of library IDs for each asset (null for assets not in an external library)'),
     visibility: z
       .array(AssetVisibilitySchema)
       .describe('Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)'),

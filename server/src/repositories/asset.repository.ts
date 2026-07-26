@@ -951,9 +951,19 @@ export class AssetRepository {
             'asset.duration',
             'asset.id',
             'asset.visibility',
+            'asset.isEdited',
+            'asset.libraryId',
             sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
+            eb
+              .exists(
+                eb
+                  .selectFrom('asset_file')
+                  .whereRef('asset_file.assetId', '=', 'asset.id')
+                  .where('asset_file.type', '=', sql.lit(AssetFileType.Sidecar)),
+              )
+              .as('hasSidecar'),
             'asset.livePhotoVideoId',
             sql`extract(epoch from (asset."localDateTime" AT TIME ZONE 'UTC' - asset."fileCreatedAt" at time zone 'UTC'))::real / 3600`.as(
               'localOffsetHours',
@@ -1076,6 +1086,9 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['id']), sql.lit('{}')).as('id'),
             eb.fn.coalesce(eb.fn('array_agg', ['visibility']), sql.lit('{}')).as('visibility'),
             eb.fn.coalesce(eb.fn('array_agg', ['isFavorite']), sql.lit('{}')).as('isFavorite'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isEdited']), sql.lit('{}')).as('isEdited'),
+            eb.fn.coalesce(eb.fn('array_agg', ['hasSidecar']), sql.lit('{}')).as('hasSidecar'),
+            eb.fn.coalesce(eb.fn('array_agg', ['libraryId']), sql.lit('{}')).as('libraryId'),
             eb.fn.coalesce(eb.fn('array_agg', ['isImage']), sql.lit('{}')).as('isImage'),
             // TODO: isTrashed is redundant as it will always be all true or false depending on the options
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),

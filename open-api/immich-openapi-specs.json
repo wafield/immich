@@ -28005,10 +28005,24 @@
             },
             "type": "array"
           },
+          "hasSidecar": {
+            "description": "Array indicating whether each asset has an XMP sidecar file",
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
           "id": {
             "description": "Array of asset IDs in the time bucket",
             "items": {
               "type": "string"
+            },
+            "type": "array"
+          },
+          "isEdited": {
+            "description": "Array indicating whether each asset has been edited within Immich",
+            "items": {
+              "type": "boolean"
             },
             "type": "array"
           },
@@ -28038,6 +28052,14 @@
             "items": {
               "nullable": true,
               "type": "number"
+            },
+            "type": "array"
+          },
+          "libraryId": {
+            "description": "Array of library IDs for each asset (null for assets not in an external library)",
+            "items": {
+              "nullable": true,
+              "type": "string"
             },
             "type": "array"
           },
@@ -28119,10 +28141,13 @@
           "createdAt",
           "duration",
           "fileCreatedAt",
+          "hasSidecar",
           "id",
+          "isEdited",
           "isFavorite",
           "isImage",
           "isTrashed",
+          "libraryId",
           "livePhotoVideoId",
           "localOffsetHours",
           "ownerId",

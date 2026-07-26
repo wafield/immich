@@ -2926,6 +2926,12 @@ export type TimeBucketAssetResponseDto = {
     id: string[];
     /** Array indicating whether each asset is favorited */
     isFavorite: boolean[];
+    /** Array indicating whether each asset has been edited within Immich */
+    isEdited: boolean[];
+    /** Array indicating whether each asset has an XMP sidecar file */
+    hasSidecar: boolean[];
+    /** Array of library IDs for each asset (null for assets not in an external library) */
+    libraryId: (string | null)[];
     /** Array indicating whether each asset is an image (false for videos) */
     isImage: boolean[];
     /** Array indicating whether each asset is in the trash */

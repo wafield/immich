@@ -20,6 +20,8 @@
     mdiMotionPauseOutline,
     mdiMotionPlayOutline,
     mdiRotate360,
+    mdiImageEditOutline,
+    mdiCardText,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
@@ -332,12 +334,18 @@
           ></div>
         {/if}
 
-        <!-- Favorite asset star -->
-        {#if !authManager.isSharedLink && asset.isFavorite}
-          <div class="absolute inset-s-2 bottom-2 z-2">
+        <!-- Bottom-left asset properties -->
+        <div class="absolute inset-s-2 bottom-2 z-2 flex gap-1">
+          {#if !authManager.isSharedLink && asset.isFavorite}
             <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
-          </div>
-        {/if}
+          {/if}
+          {#if !authManager.isSharedLink && asset.isEdited}
+            <Icon icon={mdiImageEditOutline} size="24" class="text-white" />
+          {/if}
+          {#if !authManager.isSharedLink && asset.hasSidecar}
+            <Icon icon={mdiCardText} size="24" class="text-white" />
+          {/if}
+        </div>
 
         {#if !!assetOwner}
           <div class="absolute inset-e-2 bottom-1 z-2 max-w-[50%]">
