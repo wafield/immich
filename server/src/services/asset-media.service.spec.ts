@@ -156,6 +156,7 @@ const assetEntity = Object.freeze({
   ownerId: 'user_id_1',
   type: AssetType.Video,
   originalPath: 'fake_path/asset_1.jpeg',
+  sidecarPath: null,
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   updatedAt: new Date('2022-06-19T23:41:36.910Z'),
@@ -809,7 +810,9 @@ describe(AssetMediaService.name, () => {
       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
-      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'asset-1', checksum: file1, deletedAt: null, originalPath: '/path/to/file1.jpg' }]);
+      mocks.asset.getByChecksums.mockResolvedValue([
+        { id: 'asset-1', checksum: file1, deletedAt: null, originalPath: '/path/to/file1.jpg' },
+      ]);
 
       await expect(
         sut.bulkUploadCheck(authStub.admin, {

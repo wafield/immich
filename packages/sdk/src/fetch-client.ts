@@ -1127,6 +1127,8 @@ export type AssetResponseDto = {
     originalMimeType?: string;
     /** Original file path */
     originalPath: string;
+    /** Sidecar file path */
+    sidecarPath?: string | null;
     owner?: UserResponseDto;
     /** Owner user ID */
     ownerId: string;

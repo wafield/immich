@@ -5,11 +5,12 @@ import { HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { ExifResponseSchema, mapExif } from 'src/dtos/exif.dto';
+import { LibraryAssetResponseSchema, mapLibraryAsset } from 'src/dtos/library.dto';
 import { PersonResponseDto, PersonResponseSchema, mapPerson } from 'src/dtos/person.dto';
 import { TagResponseSchema, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
-import { LibraryAssetResponseSchema, mapLibraryAsset } from 'src/dtos/library.dto';
 import {
+  AssetFileType,
   AssetStatus,
   AssetType,
   AssetTypeSchema,
@@ -100,6 +101,7 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .meta(new HistoryBuilder().added('v1').deprecated('v1').getExtensions()),
     library: LibraryAssetResponseSchema.optional(),
     originalPath: z.string().describe('Original file path'),
+    sidecarPath: z.string().optional().nullable().describe('Sidecar file path'),
     originalFileName: z.string().describe('Original file name'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     fileCreatedAt: z
@@ -173,6 +175,7 @@ export type MapAsset = {
   localDateTime: Date;
   originalFileName: string;
   originalPath: string;
+  sidecarPath?: string | null;
   owner?: ShallowDehydrateObject<User> | null;
   ownerId: string;
   stack?: (ShallowDehydrateObject<Stack> & { assets: Stack['assets'] }) | null;
@@ -248,6 +251,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     library: entity.library ? mapLibraryAsset(entity.library) : undefined,
     type: entity.type,
     originalPath: entity.originalPath,
+    sidecarPath: entity.sidecarPath ?? entity.files?.find((f) => f.type === AssetFileType.Sidecar)?.path ?? null,
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
     thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,

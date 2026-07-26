@@ -18090,6 +18090,11 @@
             ],
             "x-immich-state": "Deprecated"
           },
+          "sidecarPath": {
+            "description": "Sidecar file path",
+            "nullable": true,
+            "type": "string"
+          },
           "stack": {
             "allOf": [
               {

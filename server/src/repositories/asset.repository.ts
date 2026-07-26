@@ -610,7 +610,12 @@ export class AssetRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
   getByIds(ids: string[]) {
-    return this.db.selectFrom('asset').selectAll('asset').where('asset.id', '=', anyUuid(ids)).execute();
+    return this.db
+      .selectFrom('asset')
+      .selectAll('asset')
+      .select((eb) => withFilePath(eb, AssetFileType.Sidecar).limit(1).as('sidecarPath'))
+      .where('asset.id', '=', anyUuid(ids))
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -619,6 +624,7 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
+      .select((eb) => withFilePath(eb, AssetFileType.Sidecar).limit(1).as('sidecarPath'))
       .select(withFacesAndPeople)
       .select(withTags)
       .$call(withExif)
@@ -687,6 +693,7 @@ export class AssetRepository {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
+      .select((eb) => withFilePath(eb, AssetFileType.Sidecar).limit(1).as('sidecarPath'))
       .where('asset.id', '=', asUuid(id))
       .$if(!!exifInfo, withExif)
       .$if(!!faces, (qb) => qb.select(faces?.person ? withFacesAndPeople : withFaces).$narrowType<{ faces: NotNull }>())
@@ -751,6 +758,7 @@ export class AssetRepository {
         .with('asset', (qb) => qb.updateTable('asset').set(asset).where('id', '=', asUuid(asset.id)).returningAll())
         .selectFrom('asset')
         .selectAll('asset')
+        .select((eb) => withFilePath(eb, AssetFileType.Sidecar).limit(1).as('sidecarPath'))
         .$call(withExif)
         .$call((qb) => qb.select(withFacesAndPeople))
         .$call((qb) => qb.select(withEdits))

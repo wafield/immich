@@ -45,6 +45,7 @@
   } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { slide } from 'svelte/transition';
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
   import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
@@ -594,6 +595,11 @@
                   {asset.originalPath}
                 </a>
               </p>
+              {#if asset.sidecarPath}
+                <p class="pb-2 text-xs break-all opacity-50" transition:slide={{ duration: 250 }}>
+                  {asset.sidecarPath}
+                </p>
+              {/if}
             {/if}
             {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
               <div class="flex gap-2 text-sm">
@@ -684,33 +690,6 @@
 
     {#if activeTab === 'more'}
       <div class="p-4">
-        <div class="flex h-10 w-full items-center justify-between text-sm">
-          <Text size="small" color="muted">More Info</Text>
-        </div>
-        <div class="flex gap-4 py-4">
-          <div><Icon icon={mdiFolderOutline} size="24" /></div>
-
-          <div>
-            {#if isOwner}
-              <p class="break-all text-immich-fg opacity-70 hover:text-primary dark:text-immich-dark-fg">
-                <a
-                  href={getAssetFolderHref(asset)}
-                  title={$t('go_to_folder')}
-                  class="font-mono text-xs whitespace-pre-wrap select-text"
-                >
-                  {asset.originalPath}
-                </a>
-              </p>
-            {:else}
-              <p
-                class="font-mono text-xs break-all whitespace-pre-wrap text-immich-fg opacity-70 select-text dark:text-immich-dark-fg"
-              >
-                {asset.originalPath}
-              </p>
-            {/if}
-          </div>
-        </div>
-
         {#if extraExifSections.length > 0}
           {#each extraExifSections as { title, icon, fields } (title)}
             <hr class="my-4 border-immich-fg/10 dark:border-immich-dark-fg/10" />
