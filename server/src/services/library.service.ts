@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
-import { R_OK } from 'node:constants';
+import { R_OK, W_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
@@ -403,6 +403,18 @@ export class LibraryService extends BaseService {
             throw new BadRequestException(`Invalid import path: ${path.message}`);
           }
         }
+      }
+    }
+
+    if (dto.uploadPath) {
+      const validation = await this.validateImportPath(dto.uploadPath);
+      if (!validation.isValid) {
+        throw new BadRequestException(`Invalid upload path: ${validation.message}`);
+      }
+
+      const hasWriteAccess = await this.storageRepository.checkFileExists(dto.uploadPath, W_OK);
+      if (!hasWriteAccess) {
+        throw new BadRequestException(`Lacking write permission for folder`);
       }
     }
 

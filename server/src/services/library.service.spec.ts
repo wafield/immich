@@ -940,16 +940,31 @@ describe(LibraryService.name, () => {
       );
     });
 
-    it('should update library with uploadPath', async () => {
-      const library = factory.library({ uploadPath: '/path/to/upload' });
+    it('should throw an error if an uploadPath is invalid', async () => {
+      const library = factory.library();
 
       mocks.library.update.mockResolvedValue(library);
       mocks.library.get.mockResolvedValue(library);
 
-      await expect(sut.update('library-id', { uploadPath: '/path/to/upload' })).resolves.toEqual(mapLibrary(library));
+      await expect(sut.update('library-id', { uploadPath: 'relative/upload/path' })).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.library.update).not.toHaveBeenCalled();
+    });
+
+    it('should update library with uploadPath', async () => {
+      const cwd = process.cwd();
+      const validPath = `${cwd}/path/to/upload`;
+      const library = factory.library({ uploadPath: validPath });
+
+      mocks.library.update.mockResolvedValue(library);
+      mocks.library.get.mockResolvedValue(library);
+      mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+
+      await expect(sut.update('library-id', { uploadPath: validPath })).resolves.toEqual(mapLibrary(library));
       expect(mocks.library.update).toHaveBeenCalledWith(
         'library-id',
-        expect.objectContaining({ uploadPath: '/path/to/upload' }),
+        expect.objectContaining({ uploadPath: validPath }),
       );
     });
 

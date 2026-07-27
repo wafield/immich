@@ -13,9 +13,10 @@
     getLibraryActions,
     getLibraryExclusionPatternActions,
     getLibraryFolderActions,
+    getLibraryUploadPathActions,
   } from '$lib/services/library.service';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { Code, CommandPaletteDefaultProvider, Container, Heading, modalManager } from '@immich/ui';
+  import { Code, CommandPaletteDefaultProvider, Container, Heading, Input, modalManager } from '@immich/ui';
   import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -41,6 +42,8 @@
 
   const library = $derived(data.library);
 
+  let uploadPath = $derived(data.library.uploadPath ?? '');
+
   const onLibraryUpdate = () => invalidate('app:library');
 
   const onLibraryDelete = async ({ id }: { id: string }) => {
@@ -50,6 +53,7 @@
   };
 
   const { Edit, Delete, AddFolder, AddExclusionPattern, Scan } = $derived(getLibraryActions($t, library));
+  const { SubmitUploadPath } = $derived(getLibraryUploadPathActions($t, library, uploadPath));
 </script>
 
 <OnEvents {onLibraryUpdate} {onLibraryDelete} />
@@ -68,6 +72,17 @@
         <ServerStatisticsCard icon={mdiPlayCircle} title={$t('videos')} valuePromise={videosPromise} />
         <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} valuePromise={usagePromise} />
       </div>
+
+      <AdminCard icon={mdiFolderOutline} title="Library Upload Path" class="col-span-full">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          When assets are uploaded or moved to this library, they will be put under this path, applying the storage
+          template. Under this path, expect to see a list of years.
+        </p>
+        <div class="mt-4 flex items-center gap-2">
+          <Input id="library-upload-path" bind:value={uploadPath} placeholder="/media/path/to/upload" class="flex-1" />
+          <TableButton action={SubmitUploadPath} />
+        </div>
+      </AdminCard>
 
       <AdminCard icon={mdiFolderOutline} title={$t('folders')} headerAction={AddFolder}>
         {#if library.importPaths.length === 0}

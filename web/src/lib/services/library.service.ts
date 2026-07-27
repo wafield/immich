@@ -11,7 +11,14 @@ import {
   type UpdateLibraryDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiInformationOutline, mdiPencilOutline, mdiPlusBoxOutline, mdiSync, mdiTrashCanOutline } from '@mdi/js';
+import {
+  mdiCheck,
+  mdiInformationOutline,
+  mdiPencilOutline,
+  mdiPlusBoxOutline,
+  mdiSync,
+  mdiTrashCanOutline,
+} from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -120,6 +127,37 @@ export const getLibraryExclusionPatternActions = (
   };
 
   return { Edit, Delete };
+};
+
+export const getLibraryUploadPathActions = (
+  $t: MessageFormatter,
+  library: LibraryResponseDto,
+  uploadPath: string,
+) => {
+  const SubmitUploadPath: ActionItem = {
+    icon: mdiCheck,
+    title: $t('save'),
+    onAction: () => handleUpdateLibraryUploadPath(library, uploadPath),
+  };
+
+  return { SubmitUploadPath };
+};
+
+export const handleUpdateLibraryUploadPath = async (library: LibraryResponseDto, uploadPath: string) => {
+  const $t = await getFormatter();
+
+  try {
+    const updatedLibrary = await updateLibrary({
+      id: library.id,
+      updateLibraryDto: { uploadPath: uploadPath.trim() || null },
+    });
+    eventManager.emit('LibraryUpdate', updatedLibrary);
+    toastManager.primary($t('admin.library_updated'));
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_library'));
+    return false;
+  }
 };
 
 const handleScanAllLibraries = async () => {
