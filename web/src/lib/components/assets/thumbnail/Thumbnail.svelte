@@ -3,7 +3,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
+  import { locale, playVideoThumbnailOnHover, showLibraryIndicator } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
@@ -336,6 +336,13 @@
 
         <!-- Bottom-left asset properties -->
         <div class="absolute inset-s-2 bottom-2 z-2 flex gap-1">
+          {#if $showLibraryIndicator}
+            <span
+              class="inline-block size-2.5 self-center rounded-full"
+              style:background-color={asset.libraryId === null ? '#9ca3af' : '#eab308'}
+              title={asset.libraryId === null ? 'Default Library' : asset.libraryId}
+            ></span>
+          {/if}
           {#if !authManager.isSharedLink && asset.isFavorite}
             <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
           {/if}

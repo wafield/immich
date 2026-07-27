@@ -5,10 +5,15 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
-  import { recentAlbumsDropdown, hideScreenshots, selectedLibraries } from '$lib/stores/preferences.store';
+  import {
+    recentAlbumsDropdown,
+    hideScreenshots,
+    selectedLibraries,
+    showLibraryIndicator,
+  } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { NavbarGroup, NavbarItem, Checkbox, Label, Icon, Button } from '@immich/ui';
+  import { NavbarGroup, NavbarItem, Checkbox, Label, Button } from '@immich/ui';
   import { getAllLibraries, type LibraryResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import {
@@ -18,8 +23,6 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
-    mdiCellphone,
-    mdiDatabaseOutline,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -89,7 +92,7 @@
   />
 
   {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
-    <NavbarGroup title={$t('library')} size="tiny" />
+    <NavbarGroup title="Collections" size="tiny" />
   {/if}
 
   <NavbarItem title={$t('favorites')} href={Route.favorites()} icon={mdiHeartOutline} activeIcon={mdiHeart} />
@@ -141,8 +144,7 @@
   {/if}
 
   {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
-    <NavbarGroup title="View Options" size="tiny" />
-    <NavbarItem title="Screenshots" href="" icon={mdiCellphone} />
+    <NavbarGroup title="Screenshots" size="tiny" />
 
     <div class="flex ps-5 pb-4 text-xs">
       <Button
@@ -163,7 +165,7 @@
       </Button>
     </div>
 
-    <NavbarItem title="Libraries" href="" icon={mdiDatabaseOutline} />
+    <NavbarGroup title="Libraries" size="tiny" />
     <div class="flex flex-col gap-4 ps-5 pb-4">
       <div class="flex items-start gap-2">
         <Checkbox
@@ -185,6 +187,18 @@
           <Label label={library.name} for="library-checkbox-{library.id}" size="tiny" />
         </div>
       {/each}
+
+      <hr class="border-gray-200 dark:border-gray-700" />
+
+      <div class="flex items-start gap-2">
+        <Checkbox
+          size="tiny"
+          id="library-indicator-checkbox"
+          checked={$showLibraryIndicator}
+          onCheckedChange={() => ($showLibraryIndicator = !$showLibraryIndicator)}
+        />
+        <Label label="Show Library Indicator" for="library-indicator-checkbox" size="tiny" />
+      </div>
     </div>
 
     <BottomInfo />

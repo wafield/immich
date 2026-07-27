@@ -144,6 +144,8 @@ export const hideScreenshots = persisted<boolean>('hide-screenshots', false, {})
 
 export const selectedLibraries = persisted<string[]>('selected-libraries', [], {});
 
+export const showLibraryIndicator = persisted<boolean>('show-library-indicator', false, {});
+
 export enum FolderAssetsSortBy {
   CaptureTime = 'capture-time',
   AddedTime = 'added-time',
