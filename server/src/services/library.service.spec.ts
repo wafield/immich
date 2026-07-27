@@ -3,7 +3,7 @@ import { Stats } from 'node:fs';
 import path from 'node:path';
 import { defaults, SystemConfig } from 'src/config';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
-import { mapLibrary } from 'src/dtos/library.dto';
+import { CreateLibraryDto, mapLibrary, UpdateLibraryDto } from 'src/dtos/library.dto';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
@@ -625,7 +625,7 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.asset.getByChecksum.mockResolvedValue(duplicateAsset);
-      mocks.notification.create.mockResolvedValue({ id: 'notification-id' });
+      mocks.notification.create.mockResolvedValue({ id: 'notification-id' } as any);
 
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
 
@@ -938,6 +938,47 @@ describe(LibraryService.name, () => {
         'library-id',
         expect.objectContaining({ importPaths: [`${cwd}/foo/bar`] }),
       );
+    });
+
+    it('should update library with uploadPath', async () => {
+      const library = factory.library({ uploadPath: '/path/to/upload' });
+
+      mocks.library.update.mockResolvedValue(library);
+      mocks.library.get.mockResolvedValue(library);
+
+      await expect(sut.update('library-id', { uploadPath: '/path/to/upload' })).resolves.toEqual(mapLibrary(library));
+      expect(mocks.library.update).toHaveBeenCalledWith(
+        'library-id',
+        expect.objectContaining({ uploadPath: '/path/to/upload' }),
+      );
+    });
+
+    it('should reject update if uploadPath exceeds 128 characters', () => {
+      expect(() => UpdateLibraryDto.create({ uploadPath: 'a'.repeat(129) })).toThrow();
+    });
+  });
+
+  describe('create', () => {
+    it('should create library with uploadPath when provided', async () => {
+      const library = factory.library({ uploadPath: '/custom/upload/path' });
+
+      mocks.library.create.mockResolvedValue(library);
+
+      await expect(
+        sut.create({ ownerId: 'owner-id', name: 'My Library', uploadPath: '/custom/upload/path' }),
+      ).resolves.toEqual(mapLibrary(library));
+
+      expect(mocks.library.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ownerId: 'owner-id',
+          name: 'My Library',
+          uploadPath: '/custom/upload/path',
+        }),
+      );
+    });
+
+    it('should reject creation if uploadPath exceeds 128 characters', () => {
+      expect(() => CreateLibraryDto.create({ ownerId: newUuid(), uploadPath: 'a'.repeat(129) })).toThrow();
     });
   });
 

@@ -49,6 +49,7 @@ export type Library = {
   name: string;
   importPaths: string[];
   exclusionPatterns: string[];
+  uploadPath: string | null;
   deletedAt: Date | null;
   refreshedAt: Date | null;
   assets?: MapAsset[];

@@ -1494,6 +1494,8 @@ export type LibraryResponseDto = {
     refreshedAt: string | null;
     /** Last update date */
     updatedAt: string;
+    /** Upload path */
+    uploadPath: string | null;
 };
 export type CreateLibraryDto = {
     /** Exclusion patterns (max 128) */
@@ -1504,6 +1506,8 @@ export type CreateLibraryDto = {
     name?: string;
     /** Owner user ID */
     ownerId: string;
+    /** Upload path (max 128) */
+    uploadPath?: string;
 };
 export type UpdateLibraryDto = {
     /** Exclusion patterns (max 128) */
@@ -1512,6 +1516,8 @@ export type UpdateLibraryDto = {
     importPaths?: string[];
     /** Library name */
     name?: string;
+    /** Upload path (max 128) */
+    uploadPath?: string | null;
 };
 export type LibraryStatsResponseDto = {
     /** Number of photos */

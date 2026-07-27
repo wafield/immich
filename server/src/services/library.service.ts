@@ -247,6 +247,7 @@ export class LibraryService extends BaseService {
         '**/.stversions/**',
         '**/.stfolder/**',
       ],
+      uploadPath: dto.uploadPath ?? null,
     });
     return mapLibrary(library);
   }

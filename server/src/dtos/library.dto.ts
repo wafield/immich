@@ -15,6 +15,7 @@ const CreateLibrarySchema = z
     name: z.string().min(1).optional().describe('Library name'),
     importPaths: stringArrayMax128.optional().describe('Import paths (max 128)'),
     exclusionPatterns: stringArrayMax128.optional().describe('Exclusion patterns (max 128)'),
+    uploadPath: z.string().max(128).optional().describe('Upload path (max 128)'),
   })
   .meta({ id: 'CreateLibraryDto' });
 
@@ -23,6 +24,7 @@ const UpdateLibrarySchema = z
     name: z.string().min(1).optional().describe('Library name'),
     importPaths: stringArrayMax128.optional().describe('Import paths (max 128)'),
     exclusionPatterns: stringArrayMax128.optional().describe('Exclusion patterns (max 128)'),
+    uploadPath: z.string().max(128).nullable().optional().describe('Upload path (max 128)'),
   })
   .meta({ id: 'UpdateLibraryDto' });
 
@@ -68,6 +70,7 @@ const LibraryResponseSchema = z
     assetCount: z.int().describe('Number of assets'),
     importPaths: z.array(z.string()).describe('Import paths'),
     exclusionPatterns: z.array(z.string()).describe('Exclusion patterns'),
+    uploadPath: z.string().nullable().describe('Upload path'),
     createdAt: isoDatetimeToDate.describe('Creation date'),
     updatedAt: isoDatetimeToDate.describe('Last update date'),
     refreshedAt: isoDatetimeToDate.nullable().describe('Last refresh date'),
@@ -121,5 +124,6 @@ export function mapLibrary(entity: Library): LibraryResponseDto {
     assetCount,
     importPaths: entity.importPaths,
     exclusionPatterns: entity.exclusionPatterns,
+    uploadPath: entity.uploadPath ?? null,
   };
 }

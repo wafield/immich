@@ -30,6 +30,9 @@ export class LibraryTable {
   @Column({ type: 'text', array: true })
   exclusionPatterns!: string[];
 
+  @Column({ type: 'text', nullable: true })
+  uploadPath!: string | null;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
