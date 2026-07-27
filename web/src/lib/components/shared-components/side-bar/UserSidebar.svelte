@@ -23,18 +23,22 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
+    mdiContentDuplicate,
+    mdiCrosshairsGps,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
     mdiImageAlbum,
     mdiImageMultiple,
     mdiImageMultipleOutline,
+    mdiImageSizeSelectLarge,
     mdiLink,
     mdiLock,
     mdiLockOutline,
     mdiMagnify,
     mdiMap,
     mdiMapOutline,
+    mdiStateMachine,
     mdiTagMultipleOutline,
     mdiToolbox,
     mdiToolboxOutline,
@@ -46,6 +50,7 @@
   import { fly } from 'svelte/transition';
 
   let libraries = $state<LibraryResponseDto[]>([]);
+  let utilitiesExpanded = $state(false);
 
   onMount(async () => {
     try {
@@ -128,7 +133,35 @@
     <NavbarItem title={$t('folders')} href={Route.folders()} icon={{ icon: mdiFolderOutline, flipped: true }} />
   {/if}
 
-  <NavbarItem title={$t('utilities')} href={Route.utilities()} icon={mdiToolboxOutline} activeIcon={mdiToolbox} />
+  <NavbarItem
+    title={$t('utilities')}
+    href={Route.utilities()}
+    icon={mdiToolboxOutline}
+    activeIcon={mdiToolbox}
+    bind:expanded={utilitiesExpanded}
+    items={[
+      {
+        title: $t('review_duplicates'),
+        href: Route.duplicatesUtility(),
+        icon: mdiContentDuplicate,
+      },
+      {
+        title: $t('review_large_files'),
+        href: Route.largeFileUtility(),
+        icon: mdiImageSizeSelectLarge,
+      },
+      {
+        title: $t('manage_geolocation'),
+        href: Route.geolocationUtility(),
+        icon: mdiCrosshairsGps,
+      },
+      {
+        title: $t('workflows'),
+        href: Route.workflows(),
+        icon: mdiStateMachine,
+      },
+    ]}
+  />
 
   <NavbarItem
     title={$t('archive')}
