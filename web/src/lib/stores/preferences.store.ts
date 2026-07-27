@@ -161,3 +161,17 @@ export const folderViewSettings = persisted<FolderViewSettings>('folder-view-set
   sortBy: FolderAssetsSortBy.FileName,
   sortOrder: SortOrder.Asc,
 });
+
+export enum RowSize {
+  S = 'S',
+  M = 'M',
+  L = 'L',
+}
+
+export const ROW_SIZE_LAYOUT_OPTIONS: Record<RowSize, { rowHeight: number; headerHeight: number; gap: number }> = {
+  [RowSize.S]: { rowHeight: 150, headerHeight: 32, gap: 2 },
+  [RowSize.M]: { rowHeight: 240, headerHeight: 48, gap: 3 },
+  [RowSize.L]: { rowHeight: 320, headerHeight: 60, gap: 4 },
+};
+
+export const rowSize = persisted<RowSize>('row-size', RowSize.M, {});

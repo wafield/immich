@@ -10,6 +10,8 @@
     hideScreenshots,
     selectedLibraries,
     showLibraryIndicator,
+    rowSize,
+    RowSize,
   } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
@@ -177,6 +179,35 @@
   {/if}
 
   {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
+    <NavbarGroup title="Row size" size="tiny" />
+
+    <div class="flex ps-5 pb-4 text-xs">
+      <Button
+        class="flex-1 rounded-s-full"
+        size="small"
+        color={$rowSize === RowSize.S ? 'primary' : 'secondary'}
+        onclick={() => ($rowSize = RowSize.S)}
+      >
+        S
+      </Button>
+      <Button
+        class="flex-1 rounded-none"
+        size="small"
+        color={$rowSize === RowSize.M ? 'primary' : 'secondary'}
+        onclick={() => ($rowSize = RowSize.M)}
+      >
+        M
+      </Button>
+      <Button
+        class="flex-1 rounded-e-full"
+        size="small"
+        color={$rowSize === RowSize.L ? 'primary' : 'secondary'}
+        onclick={() => ($rowSize = RowSize.L)}
+      >
+        L
+      </Button>
+    </div>
+
     <NavbarGroup title="Screenshots" size="tiny" />
 
     <div class="flex ps-5 pb-4 text-xs">
