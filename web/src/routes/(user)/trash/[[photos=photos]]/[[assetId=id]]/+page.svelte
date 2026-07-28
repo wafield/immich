@@ -16,6 +16,11 @@
   import { getTrashActions } from '$lib/services/trash.service';
   import { selectedLibraries } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
+  import { restoreAssets } from '@immich/sdk';
+  import { ActionButton, modalManager, toastManager, type ActionItem } from '@immich/ui';
+  import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -40,6 +45,31 @@
     assetMultiSelectManager.clear();
     return;
   };
+
+  const handleAddToAlbum = () => {
+    const ids = assetMultiSelectManager.assets.map((asset) => asset.id);
+    void modalManager.show(AssetAddToAlbumModal, {
+      assetIds: ids,
+      beforeAdd: async () => {
+        try {
+          await restoreAssets({ bulkIdsDto: { ids } });
+          timelineManager.removeAssets(ids);
+          toastManager.primary($t('assets_restored_count', { values: { count: ids.length } }));
+          assetMultiSelectManager.clear();
+        } catch (error) {
+          handleError(error, $t('errors.unable_to_restore_assets'));
+          return false;
+        }
+      },
+    });
+  };
+
+  const AddToAlbum: ActionItem = $derived({
+    title: $t('add_to_album'),
+    icon: mdiPlus,
+    shortcuts: [{ key: 'l' }],
+    onAction: handleAddToAlbum,
+  });
 
   const { Empty, RestoreAll } = $derived(getTrashActions($t));
 </script>
@@ -74,5 +104,6 @@
     <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
     <DeleteAssets force onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)} />
     <RestoreAssets onRestore={(assetIds) => timelineManager.removeAssets(assetIds)} />
+    <ActionButton action={AddToAlbum} />
   </AssetSelectControlBar>
 {/if}
