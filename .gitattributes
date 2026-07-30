@@ -1,3 +1,5 @@
+* text=auto eol=lf
+
 mobile/openapi/**/*.md -diff -merge
 mobile/openapi/**/*.md linguist-generated=true
 mobile/openapi/**/*.dart -diff -merge
