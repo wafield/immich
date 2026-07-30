@@ -17,6 +17,8 @@ import {
   AssetMetadataResponseDto,
   AssetMetadataUpsertDto,
   AssetStatsDto,
+  MoveAssetLibraryDto,
+  AssetMoveResponseDto,
   UpdateAssetDto,
   mapStats,
 } from 'src/dtos/asset.dto';
@@ -25,6 +27,7 @@ import { AssetEditAction, AssetEditActionItem, AssetEditsCreateDto, AssetEditsRe
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import {
   AssetFileType,
+  AssetPathType,
   AssetStatus,
   AssetType,
   AssetVisibility,
@@ -33,8 +36,10 @@ import {
   Permission,
   QueueName,
 } from 'src/enum';
+import { StorageCore } from 'src/cores/storage.core';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { StorageTemplateService } from 'src/services/storage-template.service';
+import { JobItem, JobOf, StorageAsset } from 'src/types';
 import { requireElevatedPermission } from 'src/utils/access';
 import {
   getAssetFiles,
@@ -44,6 +49,8 @@ import {
   onBeforeLink,
   onBeforeUnlink,
 } from 'src/utils/asset.util';
+import { getLivePhotoMotionFilename } from 'src/utils/file';
+
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
 import { transformOcrBoundingBox } from 'src/utils/transform';
@@ -625,4 +632,229 @@ export class AssetService extends BaseService {
     await this.assetEditRepository.replaceAll(id, []);
     await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
   }
+
+  async moveLibrary(
+    auth: AuthDto,
+    dto: MoveAssetLibraryDto,
+    storageTemplateService: StorageTemplateService,
+  ): Promise<AssetMoveResponseDto[]> {
+    const { storageTemplate } = await this.getConfig({ withCache: true });
+    if (!storageTemplate.enabled) {
+      throw new BadRequestException('Storage template is not enabled or configured by admin');
+    }
+
+    let rootPath: string | undefined;
+
+    if (dto.targetLibraryId) {
+      const libraryEntity = await this.libraryRepository.get(dto.targetLibraryId);
+      if (!libraryEntity) {
+        throw new BadRequestException(`Target library ${dto.targetLibraryId} not found`);
+      }
+
+      const importPath = libraryEntity.importPaths?.[0];
+      if (!importPath) {
+        throw new BadRequestException('Target external library has no import path configured');
+      }
+
+      if (!this.storageRepository.existsSync(importPath)) {
+        throw new BadRequestException(`Import path does not exist on disk: ${importPath}`);
+      }
+
+      rootPath = importPath;
+    }
+
+    const results: AssetMoveResponseDto[] = [];
+
+    for (const assetId of dto.assetIds) {
+      try {
+        const allowedAccess = await this.checkAccess({
+          auth,
+          permission: Permission.AssetUpdate,
+          ids: [assetId],
+        });
+
+        if (!allowedAccess.has(assetId)) {
+          results.push({ id: assetId, success: false, error: 'Access denied' });
+          continue;
+        }
+
+        const asset = await this.assetRepository.getById(assetId, {
+          exifInfo: true,
+          owner: true,
+          files: true,
+          library: true,
+        });
+
+        if (!asset) {
+          results.push({ id: assetId, success: false, error: 'Asset not found' });
+          continue;
+        }
+
+        const targetLibraryId = dto.targetLibraryId ?? null;
+        if (asset.libraryId === targetLibraryId) {
+          results.push({ id: assetId, success: true });
+          continue;
+        }
+
+        // Check duplicate checksum collision in target library
+        const existingDuplicate = await this.assetRepository.getByChecksum({
+          ownerId: asset.ownerId,
+          libraryId: targetLibraryId ?? undefined,
+          checksum: asset.checksum,
+        });
+
+        if (existingDuplicate && existingDuplicate.id !== asset.id) {
+          results.push({
+            id: assetId,
+            success: false,
+            error: 'Asset checksum already exists in target library',
+          });
+          continue;
+        }
+
+        const ownerUser = await this.userRepository.get(asset.ownerId, {});
+        const storageLabel = ownerUser?.storageLabel || null;
+
+        const assetRootPath =
+          rootPath ?? StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+        const filename = asset.originalFileName || asset.id;
+
+        const storageAsset: StorageAsset = {
+          id: asset.id,
+          ownerId: asset.ownerId,
+          livePhotoVideoId: asset.livePhotoVideoId,
+          type: asset.type,
+          isExternal: asset.isExternal,
+          checksum: asset.checksum,
+          timeZone: asset.exifInfo?.timeZone || null,
+          fileCreatedAt: asset.fileCreatedAt,
+          originalPath: asset.originalPath,
+          originalFileName: filename,
+          fileSizeInByte: asset.exifInfo?.fileSizeInByte || null,
+          files: asset.files ?? [],
+          make: asset.exifInfo?.make || null,
+          model: asset.exifInfo?.model || null,
+          lensModel: asset.exifInfo?.lensModel || null,
+        };
+
+        const newPath = await storageTemplateService.renderTemplatePath(
+          storageAsset,
+          {
+            storageLabel,
+            filename,
+          },
+          assetRootPath,
+        );
+
+        const oldPath = asset.originalPath;
+        if (oldPath !== newPath) {
+          await this.storageCore.moveFile({
+            entityId: asset.id,
+            pathType: AssetPathType.Original,
+            oldPath,
+            newPath,
+            assetInfo: {
+              sizeInBytes: asset.exifInfo?.fileSizeInByte || 0,
+              checksum: asset.checksum,
+            },
+          });
+        }
+
+        const sidecarPath = getAssetFiles(asset.files ?? []).sidecarFile?.path;
+        if (sidecarPath) {
+          const newSidecarPath = `${newPath}.xmp`;
+          await this.storageCore.moveFile({
+            entityId: asset.id,
+            pathType: AssetFileType.Sidecar,
+            oldPath: sidecarPath,
+            newPath: newSidecarPath,
+          });
+        }
+
+        let livePhotoVideoNewPath: string | null = null;
+        if (asset.livePhotoVideoId) {
+          const livePhotoVideo = await this.assetRepository.getById(asset.livePhotoVideoId, {
+            exifInfo: true,
+            owner: true,
+            files: true,
+          });
+
+          if (livePhotoVideo) {
+            const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
+            const motionStorageAsset: StorageAsset = {
+              id: livePhotoVideo.id,
+              ownerId: livePhotoVideo.ownerId,
+              livePhotoVideoId: livePhotoVideo.livePhotoVideoId,
+              type: livePhotoVideo.type,
+              isExternal: livePhotoVideo.isExternal,
+              checksum: livePhotoVideo.checksum,
+              timeZone: livePhotoVideo.exifInfo?.timeZone || null,
+              fileCreatedAt: livePhotoVideo.fileCreatedAt,
+              originalPath: livePhotoVideo.originalPath,
+              originalFileName: livePhotoVideo.originalFileName || motionFilename,
+              fileSizeInByte: livePhotoVideo.exifInfo?.fileSizeInByte || null,
+              files: livePhotoVideo.files ?? [],
+              make: livePhotoVideo.exifInfo?.make || null,
+              model: livePhotoVideo.exifInfo?.model || null,
+              lensModel: livePhotoVideo.exifInfo?.lensModel || null,
+            };
+
+            livePhotoVideoNewPath = await storageTemplateService.renderTemplatePath(
+              motionStorageAsset,
+              {
+                storageLabel,
+                filename: motionFilename,
+              },
+              assetRootPath,
+              storageAsset,
+            );
+
+            if (livePhotoVideo.originalPath !== livePhotoVideoNewPath) {
+              await this.storageCore.moveFile({
+                entityId: livePhotoVideo.id,
+                pathType: AssetPathType.Original,
+                oldPath: livePhotoVideo.originalPath,
+                newPath: livePhotoVideoNewPath,
+                assetInfo: {
+                  sizeInBytes: livePhotoVideo.exifInfo?.fileSizeInByte || 0,
+                  checksum: livePhotoVideo.checksum,
+                },
+              });
+            }
+          }
+        }
+
+        const isExternal = targetLibraryId !== null;
+
+        await this.assetRepository.update({
+          id: asset.id,
+          libraryId: targetLibraryId,
+          isExternal,
+          originalPath: newPath,
+        });
+
+        if (asset.livePhotoVideoId && livePhotoVideoNewPath) {
+          await this.assetRepository.update({
+            id: asset.livePhotoVideoId,
+            libraryId: targetLibraryId,
+            isExternal,
+            originalPath: livePhotoVideoNewPath,
+          });
+        }
+
+        results.push({ id: assetId, success: true });
+      } catch (err: any) {
+        this.logger.error(`Failed to move asset ${assetId} to library: ${err.message}`, err.stack);
+        results.push({
+          id: assetId,
+          success: false,
+          error: err.message || 'Failed to move asset to target library',
+        });
+      }
+    }
+
+    return results;
+  }
 }
+
+

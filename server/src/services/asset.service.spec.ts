@@ -773,4 +773,92 @@ describe(AssetService.name, () => {
       expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
     });
   });
+
+  describe('moveLibrary', () => {
+    it('should throw if storage template is not enabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: false } });
+
+      await expect(
+        sut.moveLibrary(authStub.admin, { assetIds: ['asset-1'], targetLibraryId: null }, {} as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should throw if target library is not found', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.library.get.mockResolvedValue(null);
+
+      await expect(
+        sut.moveLibrary(authStub.admin, { assetIds: ['asset-1'], targetLibraryId: 'lib-1' }, {} as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should throw if target library has no import path configured', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.library.get.mockResolvedValue({ id: 'lib-1', importPaths: [] });
+
+      await expect(
+        sut.moveLibrary(authStub.admin, { assetIds: ['asset-1'], targetLibraryId: 'lib-1' }, {} as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should throw if import path does not exist on disk', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.library.get.mockResolvedValue({ id: 'lib-1', importPaths: ['/invalid/path'] });
+      mocks.storage.existsSync.mockReturnValue(false);
+
+      await expect(
+        sut.moveLibrary(authStub.admin, { assetIds: ['asset-1'], targetLibraryId: 'lib-1' }, {} as any),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should handle checksum collision and return error for specific asset', async () => {
+      const asset = AssetFactory.create({ id: 'asset-1', libraryId: 'old-lib-id', checksum: Buffer.from('abc') });
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.asset.getByChecksum.mockResolvedValue({ id: 'asset-2' }); // Collision!
+
+      const mockStorageTemplateService = {
+        renderTemplatePath: vitest.fn(),
+      } as any;
+
+      const res = await sut.moveLibrary(
+        authStub.admin,
+        { assetIds: ['asset-1'], targetLibraryId: null },
+        mockStorageTemplateService,
+      );
+
+
+      expect(res).toEqual([
+        {
+          id: 'asset-1',
+          success: false,
+          error: 'Asset checksum already exists in target library',
+        },
+      ]);
+    });
+
+    it('should take no action if asset is already in target library', async () => {
+      const asset = AssetFactory.create({ id: 'asset-1', libraryId: null });
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+
+      const mockStorageTemplateService = {
+        renderTemplatePath: vitest.fn(),
+      } as any;
+
+      const res = await sut.moveLibrary(
+        authStub.admin,
+        { assetIds: ['asset-1'], targetLibraryId: null },
+        mockStorageTemplateService,
+      );
+
+      expect(res).toEqual([{ id: 'asset-1', success: true }]);
+      expect(mockStorageTemplateService.renderTemplatePath).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+  });
 });
+
+

@@ -3742,6 +3742,65 @@
         "x-immich-state": "Beta"
       }
     },
+    "/assets/move-library": {
+      "post": {
+        "description": "Moves a batch of assets to a target library (external or default upload library) using storage template pathing.",
+        "operationId": "moveLibrary",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveAssetLibraryDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetMoveResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Move assets to another library",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets/statistics": {
       "get": {
         "description": "Retrieve various statistics about the assets owned by the authenticated user.",
@@ -17824,6 +17883,29 @@
         ],
         "type": "object"
       },
+      "AssetMoveResponseDto": {
+        "properties": {
+          "error": {
+            "description": "Error message if move operation failed",
+            "type": "string"
+          },
+          "id": {
+            "description": "Asset ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "success": {
+            "description": "Whether move operation succeeded",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "success"
+        ],
+        "type": "object"
+      },
       "AssetOcrResponseDto": {
         "properties": {
           "assetId": {
@@ -20949,6 +21031,31 @@
         },
         "required": [
           "axis"
+        ],
+        "type": "object"
+      },
+      "MoveAssetLibraryDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Asset IDs to move",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "targetLibraryId": {
+            "description": "Target library ID (UUID or null for default upload library)",
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetIds"
         ],
         "type": "object"
       },

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
@@ -259,10 +259,24 @@ export class StorageTemplateService extends BaseService {
     });
   }
 
+  async renderTemplatePath(
+    asset: StorageAsset,
+    metadata: MoveAssetMetadata,
+    rootPath: string,
+    stillPhoto?: StorageAsset,
+  ): Promise<string> {
+    const config = await this.getConfig({ withCache: true });
+    if (!config.storageTemplate.enabled) {
+      throw new BadRequestException('Storage template is not enabled or configured by admin');
+    }
+    return this.getTemplatePath(asset, metadata, stillPhoto, rootPath);
+  }
+
   private async getTemplatePath(
     asset: StorageAsset,
     metadata: MoveAssetMetadata,
     stillPhoto?: StorageAsset,
+    overrideRootPath?: string,
   ): Promise<string> {
     const { storageLabel, filename } = metadata;
 
@@ -273,7 +287,9 @@ export class StorageTemplateService extends BaseService {
       let extension = getFilenameExtension(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filenameWithoutExtension, `.${extension}`));
       extension = extension?.toLowerCase();
-      const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+
+      // OverrideRootPath is passed in when the function is called to move assets from one library to another.
+      const rootPath = overrideRootPath ?? StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
 
       switch (extension) {
         case 'jpeg':

@@ -169,6 +169,21 @@ const AssetDownloadOriginalSchema = z
   })
   .meta({ id: 'AssetDownloadOriginalDto' });
 
+const MoveAssetLibrarySchema = z
+  .object({
+    assetIds: z.array(z.uuidv4()).min(1).describe('Asset IDs to move'),
+    targetLibraryId: z.uuidv4().nullish().describe('Target library ID (UUID or null for default upload library)'),
+  })
+  .meta({ id: 'MoveAssetLibraryDto' });
+
+const AssetMoveResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Asset ID'),
+    success: z.boolean().describe('Whether move operation succeeded'),
+    error: z.string().optional().describe('Error message if move operation failed'),
+  })
+  .meta({ id: 'AssetMoveResponseDto' });
+
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
     images: stats[AssetType.Image],
@@ -192,3 +207,6 @@ export class AssetMetadataResponseDto extends createZodDto(AssetMetadataResponse
 export class AssetMetadataBulkResponseDto extends createZodDto(AssetMetadataBulkResponseSchema) {}
 export class AssetCopyDto extends createZodDto(AssetCopySchema) {}
 export class AssetDownloadOriginalDto extends createZodDto(AssetDownloadOriginalSchema) {}
+export class MoveAssetLibraryDto extends createZodDto(MoveAssetLibrarySchema) {}
+export class AssetMoveResponseDto extends createZodDto(AssetMoveResponseSchema) {}
+

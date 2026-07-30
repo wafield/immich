@@ -15,6 +15,8 @@ import {
   AssetMetadataUpsertDto,
   AssetStatsDto,
   AssetStatsResponseDto,
+  MoveAssetLibraryDto,
+  AssetMoveResponseDto,
   UpdateAssetDto,
 } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -23,14 +25,30 @@ import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
+import { StorageTemplateService } from 'src/services/storage-template.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)
 export class AssetController {
-  constructor(private service: AssetService) {}
+  constructor(
+    private service: AssetService,
+    private storageTemplateService: StorageTemplateService,
+  ) {}
+
+  @Post('move-library')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @Endpoint({
+    summary: 'Move assets to another library',
+    description: 'Moves a batch of assets to a target library (external or default upload library) using storage template pathing.',
+    history: new HistoryBuilder().added('v3').beta('v3'),
+  })
+  moveLibrary(@Auth() auth: AuthDto, @Body() dto: MoveAssetLibraryDto): Promise<AssetMoveResponseDto[]> {
+    return this.service.moveLibrary(auth, dto, this.storageTemplateService);
+  }
 
   @Get('statistics')
+
   @Authenticated({ permission: Permission.AssetStatistics })
   @Endpoint({
     summary: 'Get asset statistics',
