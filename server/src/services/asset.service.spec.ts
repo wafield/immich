@@ -792,18 +792,18 @@ describe(AssetService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should throw if target library has no import path configured', async () => {
+    it('should throw if target library has no upload path configured', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
-      mocks.library.get.mockResolvedValue({ id: 'lib-1', importPaths: [] });
+      mocks.library.get.mockResolvedValue({ id: 'lib-1', uploadPath: null });
 
       await expect(
         sut.moveLibrary(authStub.admin, { assetIds: ['asset-1'], targetLibraryId: 'lib-1' }, {} as any),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
-    it('should throw if import path does not exist on disk', async () => {
+    it('should throw if upload path does not exist on disk', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
-      mocks.library.get.mockResolvedValue({ id: 'lib-1', importPaths: ['/invalid/path'] });
+      mocks.library.get.mockResolvedValue({ id: 'lib-1', uploadPath: '/invalid/path' });
       mocks.storage.existsSync.mockReturnValue(false);
 
       await expect(
