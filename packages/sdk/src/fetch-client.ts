@@ -8102,3 +8102,28 @@ export enum UserMetadataKey {
     License = "license",
     Onboarding = "onboarding"
 }
+
+export type MoveAssetLibraryDto = {
+    assetIds: string[];
+    targetLibraryId?: string | null;
+};
+
+export type AssetMoveResponseDto = {
+    error?: string;
+    id: string;
+    success: boolean;
+};
+
+export function moveAssetsToLibrary({ moveAssetLibraryDto }: {
+    moveAssetLibraryDto: MoveAssetLibraryDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMoveResponseDto[];
+    }>("/assets/move-library", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: moveAssetLibraryDto
+    })));
+}
+

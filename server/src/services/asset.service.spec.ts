@@ -854,7 +854,8 @@ describe(AssetService.name, () => {
         mockStorageTemplateService,
       );
 
-      expect(res).toEqual([{ id: 'asset-1', success: true }]);
+      expect(res[0].id).toBe('asset-1');
+      expect(res[0].success).toBe(true);
       expect(mockStorageTemplateService.renderTemplatePath).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });

@@ -12,6 +12,7 @@
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import LinkLivePhotoAction from '$lib/components/timeline/actions/LinkLivePhotoAction.svelte';
+  import MoveToLibraryAction from '$lib/components/timeline/actions/MoveToLibraryAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import StackAction from '$lib/components/timeline/actions/StackAction.svelte';
@@ -32,6 +33,7 @@
     type OnUnlink,
   } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility, AssetOrderBy } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
@@ -117,6 +119,17 @@
     <ActionButton action={Actions.AddToAlbum} />
 
     {#if assetMultiSelectManager.isAllUserOwned}
+      <MoveToLibraryAction
+        onAssetChange={(assets, selectedLibraryId) => {
+          timelineManager.update(
+            assets.map((a) => a.id),
+            (asset) => {
+              asset.libraryId = selectedLibraryId;
+            },
+          );
+          timelineManager.upsertAssets(assets.map(toTimelineAsset));
+        }}
+      />
       <FavoriteAction
         removeFavorite={assetMultiSelectManager.isAllFavorite}
         onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}

@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { StorageCore } from 'src/cores/storage.core';
 import { AssetFile } from 'src/database';
 import { OnJob } from 'src/decorators';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
@@ -16,9 +17,9 @@ import {
   AssetMetadataBulkUpsertDto,
   AssetMetadataResponseDto,
   AssetMetadataUpsertDto,
+  AssetMoveResponseDto,
   AssetStatsDto,
   MoveAssetLibraryDto,
-  AssetMoveResponseDto,
   UpdateAssetDto,
   mapStats,
 } from 'src/dtos/asset.dto';
@@ -36,7 +37,6 @@ import {
   Permission,
   QueueName,
 } from 'src/enum';
-import { StorageCore } from 'src/cores/storage.core';
 import { BaseService } from 'src/services/base.service';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { JobItem, JobOf, StorageAsset } from 'src/types';
@@ -645,6 +645,7 @@ export class AssetService extends BaseService {
 
     let rootPath: string | undefined;
 
+    // Validate destination: target library must have import path configured.
     if (dto.targetLibraryId) {
       const libraryEntity = await this.libraryRepository.get(dto.targetLibraryId);
       if (!libraryEntity) {
@@ -715,8 +716,7 @@ export class AssetService extends BaseService {
         const ownerUser = await this.userRepository.get(asset.ownerId, {});
         const storageLabel = ownerUser?.storageLabel || null;
 
-        const assetRootPath =
-          rootPath ?? StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+        const assetRootPath = rootPath ?? StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
         const filename = asset.originalFileName || asset.id;
 
         const storageAsset: StorageAsset = {
@@ -856,5 +856,3 @@ export class AssetService extends BaseService {
     return results;
   }
 }
-
-
