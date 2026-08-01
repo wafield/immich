@@ -130,8 +130,8 @@
           <Icon icon={mdiFolderNetworkOutline} size="24" class="text-primary" />
           <div class="grow text-start">
             <Text fontWeight="medium">{library.name}</Text>
-            {#if library.importPaths?.[0]}
-              <Text size="tiny" color="muted">{library.importPaths[0]}</Text>
+            {#if library.uploadPath}
+              <Text size="tiny" color="muted">{library.uploadPath}</Text>
             {/if}
           </div>
         </ListButton>

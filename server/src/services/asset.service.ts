@@ -645,23 +645,23 @@ export class AssetService extends BaseService {
 
     let rootPath: string | undefined;
 
-    // Validate destination: target library must have import path configured.
+    // Validate destination: target library must have upload path configured.
     if (dto.targetLibraryId) {
       const libraryEntity = await this.libraryRepository.get(dto.targetLibraryId);
       if (!libraryEntity) {
         throw new BadRequestException(`Target library ${dto.targetLibraryId} not found`);
       }
 
-      const importPath = libraryEntity.importPaths?.[0];
-      if (!importPath) {
-        throw new BadRequestException('Target external library has no import path configured');
+      const uploadPath = libraryEntity.uploadPath;
+      if (!uploadPath) {
+        throw new BadRequestException('Target external library has no upload path configured');
       }
 
-      if (!this.storageRepository.existsSync(importPath)) {
-        throw new BadRequestException(`Import path does not exist on disk: ${importPath}`);
+      if (!this.storageRepository.existsSync(uploadPath)) {
+        throw new BadRequestException(`Upload path does not exist on disk: ${uploadPath}`);
       }
 
-      rootPath = importPath;
+      rootPath = uploadPath;
     }
 
     const results: AssetMoveResponseDto[] = [];
@@ -746,6 +746,7 @@ export class AssetService extends BaseService {
           assetRootPath,
         );
 
+        // Move the photo itself.
         const oldPath = asset.originalPath;
         if (oldPath !== newPath) {
           await this.storageCore.moveFile({
@@ -760,6 +761,7 @@ export class AssetService extends BaseService {
           });
         }
 
+        // Move the sidecar file.
         const sidecarPath = getAssetFiles(asset.files ?? []).sidecarFile?.path;
         if (sidecarPath) {
           const newSidecarPath = `${newPath}.xmp`;
@@ -771,7 +773,9 @@ export class AssetService extends BaseService {
           });
         }
 
+        // Move the live photo video, but only if it exists and is also external.
         let livePhotoVideoNewPath: string | null = null;
+        let shouldMoveLivePhotoVideo = false;
         if (asset.livePhotoVideoId) {
           const livePhotoVideo = await this.assetRepository.getById(asset.livePhotoVideoId, {
             exifInfo: true,
@@ -779,6 +783,9 @@ export class AssetService extends BaseService {
             files: true,
           });
 
+          if (livePhotoVideo && livePhotoVideo.isExternal) {
+            shouldMoveLivePhotoVideo = true;
+          }
           if (livePhotoVideo) {
             const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
             const motionStorageAsset: StorageAsset = {
@@ -809,7 +816,7 @@ export class AssetService extends BaseService {
               storageAsset,
             );
 
-            if (livePhotoVideo.originalPath !== livePhotoVideoNewPath) {
+            if (shouldMoveLivePhotoVideo && livePhotoVideo.originalPath !== livePhotoVideoNewPath) {
               await this.storageCore.moveFile({
                 entityId: livePhotoVideo.id,
                 pathType: AssetPathType.Original,
@@ -833,7 +840,7 @@ export class AssetService extends BaseService {
           originalPath: newPath,
         });
 
-        if (asset.livePhotoVideoId && livePhotoVideoNewPath) {
+        if (asset.livePhotoVideoId && livePhotoVideoNewPath && shouldMoveLivePhotoVideo) {
           await this.assetRepository.update({
             id: asset.livePhotoVideoId,
             libraryId: targetLibraryId,
