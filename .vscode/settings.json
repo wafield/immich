@@ -80,6 +80,17 @@
       "server": "127.0.0.1",
       "ssh": "Disabled",
       "username": "postgres"
+    },
+    {
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "172.18.0.2",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "immich",
+      "database": "immich",
+      "username": "postgres",
+      "password": "postgres"
     }
   ],
   "svelte.enable-ts-plugin": true,
