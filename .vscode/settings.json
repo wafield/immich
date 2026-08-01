@@ -33,19 +33,6 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
   },
-  "sqltools.connections": [
-    {
-      "ssh": "Disabled",
-      "previewLimit": 50,
-      "server": "172.19.0.4",
-      "port": 5432,
-      "driver": "PostgreSQL",
-      "name": "immich",
-      "database": "immich",
-      "username": "postgres",
-      "password": "postgres"
-    }
-  ],
   "cSpell.words": ["immich"],
   "css.lint.unknownAtRules": "ignore",
   "editor.bracketPairColorization.enabled": true,
@@ -81,6 +68,20 @@
     "**/node_modules": true,
     "**/open-api/typescript-sdk/src": true
   },
+  "sqltools.connections": [
+    {
+      "connectionTimeout": 3,
+      "database": "immich",
+      "driver": "PostgreSQL",
+      "name": "immich",
+      "password": "postgres",
+      "port": 5432,
+      "previewLimit": 50,
+      "server": "127.0.0.1",
+      "ssh": "Disabled",
+      "username": "postgres"
+    }
+  ],
   "svelte.enable-ts-plugin": true,
   "svelte.plugin.svelte.compilerWarnings": {
     "state_referenced_locally": "ignore"
