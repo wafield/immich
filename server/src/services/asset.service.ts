@@ -773,7 +773,7 @@ export class AssetService extends BaseService {
           });
         }
 
-        // Move the live photo video, but only if it exists and is also external.
+        // Move the live photo video unless its path contains '/encoded-video/'.
         let livePhotoVideoNewPath: string | null = null;
         let shouldMoveLivePhotoVideo = false;
         if (asset.livePhotoVideoId) {
@@ -783,7 +783,8 @@ export class AssetService extends BaseService {
             files: true,
           });
 
-          if (livePhotoVideo && livePhotoVideo.isExternal) {
+          // Do not move the video file if it is encoded by the server (e.g. extracted from the MP jpg file).
+          if (livePhotoVideo && !livePhotoVideo.originalPath.includes('/encoded-video/')) {
             shouldMoveLivePhotoVideo = true;
           }
           if (livePhotoVideo) {
