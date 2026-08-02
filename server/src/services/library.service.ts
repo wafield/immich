@@ -7,6 +7,7 @@ import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -213,8 +214,8 @@ export class LibraryService extends BaseService {
     return mapLibrary(library);
   }
 
-  async getAll(): Promise<LibraryResponseDto[]> {
-    const libraries = await this.libraryRepository.getAll(false);
+  async getAll(auth: AuthDto): Promise<LibraryResponseDto[]> {
+    const libraries = await this.libraryRepository.getAll(false, auth.user.id);
     return libraries.map((library) => mapLibrary(library));
   }
 

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -10,7 +11,7 @@ import {
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
 import { ApiTag, Permission } from 'src/enum';
-import { Authenticated } from 'src/middleware/auth.guard';
+import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { LibraryService } from 'src/services/library.service';
 import { UUIDParamDto } from 'src/validation';
 
@@ -26,8 +27,8 @@ export class LibraryController {
     description: 'Retrieve a list of external libraries.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getAllLibraries(): Promise<LibraryResponseDto[]> {
-    return this.service.getAll();
+  getAllLibraries(@Auth() auth: AuthDto): Promise<LibraryResponseDto[]> {
+    return this.service.getAll(auth);
   }
 
   @Post()

@@ -246,7 +246,7 @@ export class StorageCore {
           return;
         }
         this.logger.debug(
-          `Unable to rename file. Error renaming file with code ${error.code} and message: ${error.message}. Falling back to copy, verify and delete`,
+          `Unable to rename file. Error renaming file with code ${error.code}. Falling back to copy, verify and delete`,
         );
         await this.storageRepository.copyFile(move.oldPath, newPath);
 

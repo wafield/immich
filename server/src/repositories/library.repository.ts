@@ -28,13 +28,14 @@ export class LibraryRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [] })
-  getAll(withDeleted = false) {
+  @GenerateSql({ params: [DummyValue.BOOLEAN, DummyValue.UUID] })
+  getAll(withDeleted = false, ownerId?: string) {
     return this.db
       .selectFrom('library')
       .selectAll('library')
       .orderBy('createdAt', 'asc')
       .$if(!withDeleted, (qb) => qb.where('library.deletedAt', 'is', null))
+      .$if(!!ownerId, (qb) => qb.where('library.ownerId', '=', ownerId!))
       .execute();
   }
 

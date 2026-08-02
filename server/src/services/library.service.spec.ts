@@ -885,7 +885,8 @@ describe(LibraryService.name, () => {
 
       mocks.library.getAll.mockResolvedValue([library]);
 
-      await expect(sut.getAll()).resolves.toEqual([expect.objectContaining({ id: library.id })]);
+      await expect(sut.getAll(authStub.admin)).resolves.toEqual([expect.objectContaining({ id: library.id })]);
+      expect(mocks.library.getAll).toHaveBeenCalledWith(false, authStub.admin.user.id);
     });
   });
 
