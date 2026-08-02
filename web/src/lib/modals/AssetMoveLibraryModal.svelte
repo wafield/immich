@@ -2,8 +2,8 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { OnMove } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
+  import { loadUserLibraries } from '$lib/stores/library.store';
   import {
-    getAllLibraries,
     getAssetInfo,
     moveAssetsToLibrary,
     type AssetMoveResponseDto,
@@ -37,8 +37,8 @@
   );
 
   onMount(async () => {
-    libraries = await getAllLibraries();
-    libraries.sort((a, b) => a.name.localeCompare(b.name));
+    const fetched = await loadUserLibraries();
+    libraries = [...fetched].sort((a, b) => a.name.localeCompare(b.name));
     loading = false;
   });
 

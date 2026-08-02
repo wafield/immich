@@ -1,4 +1,6 @@
-import { type AssetResponseDto, getAllLibraries } from '@immich/sdk';
+import { type AssetResponseDto } from '@immich/sdk';
+import { librariesMap } from '$lib/stores/library.store';
+import { get } from 'svelte/store';
 import {
   mdiBrightness6,
   mdiCalendar,
@@ -29,21 +31,8 @@ import type { MessageFormatter } from 'svelte-i18n';
 import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
 import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
 
-const libraryCache = new Map<string, string>();
-
-export const loadLibraryCache = async () => {
-  try {
-    const libraries = await getAllLibraries();
-    for (const lib of libraries) {
-      libraryCache.set(lib.id, lib.name);
-    }
-  } catch (e) {
-    // ignore
-  }
-};
-
 export const getLibraryName = (libraryId: string): string => {
-  return libraryCache.get(libraryId) || 'Default Library';
+  return get(librariesMap).get(libraryId)?.name || 'Default Library';
 };
 
 export const formatISODateToLocale = (iso: string, locale: string | undefined): string =>

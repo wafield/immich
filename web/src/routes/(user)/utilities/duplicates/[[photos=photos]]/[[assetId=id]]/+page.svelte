@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/state';
-  import { onMount } from 'svelte';
   import { shortcuts } from '$lib/actions/shortcut';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
@@ -11,7 +10,6 @@
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { loadLibraryCache } from '$lib/utils/duplicate-utils';
   import type { AssetResponseDto } from '@immich/sdk';
   import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, modalManager, Text, toastManager } from '@immich/ui';
@@ -57,10 +55,6 @@
   let duplicates = $state(data.duplicates);
   let showMore = $state(false);
   let imageSize = $state<'S' | 'M' | 'L' | 'Full'>('M');
-
-  onMount(async () => {
-    await loadLibraryCache();
-  });
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));

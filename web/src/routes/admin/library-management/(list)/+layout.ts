@@ -1,4 +1,5 @@
-import { getAllLibraries, getLibraryStatistics, getUserAdmin, searchUsersAdmin } from '@immich/sdk';
+import { getLibraryStatistics, getUserAdmin, searchUsersAdmin } from '@immich/sdk';
+import { loadUserLibraries } from '$lib/stores/library.store';
 import { authenticate, requestServerInfo } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import type { LayoutLoad } from './$types';
@@ -10,7 +11,7 @@ export const load = (async ({ url, depends }) => {
   const allUsers = await searchUsersAdmin({ withDeleted: false });
   const $t = await getFormatter();
 
-  const libraries = await getAllLibraries();
+  const libraries = await loadUserLibraries(true);
   const statisticsPromise = Promise.all(
     libraries.map(async ({ id }) => [id, await getLibraryStatistics({ id })] as const),
   );

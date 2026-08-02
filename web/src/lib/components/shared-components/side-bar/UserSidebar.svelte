@@ -14,9 +14,10 @@
     RowSize,
   } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
+  import { loadUserLibraries, userLibraries } from '$lib/stores/library.store';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { NavbarGroup, NavbarItem, Checkbox, Label, Button } from '@immich/ui';
-  import { getAllLibraries, type LibraryResponseDto } from '@immich/sdk';
+  import { type LibraryResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import {
     mdiAccount,
@@ -56,13 +57,18 @@
 
   onMount(async () => {
     try {
-      libraries = await getAllLibraries();
+      const fetched = await loadUserLibraries();
+      libraries = fetched;
       if (localStorage.getItem('selected-libraries') === null) {
-        $selectedLibraries = [...libraries.map((lib) => lib.id), 'null'];
+        $selectedLibraries = [...fetched.map((lib) => lib.id), 'null'];
       }
     } catch (error) {
       console.error('Failed to load libraries', error);
     }
+  });
+
+  $effect(() => {
+    libraries = $userLibraries;
   });
 
   function handleLibraryChange(id: string) {
@@ -190,7 +196,7 @@
         />
         <Label label="Default Library" for="library-checkbox-default" size="tiny" />
         <span
-          class="inline-block size-2 rounded-full border border-gray-300 dark:border-gray-600"
+          class="inline-block size-3 rounded-full border border-gray-300 dark:border-gray-600"
           style:background-color="#ffffff"
           title="Default Library"
         ></span>
@@ -206,7 +212,7 @@
           <Label label={library.name} for="library-checkbox-{library.id}" size="tiny" />
           {#if library.uiColor}
             <span
-              class="inline-block size-2 rounded-full border border-gray-300 dark:border-gray-600"
+              class="inline-block size-3 rounded-full border border-gray-300 dark:border-gray-600"
               style:background-color={library.uiColor}
               title={library.uiColor}
             ></span>
