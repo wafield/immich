@@ -27,7 +27,7 @@ services:
       # External libraries
       - /mnt/user/photos:/media/photos
       - /mnt/user/wafield/Photos:/media/wafield
-      - /mnt/user/mandy/Photos:/media/mandy
+      - /mnt/user/mandy:/media/mandy
     env_file:
       - .env
     ports:
