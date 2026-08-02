@@ -50,6 +50,7 @@ export type Library = {
   importPaths: string[];
   exclusionPatterns: string[];
   uploadPath: string | null;
+  uiColor: string | null;
   deletedAt: Date | null;
   refreshedAt: Date | null;
   assets?: MapAsset[];

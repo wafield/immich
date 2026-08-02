@@ -160,6 +160,37 @@ export const handleUpdateLibraryUploadPath = async (library: LibraryResponseDto,
   }
 };
 
+export const getLibraryUiColorActions = (
+  $t: MessageFormatter,
+  library: LibraryResponseDto,
+  uiColor: string,
+) => {
+  const SubmitUiColor: ActionItem = {
+    icon: mdiCheck,
+    title: $t('save'),
+    onAction: () => handleUpdateLibraryUiColor(library, uiColor),
+  };
+
+  return { SubmitUiColor };
+};
+
+export const handleUpdateLibraryUiColor = async (library: LibraryResponseDto, uiColor: string) => {
+  const $t = await getFormatter();
+
+  try {
+    const updatedLibrary = await updateLibrary({
+      id: library.id,
+      updateLibraryDto: { uiColor: uiColor.trim() || null },
+    });
+    eventManager.emit('LibraryUpdate', updatedLibrary);
+    toastManager.primary($t('admin.library_updated'));
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_library'));
+    return false;
+  }
+};
+
 const handleScanAllLibraries = async () => {
   const $t = await getFormatter();
 

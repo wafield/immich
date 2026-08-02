@@ -249,6 +249,7 @@ export class LibraryService extends BaseService {
         '**/.stfolder/**',
       ],
       uploadPath: dto.uploadPath ?? null,
+      uiColor: dto.uiColor ?? null,
     });
     return mapLibrary(library);
   }

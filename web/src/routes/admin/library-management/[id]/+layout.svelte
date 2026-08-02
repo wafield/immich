@@ -13,11 +13,19 @@
     getLibraryActions,
     getLibraryExclusionPatternActions,
     getLibraryFolderActions,
+    getLibraryUiColorActions,
     getLibraryUploadPathActions,
   } from '$lib/services/library.service';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
   import { Code, CommandPaletteDefaultProvider, Container, Heading, Input, modalManager } from '@immich/ui';
-  import { mdiCameraIris, mdiChartPie, mdiFilterMinusOutline, mdiFolderOutline, mdiPlayCircle } from '@mdi/js';
+  import {
+    mdiCameraIris,
+    mdiChartPie,
+    mdiFilterMinusOutline,
+    mdiFolderOutline,
+    mdiPaletteOutline,
+    mdiPlayCircle,
+  } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { LayoutData } from './$types';
@@ -44,6 +52,12 @@
 
   let uploadPath = $derived(data.library.uploadPath ?? '');
 
+  let uiColor = $state(data.library.uiColor ?? '');
+
+  $effect(() => {
+    uiColor = data.library.uiColor ?? '';
+  });
+
   const onLibraryUpdate = () => invalidate('app:library');
 
   const onLibraryDelete = async ({ id }: { id: string }) => {
@@ -54,6 +68,7 @@
 
   const { Edit, Delete, AddFolder, AddExclusionPattern, Scan } = $derived(getLibraryActions($t, library));
   const { SubmitUploadPath } = $derived(getLibraryUploadPathActions($t, library, uploadPath));
+  const { SubmitUiColor } = $derived(getLibraryUiColorActions($t, library, uiColor));
 </script>
 
 <OnEvents {onLibraryUpdate} {onLibraryDelete} />
@@ -73,7 +88,7 @@
         <ServerStatisticsCard icon={mdiChartPie} title={$t('usage')} valuePromise={usagePromise} />
       </div>
 
-      <AdminCard icon={mdiFolderOutline} title="Library Upload Path" class="col-span-full">
+      <AdminCard icon={mdiFolderOutline} title="Library Upload Path">
         <p class="text-sm text-gray-500 dark:text-gray-400">
           When assets are uploaded or moved to this library, they will be put under this path, applying the storage
           template. Under this path, expect to see a list of years.
@@ -81,6 +96,32 @@
         <div class="mt-4 flex items-center gap-2">
           <Input id="library-upload-path" bind:value={uploadPath} placeholder="/media/path/to/upload" class="flex-1" />
           <TableButton action={SubmitUploadPath} />
+        </div>
+      </AdminCard>
+
+      <AdminCard icon={mdiPaletteOutline} title="Library UI Color">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Set a UI color (RGBA / Hex format) associated with this library to visually identify its content on the UI.
+        </p>
+        <div class="mt-4 flex items-center gap-3">
+          <input
+            type="color"
+            id="library-ui-color-picker"
+            value={uiColor && /^#[0-9A-Fa-f]{6}$/.test(uiColor) ? uiColor : '#3b82f6'}
+            oninput={(e) => (uiColor = e.currentTarget.value)}
+            class="size-10 cursor-pointer rounded border border-gray-300 bg-transparent p-1 dark:border-gray-600"
+          />
+          <Input id="library-ui-color" bind:value={uiColor} placeholder="#3b82f6" class="w-48" />
+          {#if uiColor}
+            <button
+              type="button"
+              onclick={() => (uiColor = '')}
+              class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              Clear
+            </button>
+          {/if}
+          <TableButton action={SubmitUiColor} />
         </div>
       </AdminCard>
 

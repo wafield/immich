@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { Library } from 'src/database';
-import { isoDatetimeToDate } from 'src/validation';
+import { hexColor, isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
 const stringArrayMax128 = z
@@ -16,6 +16,7 @@ const CreateLibrarySchema = z
     importPaths: stringArrayMax128.optional().describe('Import paths (max 128)'),
     exclusionPatterns: stringArrayMax128.optional().describe('Exclusion patterns (max 128)'),
     uploadPath: z.string().max(128).optional().describe('Upload path (max 128)'),
+    uiColor: hexColor.nullable().optional().describe('UI color (RGBA in hex format)'),
   })
   .meta({ id: 'CreateLibraryDto' });
 
@@ -25,6 +26,7 @@ const UpdateLibrarySchema = z
     importPaths: stringArrayMax128.optional().describe('Import paths (max 128)'),
     exclusionPatterns: stringArrayMax128.optional().describe('Exclusion patterns (max 128)'),
     uploadPath: z.string().max(128).nullable().optional().describe('Upload path (max 128)'),
+    uiColor: hexColor.nullable().optional().describe('UI color (RGBA in hex format)'),
   })
   .meta({ id: 'UpdateLibraryDto' });
 
@@ -71,6 +73,7 @@ const LibraryResponseSchema = z
     importPaths: z.array(z.string()).describe('Import paths'),
     exclusionPatterns: z.array(z.string()).describe('Exclusion patterns'),
     uploadPath: z.string().nullable().describe('Upload path'),
+    uiColor: z.string().nullable().describe('UI color'),
     createdAt: isoDatetimeToDate.describe('Creation date'),
     updatedAt: isoDatetimeToDate.describe('Last update date'),
     refreshedAt: isoDatetimeToDate.nullable().describe('Last refresh date'),
@@ -125,5 +128,6 @@ export function mapLibrary(entity: Library): LibraryResponseDto {
     importPaths: entity.importPaths,
     exclusionPatterns: entity.exclusionPatterns,
     uploadPath: entity.uploadPath ?? null,
+    uiColor: entity.uiColor ?? null,
   };
 }

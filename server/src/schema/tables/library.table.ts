@@ -33,6 +33,9 @@ export class LibraryTable {
   @Column({ type: 'text', nullable: true })
   uploadPath!: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  uiColor!: string | null;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 

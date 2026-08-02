@@ -82,7 +82,16 @@
               {@const owner = owners[library.id]}
               <TableRow>
                 <TableCell class={classes.column1}>
-                  <Link href={Route.viewLibrary(library)}>{library.name}</Link>
+                  <div class="flex items-center gap-2 px-4">
+                    <Link href={Route.viewLibrary(library)}>{library.name}</Link>
+                    {#if library.uiColor}
+                      <span
+                        class="inline-block size-3 rounded-sm border border-gray-300 dark:border-gray-600"
+                        style:background-color={library.uiColor}
+                        title={library.uiColor}
+                      ></span>
+                    {/if}
+                  </div>
                 </TableCell>
                 <TableCell class={classes.column2}>
                   <Link href={Route.viewUser(owner)}>{owner.name}</Link>

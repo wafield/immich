@@ -876,6 +876,24 @@ describe(LibraryService.name, () => {
           }),
         );
       });
+
+      it('should create with uiColor when provided', async () => {
+        const library = factory.library({ uiColor: '#ff0000ff' });
+
+        mocks.library.create.mockResolvedValue(library);
+        await expect(
+          sut.create({
+            ownerId: authStub.admin.user.id,
+            uiColor: '#ff0000ff',
+          }),
+        ).resolves.toEqual(expect.objectContaining({ uiColor: '#ff0000ff' }));
+
+        expect(mocks.library.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            uiColor: '#ff0000ff',
+          }),
+        );
+      });
     });
   });
 

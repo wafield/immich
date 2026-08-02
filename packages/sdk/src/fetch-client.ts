@@ -1496,6 +1496,8 @@ export type LibraryResponseDto = {
     updatedAt: string;
     /** Upload path */
     uploadPath: string | null;
+    /** UI color */
+    uiColor: string | null;
 };
 export type CreateLibraryDto = {
     /** Exclusion patterns (max 128) */
@@ -1508,6 +1510,8 @@ export type CreateLibraryDto = {
     ownerId: string;
     /** Upload path (max 128) */
     uploadPath?: string;
+    /** UI color */
+    uiColor?: string | null;
 };
 export type UpdateLibraryDto = {
     /** Exclusion patterns (max 128) */
@@ -1518,6 +1522,8 @@ export type UpdateLibraryDto = {
     name?: string;
     /** Upload path (max 128) */
     uploadPath?: string | null;
+    /** UI color */
+    uiColor?: string | null;
 };
 export type LibraryStatsResponseDto = {
     /** Number of photos */

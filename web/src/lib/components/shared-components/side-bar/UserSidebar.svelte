@@ -181,7 +181,7 @@
   {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
     <NavbarGroup title="Libraries" size="tiny" />
     <div class="flex flex-col gap-4 ps-5 pb-4">
-      <div class="flex items-start gap-2">
+      <div class="flex items-center gap-2">
         <Checkbox
           size="tiny"
           id="library-checkbox-default"
@@ -189,9 +189,14 @@
           onCheckedChange={() => handleLibraryChange('null')}
         />
         <Label label="Default Library" for="library-checkbox-default" size="tiny" />
+        <span
+          class="inline-block size-2 rounded-full border border-gray-300 dark:border-gray-600"
+          style:background-color="#ffffff"
+          title="Default Library"
+        ></span>
       </div>
       {#each libraries as library (library.id)}
-        <div class="flex items-start gap-2">
+        <div class="flex items-center gap-2">
           <Checkbox
             size="tiny"
             id="library-checkbox-{library.id}"
@@ -199,6 +204,13 @@
             onCheckedChange={() => handleLibraryChange(library.id)}
           />
           <Label label={library.name} for="library-checkbox-{library.id}" size="tiny" />
+          {#if library.uiColor}
+            <span
+              class="inline-block size-2 rounded-full border border-gray-300 dark:border-gray-600"
+              style:background-color={library.uiColor}
+              title={library.uiColor}
+            ></span>
+          {/if}
         </div>
       {/each}
 
