@@ -179,8 +179,43 @@
   {/if}
 
   {#if !(sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar)}
-    <NavbarGroup title="Row size" size="tiny" />
+    <NavbarGroup title="Libraries" size="tiny" />
+    <div class="flex flex-col gap-4 ps-5 pb-4">
+      <div class="flex items-start gap-2">
+        <Checkbox
+          size="tiny"
+          id="library-checkbox-default"
+          checked={$selectedLibraries.includes('null')}
+          onCheckedChange={() => handleLibraryChange('null')}
+        />
+        <Label label="Default Library" for="library-checkbox-default" size="tiny" />
+      </div>
+      {#each libraries as library (library.id)}
+        <div class="flex items-start gap-2">
+          <Checkbox
+            size="tiny"
+            id="library-checkbox-{library.id}"
+            checked={$selectedLibraries.includes(library.id)}
+            onCheckedChange={() => handleLibraryChange(library.id)}
+          />
+          <Label label={library.name} for="library-checkbox-{library.id}" size="tiny" />
+        </div>
+      {/each}
 
+      <hr class="border-gray-200 dark:border-gray-700" />
+
+      <div class="flex items-start gap-2">
+        <Checkbox
+          size="tiny"
+          id="library-indicator-checkbox"
+          checked={$showLibraryIndicator}
+          onCheckedChange={() => ($showLibraryIndicator = !$showLibraryIndicator)}
+        />
+        <Label label="Show Library Indicator" for="library-indicator-checkbox" size="tiny" />
+      </div>
+    </div>
+
+    <NavbarGroup title="Row size" size="tiny" />
     <div class="flex ps-5 pb-4 text-xs">
       <Button
         class="flex-1 rounded-s-full"
@@ -227,42 +262,6 @@
       >
         Hide
       </Button>
-    </div>
-
-    <NavbarGroup title="Libraries" size="tiny" />
-    <div class="flex flex-col gap-4 ps-5 pb-4">
-      <div class="flex items-start gap-2">
-        <Checkbox
-          size="tiny"
-          id="library-checkbox-default"
-          checked={$selectedLibraries.includes('null')}
-          onCheckedChange={() => handleLibraryChange('null')}
-        />
-        <Label label="Default Library" for="library-checkbox-default" size="tiny" />
-      </div>
-      {#each libraries as library (library.id)}
-        <div class="flex items-start gap-2">
-          <Checkbox
-            size="tiny"
-            id="library-checkbox-{library.id}"
-            checked={$selectedLibraries.includes(library.id)}
-            onCheckedChange={() => handleLibraryChange(library.id)}
-          />
-          <Label label={library.name} for="library-checkbox-{library.id}" size="tiny" />
-        </div>
-      {/each}
-
-      <hr class="border-gray-200 dark:border-gray-700" />
-
-      <div class="flex items-start gap-2">
-        <Checkbox
-          size="tiny"
-          id="library-indicator-checkbox"
-          checked={$showLibraryIndicator}
-          onCheckedChange={() => ($showLibraryIndicator = !$showLibraryIndicator)}
-        />
-        <Label label="Show Library Indicator" for="library-indicator-checkbox" size="tiny" />
-      </div>
     </div>
 
     <BottomInfo />
