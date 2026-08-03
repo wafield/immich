@@ -396,4 +396,19 @@ export class TimelineMonth {
   cancel() {
     this.loader?.cancel();
   }
+
+  getDayAtOffset(offsetY: number): TimelineDay | undefined {
+    if (!this.isLoaded || this.timelineDays.length === 0) {
+      return undefined;
+    }
+    let currentDay: TimelineDay = this.timelineDays[0];
+    for (const day of this.timelineDays) {
+      if (day.top <= offsetY) {
+        currentDay = day;
+      } else {
+        break;
+      }
+    }
+    return currentDay;
+  }
 }

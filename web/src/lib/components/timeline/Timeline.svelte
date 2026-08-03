@@ -23,10 +23,18 @@
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { rowSize, RowSize, ROW_SIZE_LAYOUT_OPTIONS } from '$lib/stores/preferences.store';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
-  import { getTimes, type ScrubberListener } from '$lib/utils/timeline-util';
+  import {
+    fromTimelinePlainDate,
+    getDateLocaleString,
+    getTimes,
+    type ScrubberListener,
+  } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
+  import { Icon } from '@immich/ui';
+  import { mdiCalendar } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, tick, type Snippet } from 'svelte';
+  import { fade } from 'svelte/transition';
   import type { UpdatePayload } from 'vite';
 
   interface Props {
@@ -296,6 +304,8 @@
     }
   };
 
+  let viewportTopDayTitle = $state<string | undefined>();
+
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   const handleTimelineScroll = () => {
     if (!scrollableElement) {
@@ -309,6 +319,7 @@
       timelineScrollPercent = Math.min(1, scrollableElement.scrollTop / maxScroll);
       viewportTopMonth = undefined;
       viewportTopMonthScrollPercent = 0;
+      viewportTopDayTitle = undefined;
     } else {
       timelineScrollPercent = 0;
 
@@ -316,6 +327,8 @@
       let maxScrollPercent = timelineManager.maxScrollPercent;
 
       const monthsLength = timelineManager.months.length;
+      viewportTopDayTitle = undefined;
+
       for (let i = -1; i < monthsLength + 1; i++) {
         let timelineMonth: ViewportTopMonth;
         let timelineMonthHeight: number;
@@ -344,6 +357,25 @@
           if (viewportTopMonthScrollPercent > 0.9999 && i + 1 < monthsLength - 1) {
             viewportTopMonth = timelineManager.months[i + 1].yearMonth;
             viewportTopMonthScrollPercent = 0;
+          }
+
+          if (scrollableElement.scrollTop > 10 && typeof viewportTopMonth === 'object' && viewportTopMonth !== null) {
+            const currentMonthObj = timelineManager.months.find(
+              (m) => m.yearMonth.year === viewportTopMonth.year && m.yearMonth.month === viewportTopMonth.month,
+            );
+            if (currentMonthObj && currentMonthObj.isLoaded) {
+              const monthTop = timelineManager.topSectionHeight + currentMonthObj.top;
+              const viewportScrollY = scrollableElement.scrollTop - monthTop;
+              const day = currentMonthObj.getDayAtOffset(viewportScrollY);
+              if (day) {
+                const date = fromTimelinePlainDate({
+                  year: currentMonthObj.yearMonth.year,
+                  month: currentMonthObj.yearMonth.month,
+                  day: day.day,
+                });
+                viewportTopDayTitle = getDateLocaleString(date);
+              }
+            }
           }
           break;
         }
@@ -597,6 +629,21 @@
   bind:this={scrollableElement}
   onscroll={() => (handleTimelineScroll(), timelineManager.updateSlidingWindow(), updateIsScrolling())}
 >
+  {#if viewportTopDayTitle}
+    <div
+      class="pointer-events-none sticky top-1 z-20 float-left transition-opacity duration-200"
+      in:fade={{ duration: 150 }}
+      out:fade={{ duration: 150 }}
+    >
+      <div
+        class="flex items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-md backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/90 dark:text-gray-100"
+      >
+        <Icon icon={mdiCalendar} size="16" class="text-primary" />
+        <span class="truncate">{viewportTopDayTitle}</span>
+      </div>
+    </div>
+  {/if}
+
   <section
     bind:this={timelineElement}
     id="virtual-timeline"
