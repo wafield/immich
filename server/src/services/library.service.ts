@@ -215,7 +215,8 @@ export class LibraryService extends BaseService {
   }
 
   async getAll(auth: AuthDto): Promise<LibraryResponseDto[]> {
-    const libraries = await this.libraryRepository.getAll(false, auth.user.id);
+    const ownerId = auth.user.isAdmin ? undefined : auth.user.id;
+    const libraries = await this.libraryRepository.getAll(false, ownerId);
     return libraries.map((library) => mapLibrary(library));
   }
 

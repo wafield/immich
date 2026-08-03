@@ -898,13 +898,22 @@ describe(LibraryService.name, () => {
   });
 
   describe('getAll', () => {
-    it('should get all libraries', async () => {
+    it('should get all libraries for admin', async () => {
       const library = factory.library();
 
       mocks.library.getAll.mockResolvedValue([library]);
 
       await expect(sut.getAll(authStub.admin)).resolves.toEqual([expect.objectContaining({ id: library.id })]);
-      expect(mocks.library.getAll).toHaveBeenCalledWith(false, authStub.admin.user.id);
+      expect(mocks.library.getAll).toHaveBeenCalledWith(false, undefined);
+    });
+
+    it('should get owned libraries for non-admin', async () => {
+      const library = factory.library();
+
+      mocks.library.getAll.mockResolvedValue([library]);
+
+      await expect(sut.getAll(authStub.user1)).resolves.toEqual([expect.objectContaining({ id: library.id })]);
+      expect(mocks.library.getAll).toHaveBeenCalledWith(false, authStub.user1.user.id);
     });
   });
 
