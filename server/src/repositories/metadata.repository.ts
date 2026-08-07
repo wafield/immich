@@ -20,6 +20,7 @@ type TagsWithWrongTypes =
   | 'TagsList'
   | 'Keywords'
   | 'HierarchicalSubject'
+  | 'LensModel'
   | 'ISO'
   | 'ActionsDescription'
   | 'ActionsSoftwareAgentName'
@@ -124,6 +125,9 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   // Type is wrong, can also be number.
   Description?: StringOrNumber;
   ImageDescription?: StringOrNumber;
+
+  // Apparently LensModel can also be a float: https://github.com/immich-app/immich/issues/30492
+  LensModel?: StringOrNumber;
 
   // Extended properties for image regions, such as faces
   RegionInfo?: {
