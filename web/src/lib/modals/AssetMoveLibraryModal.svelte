@@ -3,12 +3,7 @@
   import type { OnMove } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { loadUserLibraries } from '$lib/stores/library.store';
-  import {
-    getAssetInfo,
-    moveAssetsToLibrary,
-    type AssetMoveResponseDto,
-    type LibraryResponseDto,
-  } from '@immich/sdk';
+  import { getAssetInfo, moveAssetsToLibrary, type AssetMoveResponseDto, type LibraryResponseDto } from '@immich/sdk';
   import { FormModal, Icon, ListButton, LoadingSpinner, Text, toastManager } from '@immich/ui';
   import { mdiDatabaseArrowRight, mdiFolderNetworkOutline, mdiHarddisk } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -24,6 +19,7 @@
 
   let libraries = $state<LibraryResponseDto[]>([]);
   let loading = $state(true);
+  let isMoving = $state(false);
 
   const selectedAssets = $derived(assetMultiSelectManager.assets.filter((a) => assetIds.includes(a.id)));
   const sourceLibraryIds = $derived(new Set(selectedAssets.map((a) => a.libraryId ?? null)));
@@ -32,7 +28,8 @@
   let selectedLibraryId = $state<string | null | undefined>(initialLibraryId);
 
   const disabled = $derived(
-    selectedLibraryId === undefined ||
+    isMoving ||
+      selectedLibraryId === undefined ||
       (selectedAssets.length > 0 && selectedAssets.every((a) => (a.libraryId ?? null) === selectedLibraryId)),
   );
 
@@ -43,11 +40,13 @@
   });
 
   const handleMove = async () => {
-    if (selectedLibraryId === undefined) {
+    if (selectedLibraryId === undefined || isMoving) {
       return;
     }
 
     try {
+      isMoving = true;
+
       const results: AssetMoveResponseDto[] = await moveAssetsToLibrary({
         moveAssetLibraryDto: {
           assetIds,
@@ -96,6 +95,8 @@
       onClose();
     } catch (error) {
       handleError(error, 'Unable to move assets to selected library');
+    } finally {
+      isMoving = false;
     }
   };
 </script>
@@ -104,12 +105,16 @@
   title="Move to Library"
   icon={mdiDatabaseArrowRight}
   size="small"
-  {onClose}
+  onClose={() => {
+    if (!isMoving) {
+      onClose();
+    }
+  }}
   onSubmit={handleMove}
   submitText={$t('move')}
   {disabled}
 >
-  {#if loading}
+  {#if loading || isMoving}
     <div class="flex w-full place-content-center place-items-center py-6">
       <LoadingSpinner />
     </div>

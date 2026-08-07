@@ -35,6 +35,7 @@ class UploadCallbacks {
 }
 
 final foregroundUploadServiceProvider = Provider((ref) {
+  // ignore: dispose-provided-instances
   return ForegroundUploadService(
     ref.watch(uploadRepositoryProvider),
     ref.watch(storageRepositoryProvider),
@@ -384,7 +385,6 @@ class ForegroundUploadService {
       if (result.isSuccess && result.remoteAssetId != null) {
         callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
       } else if (result.isCancelled) {
-        _logger.warning(() => "Backup was cancelled by the user");
         shouldAbortUpload = true;
       } else if (result.errorMessage != null) {
         _logger.severe(
