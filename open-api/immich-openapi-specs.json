@@ -18275,6 +18275,11 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
+          },
+          "stackType": {
+            "description": "Type of stack",
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
@@ -28268,13 +28273,14 @@
             "type": "array"
           },
           "stack": {
-            "description": "Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)",
+            "description": "Array of stack information as [stackId, assetCount, stackType] tuples (null for non-stacked assets)",
             "items": {
               "items": {
+                "nullable": true,
                 "type": "string"
               },
-              "maxItems": 2,
-              "minItems": 2,
+              "maxItems": 3,
+              "minItems": 3,
               "nullable": true,
               "type": "array"
             },

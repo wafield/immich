@@ -82,6 +82,7 @@ const AssetStackResponseSchema = z
     id: z.uuidv4().describe('Stack ID'),
     primaryAssetId: z.uuidv4().describe('Primary asset ID'),
     assetCount: z.int().min(0).describe('Number of assets in stack'),
+    stackType: z.string().nullable().optional().describe('Type of stack'),
   })
   .meta({ id: 'AssetStackResponseDto' });
 
@@ -220,6 +221,7 @@ const mapStack = (entity: { stack?: Stack | null }) => {
     id: entity.stack.id,
     primaryAssetId: entity.stack.primaryAssetId,
     assetCount: entity.stack.assetCount ?? entity.stack.assets.length + 1,
+    stackType: entity.stack.stackType ?? null,
   };
 };
 

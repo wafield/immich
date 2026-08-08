@@ -92,7 +92,7 @@ const TimeBucketAssetSchema = TimeBucketQueryBaseSchema.extend({
   timeBucket: z.string().describe('Time bucket identifier in YYYY-MM-DD format').meta({ example: '2024-01-01' }),
 }).meta({ id: 'TimeBucketAssetDto' });
 
-const stackTupleSchema = z.array(z.string()).length(2).nullable();
+const stackTupleSchema = z.array(z.string().nullable()).length(3).nullable();
 
 const TimeBucketAssetResponseSchema = z
   .object({
@@ -128,7 +128,7 @@ const TimeBucketAssetResponseSchema = z
     stack: z
       .array(stackTupleSchema)
       .optional()
-      .describe('Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets)'),
+      .describe('Array of stack information as [stackId, assetCount, stackType] tuples (null for non-stacked assets)'),
     projectionType: z
       .array(z.string().nullable())
       .describe('Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL")'),

@@ -1029,6 +1029,8 @@ export type AssetStackResponseDto = {
     id: string;
     /** Primary asset ID */
     primaryAssetId: string;
+    /** Stack type */
+    stackType?: string | null;
 };
 export type TagResponseDto = {
     /** Tag color (hex) */

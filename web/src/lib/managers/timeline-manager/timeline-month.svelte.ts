@@ -205,6 +205,7 @@ export class TimelineMonth {
               id: bucketAssets.stack[i]![0],
               primaryAssetId: bucketAssets.id[i],
               assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
+              stackType: bucketAssets.stack[i]![2] ?? null,
             }
           : null,
         thumbhash: bucketAssets.thumbhash[i],

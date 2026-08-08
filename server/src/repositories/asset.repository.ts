@@ -1068,7 +1068,12 @@ export class AssetRepository {
                 (eb) =>
                   eb
                     .selectFrom('asset as stacked')
-                    .select(sql`array[stacked."stackId"::text, count('stacked')::text]`.as('stack'))
+                    .innerJoin('stack', 'stack.id', 'stacked.stackId')
+                    .select(
+                      sql`array[stacked."stackId"::text, count('stacked')::text, min(stack."stackType")::text]`.as(
+                        'stack',
+                      ),
+                    )
                     .whereRef('stacked.stackId', '=', 'asset.stackId')
                     .where('stacked.deletedAt', 'is', null)
                     .where('stacked.visibility', '=', AssetVisibility.Timeline)

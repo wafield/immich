@@ -23,6 +23,7 @@
     mdiRotate360,
     mdiImageEditOutline,
     mdiCardText,
+    mdiRaw,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
@@ -396,6 +397,9 @@
             <span class="flex place-items-center gap-1 pe-2 pt-2">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
               <Icon icon={mdiCameraBurst} size="24" />
+              {#if asset.stack.stackType === 'raw'}
+                <Icon icon={mdiRaw} size="24" />
+              {/if}
             </span>
           </div>
         {/if}
