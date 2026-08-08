@@ -6,9 +6,10 @@ import type { PageLoad } from './$types';
 export const load = (async ({ url }) => {
   await authenticate(url);
   const duplicates = await getAssetDuplicates();
-  
+
   for (const group of duplicates) {
     if (group.assets && group.assets.length >= 2) {
+      // Order the assets in each duplicate group so that the suggested-to-keep asset is always at last.
       group.assets.sort((a, b) => {
         const isSuggestedA = group.suggestedKeepAssetIds?.includes(a.id) || false;
         const isSuggestedB = group.suggestedKeepAssetIds?.includes(b.id) || false;
@@ -26,6 +27,13 @@ export const load = (async ({ url }) => {
       });
     }
   }
+
+  // Order all duplicates by their first asset's full path.
+  duplicates.sort((a, b) => {
+    const pathA = a.assets?.[0]?.originalPath ?? '';
+    const pathB = b.assets?.[0]?.originalPath ?? '';
+    return pathA.localeCompare(pathB);
+  });
 
   const $t = await getFormatter();
 

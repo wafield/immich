@@ -24,6 +24,7 @@
     mdiImageEditOutline,
     mdiCardText,
     mdiRaw,
+    mdiContentDuplicate,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
@@ -399,6 +400,8 @@
               <Icon icon={mdiCameraBurst} size="24" />
               {#if asset.stack.stackType === 'raw'}
                 <Icon icon={mdiRaw} size="24" />
+              {:else if asset.stack.stackType === 'duplicate'}
+                <Icon icon={mdiContentDuplicate} size="24" />
               {/if}
             </span>
           </div>
