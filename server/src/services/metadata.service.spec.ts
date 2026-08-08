@@ -1828,6 +1828,74 @@ describe(MetadataService.name, () => {
       });
     });
 
+    describe('linkRawPhotos', () => {
+      it('should not search for raw match when asset is JPG', async () => {
+        const asset = AssetFactory.create({ originalPath: '/path/to/photo.jpg' });
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+
+        await sut.handleMetadataExtraction({ id: asset.id });
+
+        expect(mocks.asset.findRawPhotoMatch).not.toHaveBeenCalled();
+        expect(mocks.stack.create).not.toHaveBeenCalled();
+      });
+
+      it('should search for raw match when asset is RAW and create stack with JPG primary', async () => {
+        const rawAsset = AssetFactory.create({ originalPath: '/path/to/photo.CR2' });
+        const jpgAsset = AssetFactory.create({ originalPath: '/path/to/photo.jpg' });
+        const stackMock = { id: 'stack-1', primaryAssetId: jpgAsset.id, stackType: 'raw' };
+
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(rawAsset));
+        mocks.asset.findRawPhotoMatch.mockResolvedValue(jpgAsset);
+        mocks.stack.create.mockResolvedValue(stackMock as any);
+
+        await sut.handleMetadataExtraction({ id: rawAsset.id });
+
+        expect(mocks.asset.findRawPhotoMatch).toHaveBeenCalledWith({
+          ownerId: rawAsset.ownerId,
+          libraryId: rawAsset.libraryId,
+          rawAssetId: rawAsset.id,
+          originalPath: rawAsset.originalPath,
+        });
+        expect(mocks.stack.create).toHaveBeenCalledWith(
+          { ownerId: rawAsset.ownerId, stackType: 'raw' },
+          [jpgAsset.id, rawAsset.id],
+        );
+        expect(mocks.event.emit).toHaveBeenCalledWith('StackCreate', {
+          stackId: stackMock.id,
+          userId: rawAsset.ownerId,
+        });
+      });
+
+      it('should not create stack if raw photo match is not found', async () => {
+        const rawAsset = AssetFactory.create({ originalPath: '/path/to/photo.CR2' });
+
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(rawAsset));
+        mocks.asset.findRawPhotoMatch.mockResolvedValue(null);
+
+        await sut.handleMetadataExtraction({ id: rawAsset.id });
+
+        expect(mocks.asset.findRawPhotoMatch).toHaveBeenCalledWith({
+          ownerId: rawAsset.ownerId,
+          libraryId: rawAsset.libraryId,
+          rawAssetId: rawAsset.id,
+          originalPath: rawAsset.originalPath,
+        });
+        expect(mocks.stack.create).not.toHaveBeenCalled();
+      });
+
+      it('should not create stack if assets are already in the same stack', async () => {
+        const rawAsset = AssetFactory.create({ originalPath: '/path/to/photo.CR2', stackId: 'stack-1' });
+        const jpgAsset = AssetFactory.create({ originalPath: '/path/to/photo.jpg', stackId: 'stack-1' });
+
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(rawAsset));
+        mocks.asset.findRawPhotoMatch.mockResolvedValue(jpgAsset);
+
+        await sut.handleMetadataExtraction({ id: rawAsset.id });
+
+        expect(mocks.stack.create).not.toHaveBeenCalled();
+      });
+    });
+
     it.each([
       {
         exif: {

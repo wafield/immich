@@ -161,6 +161,7 @@ export type Stack = {
   ownerId: string;
   assets: ShallowDehydrateObject<MapAsset>[];
   assetCount?: number;
+  stackType?: string | null;
 };
 
 export type AuthSharedLink = {
@@ -305,6 +306,7 @@ export const columns = {
     'asset.width',
     'asset.height',
     'asset.isEdited',
+    'asset.stackId',
   ],
   searchAsset: [
     'asset.id',

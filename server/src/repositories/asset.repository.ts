@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import path, { parse } from 'node:path';
 import {
   ExpressionBuilder,
   Insertable,
@@ -78,6 +79,13 @@ interface LivePhotoSearchOptions {
   livePhotoCID: string;
   otherAssetId: string;
   type: AssetType;
+}
+
+export interface RawPhotoSearchOptions {
+  ownerId: string;
+  libraryId?: string | null;
+  rawAssetId: string;
+  originalPath: string;
 }
 
 interface AssetBuilderOptions {
@@ -817,6 +825,30 @@ export class AssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('type', '=', type)
       .where('asset_exif.livePhotoCID', '=', livePhotoCID)
+      .limit(1)
+      .executeTakeFirst();
+  }
+
+  findRawPhotoMatch(options: RawPhotoSearchOptions) {
+    const { ownerId, libraryId, rawAssetId, originalPath } = options;
+    const dir = path.dirname(originalPath);
+    const stem = parse(originalPath).name;
+
+    const matchingPaths = [
+      path.normalize(path.join(dir, `${stem}.jpg`)),
+      path.normalize(path.join(dir, `${stem}.JPG`)),
+      path.normalize(path.join(dir, `${stem}.jpeg`)),
+      path.normalize(path.join(dir, `${stem}.JPEG`)),
+    ];
+
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id', 'asset.ownerId', 'asset.stackId'])
+      .where('id', '!=', asUuid(rawAssetId))
+      .where('ownerId', '=', asUuid(ownerId))
+      .$if(!!libraryId, (eb) => eb.where('libraryId', '=', asUuid(libraryId!)))
+      .where('originalPath', 'in', matchingPaths)
+      .where('deletedAt', 'is', null)
       .limit(1)
       .executeTakeFirst();
   }

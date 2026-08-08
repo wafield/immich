@@ -307,7 +307,7 @@ export class LibraryService extends BaseService {
 
             if (existingAsset) {
               const title = 'Duplicate File Skipped';
-              const description = `During external library sync, new file "${asset.originalPath}" in library "${library.name}" was skipped because it is identical to existing asset "${existingAsset.originalPath}" (Asset ID: ${existingAsset.id}).`;
+              const description = `New file "${asset.originalPath}" in library "${library.name}" is identical to existing asset "${existingAsset.originalPath}".`;
               this.logger.warn(description);
 
               const notification = await this.notificationRepository.create({

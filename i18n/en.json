@@ -251,7 +251,7 @@
     "memory_cleanup_job": "Memory cleanup",
     "memory_generate_job": "Memory generation",
     "metadata_extraction_job": "Extract metadata",
-    "metadata_extraction_job_description": "Extract metadata information from each asset, such as GPS, faces and resolution",
+    "metadata_extraction_job_description": "Extract metadata information from each asset, such as GPS, faces and resolution, also links live photos and RAW photos",
     "metadata_faces_import_setting": "Enable face import",
     "metadata_faces_import_setting_description": "Import faces from image EXIF data and sidecar files",
     "metadata_settings": "Metadata Settings",

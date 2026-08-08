@@ -205,6 +205,45 @@ export class MetadataService extends BaseService {
     await this.eventRepository.emit('AssetHide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
   }
 
+  private async linkRawPhotos(asset: {
+    id: string;
+    ownerId: string;
+    libraryId: string | null;
+    originalPath: string;
+    stackId?: string | null;
+  }): Promise<void> {
+    // Only look for the JPG counterpart when seeing a RAW file.
+    if (!mimeTypes.isRaw(asset.originalPath)) {
+      return;
+    }
+
+    const match = await this.assetRepository.findRawPhotoMatch({
+      ownerId: asset.ownerId,
+      libraryId: asset.libraryId,
+      rawAssetId: asset.id,
+      originalPath: asset.originalPath,
+    });
+
+    if (!match) {
+      return;
+    }
+
+    // Don't do anything if the assets are already stacked
+    if (asset.stackId && match.stackId && asset.stackId === match.stackId) {
+      return;
+    }
+
+    const jpgAssetId = match.id;
+    const rawAssetId = asset.id;
+
+    const stack = await this.stackRepository.create({ ownerId: asset.ownerId, stackType: 'raw' }, [
+      jpgAssetId,
+      rawAssetId,
+    ]);
+
+    await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: asset.ownerId });
+  }
+
   private isOrientationSidewards(orientation: ExifOrientation | number): boolean {
     return [
       ExifOrientation.MirrorHorizontalRotate270CW,
@@ -430,8 +469,7 @@ export class MetadataService extends BaseService {
     afMode = exifTags.AFMode === undefined ? null : String(exifTags.AFMode);
     sharpnessRange = exifTags.SharpnessRange === undefined ? null : String(exifTags.SharpnessRange);
     grainEffectSize = exifTags.GrainEffectSize === undefined ? null : String(exifTags.GrainEffectSize);
-    grainEffectRoughness =
-      exifTags.GrainEffectRoughness === undefined ? null : String(exifTags.GrainEffectRoughness);
+    grainEffectRoughness = exifTags.GrainEffectRoughness === undefined ? null : String(exifTags.GrainEffectRoughness);
     sceneCaptureType = exifTags.SceneCaptureType === undefined ? null : String(exifTags.SceneCaptureType);
     fade = exifTags.Fade === undefined ? null : String(exifTags.Fade);
     historySoftwareAgent = exifTags.HistorySoftwareAgent === undefined ? null : String(exifTags.HistorySoftwareAgent);
@@ -668,6 +706,10 @@ export class MetadataService extends BaseService {
 
     if (exifData.livePhotoCID) {
       await this.linkLivePhotos(asset, exifData);
+    }
+
+    if (mimeTypes.isRaw(asset.originalPath)) {
+      await this.linkRawPhotos(asset);
     }
 
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });

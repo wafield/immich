@@ -27,6 +27,7 @@ const StackResponseSchema = z
     id: z.uuidv4().describe('Stack ID'),
     primaryAssetId: z.uuidv4().describe('Primary asset ID'),
     assets: z.array(AssetResponseSchema),
+    stackType: z.string().nullable().optional().describe('Type of stack (e.g., raw)'),
   })
   .describe('Stack response')
   .meta({ id: 'StackResponseDto' });
@@ -44,5 +45,6 @@ export const mapStack = (stack: Stack, { auth }: { auth?: AuthDto }) => {
     id: stack.id,
     primaryAssetId: stack.primaryAssetId,
     assets: [...primary, ...others].map((asset) => mapAsset(asset, { auth })),
+    stackType: stack.stackType ?? null,
   };
 };
