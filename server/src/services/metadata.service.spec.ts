@@ -1894,6 +1894,21 @@ describe(MetadataService.name, () => {
 
         expect(mocks.stack.create).not.toHaveBeenCalled();
       });
+
+      it('should log error on debug level if stack creation fails', async () => {
+        const rawAsset = AssetFactory.create({ originalPath: '/path/to/photo.CR2' });
+        const jpgAsset = AssetFactory.create({ originalPath: '/path/to/photo.jpg' });
+
+        mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(rawAsset));
+        mocks.asset.findRawPhotoMatch.mockResolvedValue(jpgAsset);
+        mocks.stack.create.mockRejectedValue(new Error('DB Error'));
+
+        await sut.handleMetadataExtraction({ id: rawAsset.id });
+
+        expect(mocks.logger.debug).toHaveBeenCalledWith(
+          expect.stringContaining('Failed to create RAW stack for asset'),
+        );
+      });
     });
 
     it.each([

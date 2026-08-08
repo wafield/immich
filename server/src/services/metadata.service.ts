@@ -217,31 +217,41 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const match = await this.assetRepository.findRawPhotoMatch({
-      ownerId: asset.ownerId,
-      libraryId: asset.libraryId,
-      rawAssetId: asset.id,
-      originalPath: asset.originalPath,
-    });
+    try {
+      const match = await this.assetRepository.findRawPhotoMatch({
+        ownerId: asset.ownerId,
+        libraryId: asset.libraryId,
+        rawAssetId: asset.id,
+        originalPath: asset.originalPath,
+      });
 
-    if (!match) {
-      return;
+      if (!match) {
+        return;
+      }
+
+      // Don't do anything if the assets are already stacked
+      if (asset.stackId && match.stackId && asset.stackId === match.stackId) {
+        return;
+      }
+
+      const jpgAssetId = match.id;
+      const rawAssetId = asset.id;
+
+      const stack = await this.stackRepository.create({ ownerId: asset.ownerId, stackType: 'raw' }, [
+        jpgAssetId,
+        rawAssetId,
+      ]);
+
+      this.logger.debug(
+        `Successfully created RAW stack ${stack.id} for JPG asset ${jpgAssetId} and RAW asset ${rawAssetId} (${asset.originalPath})`,
+      );
+
+      await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: asset.ownerId });
+    } catch (error) {
+      this.logger.debug(
+        `Failed to create RAW stack for asset ${asset.id} (${asset.originalPath}): ${error}`,
+      );
     }
-
-    // Don't do anything if the assets are already stacked
-    if (asset.stackId && match.stackId && asset.stackId === match.stackId) {
-      return;
-    }
-
-    const jpgAssetId = match.id;
-    const rawAssetId = asset.id;
-
-    const stack = await this.stackRepository.create({ ownerId: asset.ownerId, stackType: 'raw' }, [
-      jpgAssetId,
-      rawAssetId,
-    ]);
-
-    await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: asset.ownerId });
   }
 
   private isOrientationSidewards(orientation: ExifOrientation | number): boolean {
