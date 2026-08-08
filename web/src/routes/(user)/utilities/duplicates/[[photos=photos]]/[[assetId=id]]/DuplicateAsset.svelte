@@ -44,6 +44,10 @@
     imageSize === 'S' ? 'h-60' : imageSize === 'M' ? 'h-120' : imageSize === 'L' ? 'h-200' : 'h-full',
   );
 
+  const cardWidthClass = $derived(
+    imageSize === 'S' ? 'min-w-60' : imageSize === 'M' ? 'min-w-90' : imageSize === 'L' ? 'min-w-180' : 'min-w-240',
+  );
+
   const listFormat = $derived(new Intl.ListFormat($lang));
   const isFromExternalLibrary = $derived(!!asset.libraryId);
 
@@ -60,7 +64,9 @@
   );
 </script>
 
-<div class="min-w-60 flex-1 rounded-lg border transition-colors">
+<div
+  class="{cardWidthClass} rounded-lg border-3 transition-colors {isSelected ? 'border-green-400' : 'border-red-300'}"
+>
   <div class="relative w-full">
     <button
       type="button"
