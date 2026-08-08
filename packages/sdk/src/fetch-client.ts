@@ -2492,10 +2492,14 @@ export type StackResponseDto = {
     id: string;
     /** Primary asset ID */
     primaryAssetId: string;
+    /** Stack type */
+    stackType?: string | null;
 };
 export type StackCreateDto = {
     /** Asset IDs (first becomes primary, min 2) */
     assetIds: string[];
+    /** Stack type */
+    stackType?: string | null;
 };
 export type StackUpdateDto = {
     /** Primary asset ID */

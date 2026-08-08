@@ -126,7 +126,7 @@
 
   const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
     const assetIds = assets.map((asset) => asset.id);
-    await createStack({ stackCreateDto: { assetIds } });
+    await createStack({ stackCreateDto: { assetIds, stackType: 'duplicate' } });
     await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await navigateToIndex(duplicatesIndex);

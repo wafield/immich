@@ -297,7 +297,9 @@ export const stackAssets = async (assets: { id: string }[], showNotification = t
   const $t = get(t);
 
   try {
-    const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
+    const stack = await createStack({
+      stackCreateDto: { assetIds: assets.map(({ id }) => id), stackType: 'manual' },
+    });
     if (showNotification) {
       toastManager.primary({
         description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),

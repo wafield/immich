@@ -65,6 +65,7 @@ describe(StackService.name, () => {
         id: stack.id,
         primaryAssetId: primaryAsset.id,
         assets: [expect.objectContaining({ id: primaryAsset.id }), expect.objectContaining({ id: asset.id })],
+        stackType: null,
       });
 
       expect(mocks.event.emit).toHaveBeenCalledWith('StackCreate', {
@@ -107,6 +108,7 @@ describe(StackService.name, () => {
         id: stack.id,
         primaryAssetId: primaryAsset.id,
         assets: [expect.objectContaining({ id: primaryAsset.id }), expect.objectContaining({ id: asset.id })],
+        stackType: null,
       });
       expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.getById).toHaveBeenCalledWith(stack.id);

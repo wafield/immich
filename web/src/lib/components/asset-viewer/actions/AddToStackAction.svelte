@@ -27,6 +27,7 @@
     const newStack = await createStack({
       stackCreateDto: {
         assetIds,
+        stackType: 'manual',
       },
     });
 

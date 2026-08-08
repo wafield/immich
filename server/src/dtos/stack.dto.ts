@@ -13,6 +13,7 @@ const StackSearchSchema = z
 const StackCreateSchema = z
   .object({
     assetIds: z.array(z.uuidv4()).min(2).describe('Asset IDs (first becomes primary, min 2)'),
+    stackType: z.string().nullable().optional().describe('Type of stack (e.g., manual, duplicate, raw)'),
   })
   .meta({ id: 'StackCreateDto' });
 
