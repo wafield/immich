@@ -338,7 +338,13 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
 }
 
 export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size?: 'DAY' | 'MONTH') {
-  return sql<O>`date_trunc(${sql.lit(size ?? 'MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+  const col =
+    order === AssetOrderBy.CreatedAt
+      ? 'asset.createdAt'
+      : order === AssetOrderBy.DeletedAt
+        ? 'asset.deletedAt'
+        : 'localDateTime';
+  return sql<O>`date_trunc(${sql.lit(size ?? 'MONTH')}, ${sql.ref(col)} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {

@@ -8094,7 +8094,8 @@ export enum OAuthTokenEndpointAuthMethod {
 }
 export enum AssetOrderBy {
     TakenAt = "takenAt",
-    CreatedAt = "createdAt"
+    CreatedAt = "createdAt",
+    DeletedAt = "deletedAt"
 }
 export enum ReleaseType {
     Major = "major",

@@ -18,7 +18,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
-  import { restoreAssets } from '@immich/sdk';
+  import { AssetOrderBy, restoreAssets } from '@immich/sdk';
   import { ActionButton, modalManager, toastManager, type ActionItem } from '@immich/ui';
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -31,7 +31,7 @@
   let { data }: Props = $props();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  let options = $derived({ isTrashed: true, libraryIds: $selectedLibraries });
+  let options = $derived({ isTrashed: true, libraryIds: $selectedLibraries, orderBy: AssetOrderBy.DeletedAt });
 
   if (!featureFlagsManager.value.trash) {
     handlePromiseError(goto(Route.photos()));

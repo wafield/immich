@@ -18013,7 +18013,8 @@
         "description": "Asset sorting property",
         "enum": [
           "takenAt",
-          "createdAt"
+          "createdAt",
+          "deletedAt"
         ],
         "type": "string"
       },
@@ -28148,6 +28149,14 @@
           "createdAt": {
             "description": "Array of UTC timestamps when each asset was originally uploaded to Immich",
             "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "deletedAt": {
+            "description": "Array of UTC timestamps when each asset was moved to trash",
+            "items": {
+              "nullable": true,
               "type": "string"
             },
             "type": "array"

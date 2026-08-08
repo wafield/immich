@@ -196,6 +196,9 @@ export class TimelineMonth {
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,
         createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).toLocal().toObject(),
+        deletedAt: bucketAssets.deletedAt?.at(i)
+          ? fromISODateTimeUTC(bucketAssets.deletedAt[i]!).toLocal().toObject()
+          : null,
         fileCreatedAt,
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],

@@ -1004,6 +1004,7 @@ export class AssetRepository {
             'asset.status',
             sql`asset."fileCreatedAt" at time zone 'utc'`.as('fileCreatedAt'),
             sql`asset."createdAt" at time zone 'utc'`.as('createdAt'),
+            sql`asset."deletedAt" at time zone 'utc'`.as('deletedAt'),
             eb.fn('encode', ['asset.thumbhash', sql.lit('base64')]).as('thumbhash'),
             'asset_exif.projectionType',
             eb.fn
@@ -1110,7 +1111,9 @@ export class AssetRepository {
           .orderBy(
             options.orderBy == AssetOrderBy.CreatedAt
               ? sql`"createdAt"`
-              : sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`,
+              : options.orderBy == AssetOrderBy.DeletedAt
+                ? sql`"deletedAt"`
+                : sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`,
             order,
           )
           .orderBy('asset.fileCreatedAt', order),
@@ -1133,6 +1136,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAt']), sql.lit('{}')).as('fileCreatedAt'),
             eb.fn.coalesce(eb.fn('array_agg', ['localOffsetHours']), sql.lit('{}')).as('localOffsetHours'),
             eb.fn.coalesce(eb.fn('array_agg', ['createdAt']), sql.lit('{}')).as('createdAt'),
+            eb.fn.coalesce(eb.fn('array_agg', ['deletedAt']), sql.lit('{}')).as('deletedAt'),
             eb.fn.coalesce(eb.fn('array_agg', ['ownerId']), sql.lit('{}')).as('ownerId'),
             eb.fn.coalesce(eb.fn('array_agg', ['projectionType']), sql.lit('{}')).as('projectionType'),
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
