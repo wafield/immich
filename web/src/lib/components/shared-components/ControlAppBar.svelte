@@ -36,7 +36,7 @@
     class="pointer-events-auto bg-transparent p-2 {placement === 'bottom' ? 'w-fit max-w-full' : 'w-full'}"
     id="control-bar"
   >
-    <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
+    <ControlBar closeIcon={backIcon} {onClose} shape="semi-round" class={className}>
       {#if title || leading}
         <ControlBarHeader>
           {#if title}

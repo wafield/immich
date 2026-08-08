@@ -24280,6 +24280,11 @@
             },
             "minItems": 2,
             "type": "array"
+          },
+          "stackType": {
+            "description": "Type of stack (e.g., manual, duplicate, raw)",
+            "nullable": true,
+            "type": "string"
           }
         },
         "required": [
