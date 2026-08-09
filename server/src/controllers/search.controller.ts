@@ -17,6 +17,7 @@ import {
   SearchSuggestionRequestDto,
   SmartSearchDto,
   StatisticsSearchDto,
+  SuggestionResponseDto,
 } from 'src/dtos/search.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
@@ -140,8 +141,7 @@ export class SearchController {
       'Retrieve search suggestions based on partial input. This endpoint is used for typeahead search features.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<string[]> {
-    // TODO fix open api generation to indicate that results can be nullable
-    return this.service.getSearchSuggestions(auth, dto) as Promise<string[]>;
+  getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<SuggestionResponseDto[]> {
+    return this.service.getSearchSuggestions(auth, dto);
   }
 }

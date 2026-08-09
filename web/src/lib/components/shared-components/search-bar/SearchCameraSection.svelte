@@ -1,11 +1,11 @@
 <script lang="ts">
   import FilterableSelectionList, {
-    asOptions,
     asSelectedOption,
+    asSuggestionOptions,
   } from '$lib/components/shared-components/FilterableSelectionList.svelte';
   import type { SearchCameraFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
-  import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
+  import { SearchSuggestionType, getSearchSuggestions, type SuggestionResponseDto } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -15,48 +15,42 @@
 
   let { filters = $bindable() }: Props = $props();
 
-  let makes: string[] = $state([]);
-  let models: string[] = $state([]);
-  let lensModels: string[] = $state([]);
+  let makes: SuggestionResponseDto[] = $state([]);
+  let models: SuggestionResponseDto[] = $state([]);
+  let lensModels: SuggestionResponseDto[] = $state([]);
 
   async function updateMakes() {
-    const results: Array<string | null> = await getSearchSuggestions({
+    makes = await getSearchSuggestions({
       $type: SearchSuggestionType.CameraMake,
       includeNull: true,
     });
 
-    makes = results.map((result) => result ?? '');
-
-    if (filters.make && !makes.includes(filters.make)) {
+    if (filters.make && !makes.some((m) => (m.suggestion ?? '') === filters.make)) {
       filters.make = undefined;
     }
   }
 
   async function updateModels(make?: string) {
-    const results: Array<string | null> = await getSearchSuggestions({
+    models = await getSearchSuggestions({
       $type: SearchSuggestionType.CameraModel,
       make,
       includeNull: true,
     });
 
-    models = results.map((result) => result ?? '');
-
-    if (filters.model && !models.includes(filters.model)) {
+    if (filters.model && !models.some((m) => (m.suggestion ?? '') === filters.model)) {
       filters.model = undefined;
     }
   }
 
   async function updateLensModels(make?: string, model?: string) {
-    const results: Array<string | null> = await getSearchSuggestions({
+    lensModels = await getSearchSuggestions({
       $type: SearchSuggestionType.CameraLensModel,
       make,
       model,
       includeNull: true,
     });
 
-    lensModels = results.map((result) => result ?? '');
-
-    if (filters.lensModel && !lensModels.includes(filters.lensModel)) {
+    if (filters.lensModel && !lensModels.some((lm) => (lm.suggestion ?? '') === filters.lensModel)) {
       filters.lensModel = undefined;
     }
   }
@@ -84,7 +78,7 @@
       <FilterableSelectionList
         label={$t('make')}
         onSelect={(option) => (filters.make = option?.value)}
-        options={asOptions(makes)}
+        options={asSuggestionOptions(makes)}
         placeholder={$t('search_camera_make')}
         selectedOption={asSelectedOption(makeFilter)}
       />
@@ -94,7 +88,7 @@
       <FilterableSelectionList
         label={$t('model')}
         onSelect={(option) => (filters.model = option?.value)}
-        options={asOptions(models)}
+        options={asSuggestionOptions(models)}
         placeholder={$t('search_camera_model')}
         selectedOption={asSelectedOption(modelFilter)}
       />
@@ -104,7 +98,7 @@
       <FilterableSelectionList
         label={$t('lens_model')}
         onSelect={(option) => (filters.lensModel = option?.value)}
-        options={asOptions(lensModels)}
+        options={asSuggestionOptions(lensModels)}
         placeholder={$t('search_camera_lens_model')}
         selectedOption={asSelectedOption(lensModelFilter)}
       />

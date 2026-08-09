@@ -87,5 +87,8 @@ class SearchApiRepository extends ApiRepository {
     String? state,
     String? make,
     String? model,
-  }) => _api.getSearchSuggestions(type, country: country, state: state, make: make, model: model);
+  }) async {
+    final response = await _api.getSearchSuggestions(type, country: country, state: state, make: make, model: model);
+    return response?.map((e) => e.suggestion).whereType<String>().toList();
+  }
 }

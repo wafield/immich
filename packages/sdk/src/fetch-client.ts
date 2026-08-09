@@ -1978,6 +1978,16 @@ export type PlacesResponseDto = {
     /** Place name */
     name: string;
 };
+export type SuggestionResponseDto = {
+    /** Total number of matching assets */
+    assetCount: number;
+    /** Latest photo taken time */
+    endTime: string | null;
+    /** Earliest photo taken time */
+    startTime: string | null;
+    /** Suggestion text */
+    suggestion: string | null;
+};
 export type RandomSearchDto = {
     /** Filter by album IDs */
     albumIds?: string[];
@@ -6278,7 +6288,7 @@ export function getSearchSuggestions({ country, includeNull, lensModel, make, mo
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: string[];
+        data: SuggestionResponseDto[];
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
         includeNull,

@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import { get } from 'svelte/store';
+  import type { SuggestionResponseDto } from '@immich/sdk';
 
   // Data structure for a single option in the component.
   export type FilterableSelectionListOptions = {
@@ -8,6 +8,8 @@
     label: string;
     /* Value to be returned when selected */
     value: string;
+    assetCount?: number;
+    sublabel?: string;
   };
 
   export const asOptions = (values: string[]) =>
@@ -17,6 +19,31 @@
       }
 
       return { label: value, value };
+    });
+
+  export const asSuggestionOptions = (items: SuggestionResponseDto[]): FilterableSelectionListOptions[] =>
+    items.map((item) => {
+      const value = item.suggestion ?? '';
+      const label = value === '' ? '(Unknown)' : value;
+
+      if (value === '' || item.assetCount === undefined || item.assetCount === null) {
+        return { label, value };
+      }
+
+      const startYear = item.startTime ? new Date(item.startTime).getUTCFullYear() : undefined;
+      const endYear = item.endTime ? new Date(item.endTime).getUTCFullYear() : undefined;
+
+      let sublabel: string | undefined;
+      if (startYear !== undefined && endYear !== undefined && !isNaN(startYear) && !isNaN(endYear)) {
+        sublabel = startYear === endYear ? `${startYear}` : `${startYear}-${endYear}`;
+      }
+
+      return {
+        label,
+        value,
+        assetCount: item.assetCount,
+        sublabel,
+      };
     });
 
   export const asFilterableSelectionListOptions = asOptions;
@@ -29,7 +56,7 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
-  import { Checkbox, Icon, IconButton, Label } from '@immich/ui';
+  import { Badge, Checkbox, Icon, IconButton, Label } from '@immich/ui';
   import { mdiCheck, mdiClose, mdiMagnify } from '@mdi/js';
   import { tick } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -250,16 +277,26 @@
           onclick={() => handleSelect(option)}
           role="option"
         >
-          <div class="flex items-center gap-2 truncate">
+          <div class="flex items-center gap-2 min-w-0">
             {#if multiselect}
               <Checkbox checked={selected} size="small" />
             {/if}
-            <span class="truncate">{option.label}</span>
+            <div class="flex flex-col">
+              <span>{option.label}</span>
+              {#if option.sublabel}
+                <span class="text-xs text-neutral-500 dark:text-neutral-400">{option.sublabel}</span>
+              {/if}
+            </div>
           </div>
 
-          {#if !multiselect && selected}
-            <Icon icon={mdiCheck} class="text-primary dark:text-primary-light" size="18" />
-          {/if}
+          <div class="flex items-center gap-2 shrink-0">
+            {#if option.value !== '' && option.assetCount !== undefined && option.assetCount !== null}
+              <Badge size="tiny" color="info">{option.assetCount}</Badge>
+            {/if}
+            {#if !multiselect && selected}
+              <Icon icon={mdiCheck} class="text-primary dark:text-primary-light" size="18" />
+            {/if}
+          </div>
         </li>
       {/each}
     {/if}

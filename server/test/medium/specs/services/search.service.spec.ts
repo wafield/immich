@@ -209,7 +209,20 @@ describe(SearchService.name, () => {
         includeNull: true,
       });
 
-      expect(suggestions).toEqual(['Canon', null]);
+      expect(suggestions).toEqual([
+        {
+          suggestion: 'Canon',
+          startTime: expect.anything(),
+          endTime: expect.anything(),
+          assetCount: 1,
+        },
+        {
+          suggestion: null,
+          startTime: null,
+          endTime: null,
+          assetCount: 0,
+        },
+      ]);
     });
   });
 

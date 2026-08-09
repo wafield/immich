@@ -149,6 +149,15 @@ const SearchSuggestionRequestSchema = z
   })
   .meta({ id: 'SearchSuggestionRequestDto' });
 
+const SuggestionResponseSchema = z
+  .object({
+    suggestion: z.string().nullable().describe('Suggestion text'),
+    startTime: isoDatetimeToDate.nullable().describe('Earliest photo taken time'),
+    endTime: isoDatetimeToDate.nullable().describe('Latest photo taken time'),
+    assetCount: z.int().min(0).describe('Total number of matching assets'),
+  })
+  .meta({ id: 'SuggestionResponseDto' });
+
 const IdFilterSchema = nonEmptyPartial({
   eq: z.uuidv4(),
   ne: z.uuidv4(),
@@ -328,6 +337,7 @@ export class SearchPlacesDto extends createZodDto(SearchPlacesSchema) {}
 export class SearchPeopleDto extends createZodDto(SearchPeopleSchema) {}
 export class PlacesResponseDto extends createZodDto(PlacesResponseSchema) {}
 export class SearchSuggestionRequestDto extends createZodDto(SearchSuggestionRequestSchema) {}
+export class SuggestionResponseDto extends createZodDto(SuggestionResponseSchema) {}
 
 export function mapPlaces(place: Place): PlacesResponseDto {
   return {

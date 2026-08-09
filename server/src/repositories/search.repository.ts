@@ -4,7 +4,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { SearchFilter, SearchOrder } from 'src/dtos/search.dto';
+import { SearchFilter, SearchOrder, SuggestionResponseDto } from 'src/dtos/search.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
 import { DB } from 'src/schema';
@@ -464,58 +464,33 @@ export class SearchRepository {
       .execute();
   }
 
-  async getCountries(userIds: string[]): Promise<string[]> {
-    const res = await this.getExifField('country', userIds).execute();
-    return res.map((row) => row.country!);
+  async getCountries(userIds: string[]): Promise<SuggestionResponseDto[]> {
+    return this.getExifSuggestions('country', userIds);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getStates(userIds: string[], { country }: GetStatesOptions): Promise<string[]> {
-    const res = await this.getExifField('state', userIds)
-      .$if(!!country, (qb) => qb.where('country', '=', country!))
-      .execute();
-
-    return res.map((row) => row.state!);
+  @GenerateSql({ params: [[DummyValue.UUID], { country: DummyValue.STRING }] })
+  async getStates(userIds: string[], options: GetStatesOptions): Promise<SuggestionResponseDto[]> {
+    return this.getExifSuggestions('state', userIds, options);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userIds: string[], { country, state }: GetCitiesOptions): Promise<string[]> {
-    const res = await this.getExifField('city', userIds)
-      .$if(!!country, (qb) => qb.where('country', '=', country!))
-      .$if(!!state, (qb) => qb.where('state', '=', state!))
-      .execute();
-
-    return res.map((row) => row.city!);
+  @GenerateSql({ params: [[DummyValue.UUID], { country: DummyValue.STRING, state: DummyValue.STRING }] })
+  async getCities(userIds: string[], options: GetCitiesOptions): Promise<SuggestionResponseDto[]> {
+    return this.getExifSuggestions('city', userIds, options);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraMakes(userIds: string[], { model, lensModel }: GetCameraMakesOptions): Promise<string[]> {
-    const res = await this.getExifField('make', userIds)
-      .$if(!!model, (qb) => qb.where('model', '=', model!))
-      .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
-      .execute();
-
-    return res.map((row) => row.make!);
+  @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING, lensModel: DummyValue.STRING }] })
+  async getCameraMakes(userIds: string[], options: GetCameraMakesOptions): Promise<SuggestionResponseDto[]> {
+    return this.getExifSuggestions('make', userIds, options);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCameraModels(userIds: string[], { make, lensModel }: GetCameraModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('model', userIds)
-      .$if(!!make, (qb) => qb.where('make', '=', make!))
-      .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
-      .execute();
-
-    return res.map((row) => row.model!);
+  @GenerateSql({ params: [[DummyValue.UUID], { make: DummyValue.STRING, lensModel: DummyValue.STRING }] })
+  async getCameraModels(userIds: string[], options: GetCameraModelsOptions): Promise<SuggestionResponseDto[]> {
+    return this.getExifSuggestions('model', userIds, options);
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraLensModels(userIds: string[], { make, model }: GetCameraLensModelsOptions): Promise<string[]> {
-    const res = await this.getExifField('lensModel', userIds)
-      .$if(!!make, (qb) => qb.where('make', '=', make!))
-      .$if(!!model, (qb) => qb.where('model', '=', model!))
-      .execute();
-
-    return res.map((row) => row.lensModel!);
+  @GenerateSql({ params: [[DummyValue.UUID], { make: DummyValue.STRING, model: DummyValue.STRING }] })
+  async getCameraLensModels(userIds: string[], options: GetCameraLensModelsOptions): Promise<SuggestionResponseDto[]> {
+    return this.getExifSuggestions('lensModel', userIds, options);
   }
 
   @GenerateSql(...searchMetadataV3Examples)
@@ -536,16 +511,46 @@ export class SearchRepository {
       .executeTakeFirstOrThrow();
   }
 
-  private getExifField(field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel', userIds: string[]) {
-    return this.db
+  private async getExifSuggestions(
+    field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel',
+    userIds: string[],
+    options: {
+      country?: string;
+      state?: string;
+      make?: string;
+      model?: string;
+      lensModel?: string;
+    } = {},
+  ): Promise<SuggestionResponseDto[]> {
+    const { country, state, make, model, lensModel } = options;
+
+    const res = await this.db
       .selectFrom('asset_exif')
-      .select(field)
-      .distinctOn(field)
+      .select([
+        field,
+        (eb) => eb.fn.count<number>('assetId').as('assetCount'),
+        (eb) => eb.fn.min<Date>('dateTimeOriginal').as('startTime'),
+        (eb) => eb.fn.max<Date>('dateTimeOriginal').as('endTime'),
+      ])
       .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
       .where('ownerId', '=', anyUuid(userIds))
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where(field, 'is not', null)
-      .where(field, '!=', '');
+      .where(field, '!=', '')
+      .$if(!!country, (qb) => qb.where('country', '=', country!))
+      .$if(!!state, (qb) => qb.where('state', '=', state!))
+      .$if(!!make, (qb) => qb.where('make', '=', make!))
+      .$if(!!model, (qb) => qb.where('model', '=', model!))
+      .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
+      .groupBy(field)
+      .execute();
+
+    return res.map((row) => ({
+      suggestion: row[field]!,
+      startTime: row.startTime ? new Date(row.startTime) : null,
+      endTime: row.endTime ? new Date(row.endTime) : null,
+      assetCount: Number(row.assetCount),
+    }));
   }
 }

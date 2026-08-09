@@ -1,11 +1,11 @@
 <script lang="ts">
   import FilterableSelectionList, {
-    asOptions,
     asSelectedOption,
+    asSuggestionOptions,
   } from '$lib/components/shared-components/FilterableSelectionList.svelte';
   import type { SearchLocationFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
-  import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
+  import { getSearchSuggestions, SearchSuggestionType, type SuggestionResponseDto } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -16,47 +16,41 @@
 
   let { filters = $bindable() }: Props = $props();
 
-  let countries: string[] = $state([]);
-  let states: string[] = $state([]);
-  let cities: string[] = $state([]);
+  let countries: SuggestionResponseDto[] = $state([]);
+  let states: SuggestionResponseDto[] = $state([]);
+  let cities: SuggestionResponseDto[] = $state([]);
 
   async function updateCountries() {
-    const results: Array<string | null> = await getSearchSuggestions({
+    countries = await getSearchSuggestions({
       $type: SearchSuggestionType.Country,
       includeNull: true,
     });
 
-    countries = results.map((result) => result ?? '');
-
-    if (filters.country && !countries.includes(filters.country)) {
+    if (filters.country && !countries.some((c) => (c.suggestion ?? '') === filters.country)) {
       filters.country = undefined;
     }
   }
 
   async function updateStates(country?: string) {
-    const results: Array<string | null> = await getSearchSuggestions({
+    states = await getSearchSuggestions({
       $type: SearchSuggestionType.State,
       country,
       includeNull: true,
     });
 
-    states = results.map((result) => result ?? '');
-
-    if (filters.state && !states.includes(filters.state)) {
+    if (filters.state && !states.some((s) => (s.suggestion ?? '') === filters.state)) {
       filters.state = undefined;
     }
   }
 
   async function updateCities(country?: string, state?: string) {
-    const results: Array<string | null> = await getSearchSuggestions({
+    cities = await getSearchSuggestions({
       $type: SearchSuggestionType.City,
       country,
       state,
     });
 
-    cities = results.map((result) => result ?? '');
-
-    if (filters.city && !cities.includes(filters.city)) {
+    if (filters.city && !cities.some((c) => (c.suggestion ?? '') === filters.city)) {
       filters.city = undefined;
     }
   }
@@ -76,7 +70,7 @@
     <FilterableSelectionList
       label={$t('country')}
       onSelect={(option) => (filters.country = option?.value)}
-      options={asOptions(countries)}
+      options={asSuggestionOptions(countries)}
       placeholder={$t('search_country')}
       selectedOption={asSelectedOption(filters.country)}
     />
@@ -86,7 +80,7 @@
     <FilterableSelectionList
       label={$t('state')}
       onSelect={(option) => (filters.state = option?.value)}
-      options={asOptions(states)}
+      options={asSuggestionOptions(states)}
       placeholder={$t('search_state')}
       selectedOption={asSelectedOption(filters.state)}
     />
@@ -96,7 +90,7 @@
     <FilterableSelectionList
       label={$t('city')}
       onSelect={(option) => (filters.city = option?.value)}
-      options={asOptions(cities)}
+      options={asSuggestionOptions(cities)}
       placeholder={$t('search_city')}
       selectedOption={asSelectedOption(filters.city)}
     />

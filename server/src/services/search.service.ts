@@ -17,6 +17,7 @@ import {
   SearchSuggestionType,
   SmartSearchDto,
   StatisticsSearchDto,
+  SuggestionResponseDto,
 } from 'src/dtos/search.dto';
 import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -194,16 +195,21 @@ export class SearchService extends BaseService {
     return assets.map((asset) => mapAsset(asset));
   }
 
-  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
+  async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto): Promise<SuggestionResponseDto[]> {
     const userIds = await this.getUserIdsToSearch(auth);
     const suggestions = await this.getSuggestions(userIds, dto);
     if (dto.includeNull) {
-      suggestions.push(null);
+      suggestions.push({
+        suggestion: null,
+        startTime: null,
+        endTime: null,
+        assetCount: 0,
+      });
     }
     return suggestions;
   }
 
-  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<Array<string | null>> {
+  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<SuggestionResponseDto[]> {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
         return this.searchRepository.getCountries(userIds);
