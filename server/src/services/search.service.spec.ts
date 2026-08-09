@@ -241,19 +241,25 @@ describe(SearchService.name, () => {
       expect(mocks.search.getCameraLensModels).toHaveBeenCalledWith([authStub.user1.user.id], dto);
     });
 
-    it('should return search suggestions for camera lens model (including null)', async () => {
-      const mockResult = [{ suggestion: '10-24mm', startTime: new Date('2023-01-01'), endTime: new Date('2023-01-02'), assetCount: 6 }];
-      mocks.search.getCameraLensModels.mockResolvedValue([...mockResult]);
+    it('should return search suggestions for preset time range', async () => {
+      const mockResult = [{ suggestion: 'Last Week', startTime: new Date(), endTime: new Date(), assetCount: 20 }];
+      mocks.search.getPresetTimeRanges.mockResolvedValue([...mockResult]);
       mocks.partner.getAll.mockResolvedValue([]);
 
-      const dto = { includeNull: true, type: SearchSuggestionType.CAMERA_LENS_MODEL };
+      const dto = { includeNull: false, type: SearchSuggestionType.PRESET_TIME_RANGE };
       await expect(
         sut.getSearchSuggestions(authStub.user1, dto),
-      ).resolves.toEqual([
-        ...mockResult,
-        { suggestion: null, startTime: null, endTime: null, assetCount: 0 },
-      ]);
-      expect(mocks.search.getCameraLensModels).toHaveBeenCalledWith([authStub.user1.user.id], dto);
+      ).resolves.toEqual(mockResult);
+      expect(mocks.search.getPresetTimeRanges).toHaveBeenCalledWith([authStub.user1.user.id]);
+    });
+
+    it('should return empty list for library-name search suggestions', async () => {
+      mocks.partner.getAll.mockResolvedValue([]);
+
+      const dto = { includeNull: false, type: SearchSuggestionType.LIBRARY_NAME };
+      await expect(
+        sut.getSearchSuggestions(authStub.user1, dto),
+      ).resolves.toEqual([]);
     });
   });
 

@@ -9,6 +9,7 @@
     /* Value to be returned when selected */
     value: string;
     assetCount?: number;
+    /* Text displayed on the second row. Typically a year range. */
     sublabel?: string;
   };
 
@@ -250,7 +251,7 @@
   <ul
     role="listbox"
     id={listboxId}
-    class="w-full overflow-y-auto immich-scrollbar rounded-b-xl border border-gray-300 bg-white text-start text-sm dark:border-gray-900 dark:bg-gray-800 {heightClass}"
+    class="w-full overflow-y-auto immich-scrollbar rounded-b-lg border border-gray-300 bg-white text-start text-sm dark:border-gray-900 dark:bg-gray-800 {heightClass}"
     tabindex="-1"
   >
     {#if filteredOptions.length === 0}

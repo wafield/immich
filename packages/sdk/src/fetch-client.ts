@@ -7931,7 +7931,8 @@ export enum SearchSuggestionType {
     City = "city",
     CameraMake = "camera-make",
     CameraModel = "camera-model",
-    CameraLensModel = "camera-lens-model"
+    CameraLensModel = "camera-lens-model",
+    PresetTimeRange = "preset-time-range"
 }
 export enum SharedLinkType {
     Album = "ALBUM",

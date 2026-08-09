@@ -186,14 +186,14 @@
         <!-- TAGS -->
         <SearchTagsSection bind:selectedTags={filter.tagIds} />
 
+        <!-- DATE -->
+        <SearchDateSection bind:filters={filter.date} />
+
         <!-- LOCATION -->
         <SearchLocationSection bind:filters={filter.location} />
 
         <!-- CAMERA MODEL -->
         <SearchCameraSection bind:filters={filter.camera} />
-
-        <!-- DATE RANGE -->
-        <SearchDateSection bind:filters={filter.date} />
 
         <!-- RATING -->
         {#if authManager.authenticated && authManager.preferences.ratings.enabled}

@@ -211,6 +211,9 @@ export class SearchService extends BaseService {
 
   private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<SuggestionResponseDto[]> {
     switch (dto.type) {
+      case SearchSuggestionType.PRESET_TIME_RANGE: {
+        return this.searchRepository.getPresetTimeRanges(userIds);
+      }
       case SearchSuggestionType.COUNTRY: {
         return this.searchRepository.getCountries(userIds);
       }

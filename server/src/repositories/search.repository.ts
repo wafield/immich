@@ -493,6 +493,74 @@ export class SearchRepository {
     return this.getExifSuggestions('lensModel', userIds, options);
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getPresetTimeRanges(userIds: string[]): Promise<SuggestionResponseDto[]> {
+    const now = new Date();
+    const lastWeekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const lastMonthStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const lastYearStart = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+    const relativeRanges = [
+      { name: 'Last Week', startTime: lastWeekStart, endTime: now },
+      { name: 'Last Month', startTime: lastMonthStart, endTime: now },
+      { name: 'Last Year', startTime: lastYearStart, endTime: now },
+    ];
+
+    const presets: SuggestionResponseDto[] = [];
+
+    // Get asset counts for each of the preset relative time ranges.
+    for (const range of relativeRanges) {
+      const res = await this.db
+        .selectFrom('asset_exif')
+        .select((eb) => eb.fn.count<number>('assetId').as('assetCount'))
+        .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
+        .where('ownerId', '=', anyUuid(userIds))
+        .where('visibility', '=', AssetVisibility.Timeline)
+        .where('deletedAt', 'is', null)
+        .where('dateTimeOriginal', '>=', range.startTime)
+        .where('dateTimeOriginal', '<=', range.endTime)
+        .executeTakeFirst();
+
+      presets.push({
+        suggestion: range.name,
+        startTime: range.startTime,
+        endTime: range.endTime,
+        assetCount: res ? Number(res.assetCount) : 0,
+      });
+    }
+
+    // Then, load all available years, from newest to oldest.
+    const yearRows = await this.db
+      .selectFrom('asset_exif')
+      .select([
+        sql<string>`TO_CHAR("dateTimeOriginal", 'YYYY')`.as('year'),
+        (eb) => eb.fn.count<number>('assetId').as('assetCount'),
+      ])
+      .innerJoin('asset', 'asset.id', 'asset_exif.assetId')
+      .where('ownerId', '=', anyUuid(userIds))
+      .where('visibility', '=', AssetVisibility.Timeline)
+      .where('deletedAt', 'is', null)
+      .where('dateTimeOriginal', 'is not', null)
+      .groupBy(sql`TO_CHAR("dateTimeOriginal", 'YYYY')`)
+      .orderBy(sql`TO_CHAR("dateTimeOriginal", 'YYYY')`, 'desc')
+      .execute();
+
+    for (const row of yearRows) {
+      const yr = Number(row.year);
+      if (!Number.isNaN(yr)) {
+        presets.push({
+          suggestion: row.year,
+          startTime: new Date(Date.UTC(yr, 0, 1, 0, 0, 0, 0)),
+          endTime: new Date(Date.UTC(yr, 11, 31, 23, 59, 59, 999)),
+          assetCount: Number(row.assetCount),
+        });
+      }
+    }
+
+    // Note that presets at this time is already in the desired order.
+    return presets;
+  }
+
   @GenerateSql(...searchMetadataV3Examples)
   searchMetadataV3(
     pagination: AssetSearchPaginationV3Options,

@@ -71,37 +71,35 @@
   });
 </script>
 
-<div id="camera-selection">
-  <Text fontWeight="medium">{$t('camera')}</Text>
-  <div class="mt-1 grid grid-auto-fit-40 gap-5">
-    <div class="w-full">
-      <FilterableSelectionList
-        label={$t('make')}
-        onSelect={(option) => (filters.make = option?.value)}
-        options={asSuggestionOptions(makes)}
-        placeholder={$t('search_camera_make')}
-        selectedOption={asSelectedOption(makeFilter)}
-      />
-    </div>
+<Text fontWeight="medium">{$t('camera')}</Text>
+<div class="mt-1 grid grid-auto-fit-40 gap-5">
+  <div class="w-full">
+    <FilterableSelectionList
+      label={$t('make')}
+      onSelect={(option) => (filters.make = option?.value)}
+      options={asSuggestionOptions(makes)}
+      placeholder={$t('search_camera_make')}
+      selectedOption={asSelectedOption(makeFilter)}
+    />
+  </div>
 
-    <div class="w-full">
-      <FilterableSelectionList
-        label={$t('model')}
-        onSelect={(option) => (filters.model = option?.value)}
-        options={asSuggestionOptions(models)}
-        placeholder={$t('search_camera_model')}
-        selectedOption={asSelectedOption(modelFilter)}
-      />
-    </div>
+  <div class="w-full">
+    <FilterableSelectionList
+      label={$t('model')}
+      onSelect={(option) => (filters.model = option?.value)}
+      options={asSuggestionOptions(models)}
+      placeholder={$t('search_camera_model')}
+      selectedOption={asSelectedOption(modelFilter)}
+    />
+  </div>
 
-    <div class="w-full">
-      <FilterableSelectionList
-        label={$t('lens_model')}
-        onSelect={(option) => (filters.lensModel = option?.value)}
-        options={asSuggestionOptions(lensModels)}
-        placeholder={$t('search_camera_lens_model')}
-        selectedOption={asSelectedOption(lensModelFilter)}
-      />
-    </div>
+  <div class="w-full">
+    <FilterableSelectionList
+      label={$t('lens_model')}
+      onSelect={(option) => (filters.lensModel = option?.value)}
+      options={asSuggestionOptions(lensModels)}
+      placeholder={$t('search_camera_lens_model')}
+      selectedOption={asSelectedOption(lensModelFilter)}
+    />
   </div>
 </div>

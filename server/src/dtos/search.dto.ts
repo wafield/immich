@@ -121,6 +121,8 @@ const PlacesResponseSchema = z
   .meta({ id: 'PlacesResponseDto' });
 
 export enum SearchSuggestionType {
+  /** A list of all possible years, plus a few preset options (e.g. "Last Year"). */
+  PRESET_TIME_RANGE = 'preset-time-range',
   COUNTRY = 'country',
   STATE = 'state',
   CITY = 'city',

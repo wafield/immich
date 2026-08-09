@@ -23096,6 +23096,7 @@
       "SearchSuggestionType": {
         "description": "Suggestion type",
         "enum": [
+          "preset-time-range",
           "country",
           "state",
           "city",
