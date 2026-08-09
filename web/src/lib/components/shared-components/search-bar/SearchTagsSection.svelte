@@ -41,41 +41,39 @@
 </script>
 
 {#if authManager.authenticated && authManager.preferences.tags.enabled}
-  <div id="location-selection">
-    <form autocomplete="off" id="create-tag-form">
-      <div class="mb-4 flex flex-col">
-        <Text class="py-3" fontWeight="medium">{$t('tags')}</Text>
-        <Combobox
-          disabled={selectedTags === null}
-          hideLabel
-          onSelect={handleSelect}
-          label={$t('tags')}
-          defaultFirstOption
-          options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
-          bind:selectedOption
-          placeholder={$t('search_tags')}
-        />
-      </div>
-      <div class="flex items-center gap-2">
-        <Checkbox
-          id="untagged-checkbox"
-          size="tiny"
-          checked={selectedTags === null}
-          onCheckedChange={(checked) => {
-            selectedTags = checked ? null : new SvelteSet();
-          }}
-        />
-        <Label label={$t('untagged')} for="untagged-checkbox" class="text-sm font-normal" />
-      </div>
-    </form>
+  <form autocomplete="off" id="create-tag-form">
+    <div class="mb-4 flex flex-col">
+      <Text class="py-3" fontWeight="medium">{$t('tags')}</Text>
+      <Combobox
+        disabled={selectedTags === null}
+        hideLabel
+        onSelect={handleSelect}
+        label={$t('tags')}
+        defaultFirstOption
+        options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
+        bind:selectedOption
+        placeholder={$t('search_tags')}
+      />
+    </div>
+    <div class="flex items-center gap-2">
+      <Checkbox
+        id="untagged-checkbox"
+        size="tiny"
+        checked={selectedTags === null}
+        onCheckedChange={(checked) => {
+          selectedTags = checked ? null : new SvelteSet();
+        }}
+      />
+      <Label label={$t('untagged')} for="untagged-checkbox" class="text-sm font-normal" />
+    </div>
+  </form>
 
-    <section class="flex flex-wrap gap-1 pt-2">
-      {#each selectedTags ?? [] as tagId (tagId)}
-        {@const tag = tagMap[tagId]}
-        {#if tag}
-          <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
-        {/if}
-      {/each}
-    </section>
-  </div>
+  <section class="flex flex-wrap gap-1 pt-2">
+    {#each selectedTags ?? [] as tagId (tagId)}
+      {@const tag = tagMap[tagId]}
+      {#if tag}
+        <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
+      {/if}
+    {/each}
+  </section>
 {/if}

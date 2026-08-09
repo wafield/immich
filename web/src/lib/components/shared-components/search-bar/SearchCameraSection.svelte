@@ -1,5 +1,8 @@
 <script lang="ts">
-  import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/Combobox.svelte';
+  import FilterableSelectionList, {
+    asOptions,
+    asSelectedOption,
+  } from '$lib/components/shared-components/FilterableSelectionList.svelte';
   import type { SearchCameraFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
@@ -78,30 +81,30 @@
   <Text fontWeight="medium">{$t('camera')}</Text>
   <div class="mt-1 grid grid-auto-fit-40 gap-5">
     <div class="w-full">
-      <Combobox
+      <FilterableSelectionList
         label={$t('make')}
         onSelect={(option) => (filters.make = option?.value)}
-        options={asComboboxOptions(makes)}
+        options={asOptions(makes)}
         placeholder={$t('search_camera_make')}
         selectedOption={asSelectedOption(makeFilter)}
       />
     </div>
 
     <div class="w-full">
-      <Combobox
+      <FilterableSelectionList
         label={$t('model')}
         onSelect={(option) => (filters.model = option?.value)}
-        options={asComboboxOptions(models)}
+        options={asOptions(models)}
         placeholder={$t('search_camera_model')}
         selectedOption={asSelectedOption(modelFilter)}
       />
     </div>
 
     <div class="w-full">
-      <Combobox
+      <FilterableSelectionList
         label={$t('lens_model')}
         onSelect={(option) => (filters.lensModel = option?.value)}
-        options={asComboboxOptions(lensModels)}
+        options={asOptions(lensModels)}
         placeholder={$t('search_camera_lens_model')}
         selectedOption={asSelectedOption(lensModelFilter)}
       />

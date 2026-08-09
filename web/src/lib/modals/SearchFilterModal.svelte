@@ -180,9 +180,6 @@
   <ModalBody>
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
       <div class="flex flex-col gap-5 pb-10" tabindex="-1">
-        <!-- PEOPLE -->
-        <SearchPeopleSection bind:selectedPeople={filter.personIds} />
-
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
 

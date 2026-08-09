@@ -1,5 +1,8 @@
 <script lang="ts">
-  import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/Combobox.svelte';
+  import FilterableSelectionList, {
+    asOptions,
+    asSelectedOption,
+  } from '$lib/components/shared-components/FilterableSelectionList.svelte';
   import type { SearchLocationFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
@@ -60,45 +63,42 @@
   let countryFilter = $derived(filters.country);
   let stateFilter = $derived(filters.state);
 
-  // TODO replace by async $derived, at the latest when it's in stable https://svelte.dev/docs/svelte/await-expressions
   $effect(() => handlePromiseError(updateStates(countryFilter)));
   $effect(() => handlePromiseError(updateCities(countryFilter, stateFilter)));
 
   onMount(() => updateCountries());
 </script>
 
-<div id="location-selection">
-  <Text fontWeight="medium">{$t('place')}</Text>
+<Text fontWeight="medium">{$t('place')}</Text>
 
-  <div class="mt-1 grid grid-auto-fit-40 gap-5">
-    <div class="w-full">
-      <Combobox
-        label={$t('country')}
-        onSelect={(option) => (filters.country = option?.value)}
-        options={asComboboxOptions(countries)}
-        placeholder={$t('search_country')}
-        selectedOption={asSelectedOption(filters.country)}
-      />
-    </div>
+<div class="mt-1 grid grid-auto-fit-40 gap-5">
+  <div class="w-full">
+    <FilterableSelectionList
+      label={$t('country')}
+      onSelect={(option) => (filters.country = option?.value)}
+      options={asOptions(countries)}
+      placeholder={$t('search_country')}
+      selectedOption={asSelectedOption(filters.country)}
+    />
+  </div>
 
-    <div class="w-full">
-      <Combobox
-        label={$t('state')}
-        onSelect={(option) => (filters.state = option?.value)}
-        options={asComboboxOptions(states)}
-        placeholder={$t('search_state')}
-        selectedOption={asSelectedOption(filters.state)}
-      />
-    </div>
+  <div class="w-full">
+    <FilterableSelectionList
+      label={$t('state')}
+      onSelect={(option) => (filters.state = option?.value)}
+      options={asOptions(states)}
+      placeholder={$t('search_state')}
+      selectedOption={asSelectedOption(filters.state)}
+    />
+  </div>
 
-    <div class="w-full">
-      <Combobox
-        label={$t('city')}
-        onSelect={(option) => (filters.city = option?.value)}
-        options={asComboboxOptions(cities)}
-        placeholder={$t('search_city')}
-        selectedOption={asSelectedOption(filters.city)}
-      />
-    </div>
+  <div class="w-full">
+    <FilterableSelectionList
+      label={$t('city')}
+      onSelect={(option) => (filters.city = option?.value)}
+      options={asOptions(cities)}
+      placeholder={$t('search_city')}
+      selectedOption={asSelectedOption(filters.city)}
+    />
   </div>
 </div>
