@@ -9,7 +9,7 @@
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
-  import { mdiKeyboardReturn } from '@mdi/js';
+  import { mdiImageAlbum, mdiKeyboardReturn } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import AlbumListItem from '../components/asset-viewer/AlbumListItem.svelte';
@@ -156,9 +156,9 @@
   );
 </script>
 
-<Modal {title} {onClose} size="small">
+<Modal {title} icon={mdiImageAlbum} {onClose} size="large">
   <ModalBody>
-    <div class="mb-2 flex max-h-100 flex-col">
+    <div class="mb-2 flex max-h-250 flex-col">
       {#if loading}
         <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each { length: 3 } as _}
