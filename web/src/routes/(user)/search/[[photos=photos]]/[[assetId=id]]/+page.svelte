@@ -18,6 +18,7 @@
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
   import TagAction from '$lib/components/timeline/actions/TagAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
   import { QueryParameter } from '$lib/constants';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -251,92 +252,94 @@
 
 <OnEvents {onAlbumAddAssets} />
 
-{#if searchTermKeys.length > 0}
-  <section id="search-chips" class="mx-auto mt-24 w-full max-w-7xl px-4 sm:px-8 lg:px-12">
-    <div class="flex w-full flex-wrap place-content-center place-items-center gap-2.5 sm:gap-3">
-      {#each searchTermKeys as searchKey (searchKey)}
-        {@const value = terms[searchKey]}
-        <div
-          class="inline-flex max-w-full items-center rounded-full bg-primary/10 py-1 ps-1 pe-1 text-xs text-primary ring-1 ring-primary/15 transition-shadow hover:ring-primary/25 dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary dark:ring-immich-dark-primary/20 dark:hover:ring-immich-dark-primary/30"
-        >
-          <span
-            class="shrink-0 rounded-full bg-primary px-3 py-1.5 font-medium text-light dark:bg-immich-dark-primary dark:text-immich-dark-gray"
+<UserPageLayout>
+  {#if searchTermKeys.length > 0}
+    <section id="search-chips" class="mx-auto mt-4 w-full max-w-7xl px-4 sm:px-8 lg:px-12">
+      <div class="flex w-full flex-wrap place-content-center place-items-center gap-2.5 sm:gap-3">
+        {#each searchTermKeys as searchKey (searchKey)}
+          {@const value = terms[searchKey]}
+          <div
+            class="inline-flex max-w-full items-center rounded-full bg-primary/10 py-1 ps-1 pe-1 text-xs text-primary ring-1 ring-primary/15 transition-shadow hover:ring-primary/25 dark:bg-immich-dark-primary/15 dark:text-immich-dark-primary dark:ring-immich-dark-primary/20 dark:hover:ring-immich-dark-primary/30"
           >
-            {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
-          </span>
-
-          {#if value !== true}
-            <span class="max-w-[min(36rem,55vw)] min-w-0 truncate px-3 py-1.5 text-immich-fg dark:text-immich-dark-fg">
-              {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
-                {getHumanReadableDate(value)}
-              {:else if searchKey === 'personIds' && Array.isArray(value)}
-                {#await getPersonName(value) then personName}
-                  {personName}
-                {/await}
-              {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
-                {#await getTagNames(value) then tagNames}
-                  {tagNames}
-                {/await}
-              {:else if searchKey === 'rating'}
-                {$t('rating_count', { values: { count: value ?? 0 } })}
-              {:else if value === null || value === ''}
-                {$t('unknown')}
-              {:else}
-                {value}
-              {/if}
+            <span
+              class="shrink-0 rounded-full bg-primary px-3 py-1.5 font-medium text-light dark:bg-immich-dark-primary dark:text-immich-dark-gray"
+            >
+              {getHumanReadableSearchKey(searchKey as keyof SearchTerms)}
             </span>
-          {/if}
 
-          <button
-            type="button"
-            class="ms-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-primary outline-offset-2 outline-immich-primary transition-colors hover:bg-primary/15 focus-visible:outline-2 dark:text-immich-dark-primary dark:outline-immich-dark-primary dark:hover:bg-immich-dark-primary/20"
-            aria-label={$t('remove_filter')}
-            title={$t('remove_filter')}
-            onclick={() => removeFilter(searchKey)}
-          >
-            <Icon icon={mdiClose} size="14" />
-          </button>
-        </div>
-      {/each}
-    </div>
-  </section>
-{/if}
+            {#if value !== true}
+              <span
+                class="max-w-[min(36rem,55vw)] min-w-0 truncate px-3 py-1.5 text-immich-fg dark:text-immich-dark-fg"
+              >
+                {#if (searchKey === 'takenAfter' || searchKey === 'takenBefore') && typeof value === 'string'}
+                  {getHumanReadableDate(value)}
+                {:else if searchKey === 'personIds' && Array.isArray(value)}
+                  {#await getPersonName(value) then personName}
+                    {personName}
+                  {/await}
+                {:else if searchKey === 'tagIds' && (Array.isArray(value) || value === null)}
+                  {#await getTagNames(value) then tagNames}
+                    {tagNames}
+                  {/await}
+                {:else if searchKey === 'rating'}
+                  {$t('rating_count', { values: { count: value ?? 0 } })}
+                {:else if value === null || value === ''}
+                  {$t('unknown')}
+                {:else}
+                  {value}
+                {/if}
+              </span>
+            {/if}
 
-<section
-  class="m-4 mb-12 max-h-screen bg-immich-bg dark:bg-immich-dark-bg"
-  bind:clientHeight={viewport.height}
-  bind:clientWidth={viewport.width}
-  bind:this={searchResultsElement}
->
-  <section id="search-content">
-    {#if searchResultAssets.length > 0}
-      <GalleryViewer
-        assets={searchResultAssets}
-        assetInteraction={assetMultiSelectManager}
-        onEndReached={loadNextPage}
-        showArchiveIcon={true}
-        {viewport}
-        onReload={onSearchQueryUpdate}
-        slidingWindowOffset={searchResultsElement.offsetTop}
-      />
-    {:else if !isLoading}
-      <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
-        <div class="flex flex-col content-center items-center text-center">
-          <Icon icon={mdiImageOffOutline} size="3.5em" />
-          <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
-          <p class="text-base font-normal">{$t('no_results_description')}</p>
-        </div>
+            <button
+              type="button"
+              class="ms-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-primary outline-offset-2 outline-immich-primary transition-colors hover:bg-primary/15 focus-visible:outline-2 dark:text-immich-dark-primary dark:outline-immich-dark-primary dark:hover:bg-immich-dark-primary/20"
+              aria-label={$t('remove_filter')}
+              title={$t('remove_filter')}
+              onclick={() => removeFilter(searchKey)}
+            >
+              <Icon icon={mdiClose} size="14" />
+            </button>
+          </div>
+        {/each}
       </div>
-    {/if}
+    </section>
+  {/if}
 
-    {#if isLoading}
-      <div class="flex items-center justify-center py-16">
-        <LoadingSpinner size="giant" />
-      </div>
-    {/if}
-  </section>
+  <section
+    class="mt-4 mb-12 max-h-screen bg-immich-bg dark:bg-immich-dark-bg"
+    bind:clientHeight={viewport.height}
+    bind:clientWidth={viewport.width}
+    bind:this={searchResultsElement}
+  >
+    <section id="search-content">
+      {#if searchResultAssets.length > 0}
+        <GalleryViewer
+          assets={searchResultAssets}
+          assetInteraction={assetMultiSelectManager}
+          onEndReached={loadNextPage}
+          showArchiveIcon={true}
+          {viewport}
+          onReload={onSearchQueryUpdate}
+          slidingWindowOffset={searchResultsElement.offsetTop}
+        />
+      {:else if !isLoading}
+        <div class="flex min-h-[calc(66vh-11rem)] w-full place-content-center items-center dark:text-white">
+          <div class="flex flex-col content-center items-center text-center">
+            <Icon icon={mdiImageOffOutline} size="3.5em" />
+            <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
+            <p class="text-base font-normal">{$t('no_results_description')}</p>
+          </div>
+        </div>
+      {/if}
 
-  <section>
+      {#if isLoading}
+        <div class="flex items-center justify-center py-16">
+          <LoadingSpinner size="giant" />
+        </div>
+      {/if}
+    </section>
+
     {#if assetMultiSelectManager.selectionActive}
       <AssetSelectControlBar>
         {@const Actions = getAssetBulkActions($t)}
@@ -387,12 +390,5 @@
         {/if}
       </AssetSelectControlBar>
     {/if}
-    <div class="fixed inset-s-0 top-0 z-2 w-full">
-      <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
-        <div class="mx-auto w-full max-w-2xl pe-2">
-          <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
-        </div>
-      </ControlAppBar>
-    </div>
   </section>
-</section>
+</UserPageLayout>

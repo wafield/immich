@@ -103,13 +103,62 @@
     assets[index] = asset;
   };
 
-  const updateSlidingWindow = () => (scrollTop = document.scrollingElement?.scrollTop ?? 0);
+  let containerElement: HTMLElement | null = $state(null);
+
+  const scrollParent = $derived.by(() => {
+    if (!containerElement) return null;
+    let parent = containerElement.parentElement;
+    while (parent) {
+      const { overflowY, overflow } = window.getComputedStyle(parent);
+      if (
+        overflowY === 'auto' ||
+        overflowY === 'scroll' ||
+        overflowY === 'overlay' ||
+        overflow === 'auto' ||
+        overflow === 'scroll'
+      ) {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+    return document.scrollingElement || document.documentElement;
+  });
+
+  const updateSlidingWindow = () => {
+    const parent = scrollParent;
+    if (!parent || !containerElement || parent === document.scrollingElement || parent === document.documentElement) {
+      scrollTop = window.scrollY || document.scrollingElement?.scrollTop || 0;
+    } else {
+      const parentRect = parent.getBoundingClientRect();
+      const containerRect = containerElement.getBoundingClientRect();
+      const containerTopInParent = containerRect.top - parentRect.top + parent.scrollTop;
+      scrollTop = Math.max(0, parent.scrollTop - containerTopInParent);
+    }
+  };
+
+  $effect(() => {
+    const handleScroll = () => updateSlidingWindow();
+    window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+    };
+  });
 
   const debouncedOnEndReached = debounce(() => onEndReached?.(), 750, { maxWait: 100, leading: true });
 
+  const effectiveViewportHeight = $derived.by(() => {
+    const parent = scrollParent;
+    if (parent && parent !== document.scrollingElement && parent !== document.documentElement) {
+      return parent.clientHeight || window.innerHeight;
+    }
+    return viewport.height || window.innerHeight;
+  });
+
   let lastEndReachedHeight = 0;
   $effect(() => {
-    if (geometry.containerHeight - slidingWindow.bottom > viewport.height) {
+    const viewHeight = effectiveViewportHeight;
+    if (geometry.containerHeight - slidingWindow.bottom > viewHeight) {
       return;
     }
 
@@ -342,6 +391,7 @@
 
 {#if assets.length > 0}
   <div
+    bind:this={containerElement}
     style:position="relative"
     style:height={geometry.containerHeight + 'px'}
     style:width={geometry.containerWidth + 'px'}
