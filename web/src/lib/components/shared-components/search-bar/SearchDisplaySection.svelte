@@ -27,6 +27,22 @@
         <Checkbox id="favorites-checkbox" size="tiny" bind:checked={filters.isFavorite} />
         <Label label={$t('favorites')} for="favorites-checkbox" class="text-sm font-normal" />
       </div>
+      <div class="flex items-center gap-2">
+        <Checkbox id="offline-checkbox" size="tiny" bind:checked={filters.isOffline} />
+        <Label label="Include offline" for="offline-checkbox" class="text-sm font-normal" />
+      </div>
+      <div class="flex items-center gap-2">
+        <Checkbox id="motion-checkbox" size="tiny" bind:checked={filters.isMotion} />
+        <Label label="Include live photo" for="motion-checkbox" class="text-sm font-normal" />
+      </div>
+      <div class="flex items-center gap-2">
+        <Checkbox id="with-deleted-checkbox" size="tiny" bind:checked={filters.withDeleted} />
+        <Label label="Include trashed" for="with-deleted-checkbox" class="text-sm font-normal" />
+      </div>
+      <div class="flex items-center gap-2">
+        <Checkbox id="with-stacked-checkbox" size="tiny" bind:checked={filters.withStacked} />
+        <Label label="Include stacked" for="with-stacked-checkbox" class="text-sm font-normal" />
+      </div>
     </div>
   </fieldset>
 </div>

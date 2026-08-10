@@ -62,6 +62,10 @@ export type SearchDisplayFilters = {
   isNotInAlbum: boolean;
   isArchive: boolean;
   isFavorite: boolean;
+  isOffline: boolean;
+  isMotion: boolean;
+  withDeleted: boolean;
+  withStacked: boolean;
 };
 
 export type SearchLocationFilter = {
