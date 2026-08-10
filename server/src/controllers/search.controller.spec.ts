@@ -126,14 +126,14 @@ describe(SearchController.name, () => {
         expect(ctx.authenticate).toHaveBeenCalled();
       });
 
-      it('should reject if withStacked is not a boolean', async () => {
+      it('should reject if isStacked is not a boolean', async () => {
         const { status, body } = await request(ctx.getHttpServer())
           .post('/search/random')
-          .send({ withStacked: 'immich' });
+          .send({ isStacked: 'immich' });
         expect(status).toBe(400);
         expect(body).toEqual(
           errorDto.validationError([
-            { path: ['withStacked'], message: 'Invalid input: expected boolean, received string' },
+            { path: ['isStacked'], message: 'Invalid input: expected boolean, received string' },
           ]),
         );
       });

@@ -34,21 +34,23 @@ export interface SearchUserIdOptions {
 export type SearchIdOptions = SearchAssetIdOptions & SearchUserIdOptions;
 
 export interface SearchStatusOptions {
-  isEncoded?: boolean;
-  isFavorite?: boolean;
-  isMotion?: boolean;
-  isOffline?: boolean;
-  isNotInAlbum?: boolean;
+  isEncoded?: boolean | null;
+  isFavorite?: boolean | null;
+  isMotion?: boolean | null;
+  isOffline?: boolean | null;
+  isNotInAlbum?: boolean | null;
+  isArchive?: boolean | null;
+  isScreenshot?: boolean | null;
+  isTrashed?: boolean | null;
+  isStacked?: boolean | null;
   type?: AssetType;
   status?: AssetStatus;
   withArchived?: boolean;
-  withDeleted?: boolean;
   visibility?: AssetVisibility;
 }
 
 export interface SearchOneToOneRelationOptions {
   withExif?: boolean;
-  withStacked?: boolean;
 }
 
 export interface SearchRelationOptions extends SearchOneToOneRelationOptions {
@@ -214,7 +216,6 @@ export class SearchRepository {
       {
         takenAfter: DummyValue.DATE,
         lensModel: DummyValue.STRING,
-        withStacked: true,
         isFavorite: true,
         userIds: [DummyValue.UUID],
       },
@@ -255,7 +256,6 @@ export class SearchRepository {
       {
         takenAfter: DummyValue.DATE,
         lensModel: DummyValue.STRING,
-        withStacked: true,
         isFavorite: true,
         userIds: [DummyValue.UUID],
       },
@@ -275,7 +275,6 @@ export class SearchRepository {
       {
         takenAfter: DummyValue.DATE,
         lensModel: DummyValue.STRING,
-        withStacked: true,
         isFavorite: true,
         userIds: [DummyValue.UUID],
       },
@@ -299,7 +298,6 @@ export class SearchRepository {
         takenAfter: DummyValue.DATE,
         embedding: DummyValue.VECTOR,
         lensModel: DummyValue.STRING,
-        withStacked: true,
         isFavorite: true,
         userIds: [DummyValue.UUID],
       },

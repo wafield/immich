@@ -58,14 +58,16 @@ export type SearchDateFilter = {
   takenAfter?: DateTime;
 };
 
+/** Tri-state filters used to select assets that match / not match the filter. */
 export type SearchDisplayFilters = {
-  isNotInAlbum: boolean;
-  isArchive: boolean;
-  isFavorite: boolean;
-  isOffline: boolean;
-  isMotion: boolean;
-  withDeleted: boolean;
-  withStacked: boolean;
+  isNotInAlbum?: boolean | null;
+  isArchive?: boolean | null;
+  isFavorite?: boolean | null;
+  isOffline?: boolean | null;
+  isMotion?: boolean | null;
+  isScreenshot?: boolean | null;
+  isTrashed?: boolean | null;
+  isStacked?: boolean | null;
 };
 
 export type SearchLocationFilter = {

@@ -82,13 +82,29 @@
         takenBefore: searchQuery.takenBefore ? toStartOfDayDate(searchQuery.takenBefore) : undefined,
       },
       display: {
-        isArchive: searchQuery.visibility === AssetVisibility.Archive,
-        isFavorite: searchQuery.isFavorite ?? false,
-        isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? false) : false,
-        isOffline: 'isOffline' in searchQuery ? (searchQuery.isOffline ?? false) : false,
-        isMotion: 'isMotion' in searchQuery ? (searchQuery.isMotion ?? false) : false,
-        withDeleted: 'withDeleted' in searchQuery ? (searchQuery.withDeleted ?? false) : false,
-        withStacked: 'withStacked' in searchQuery ? (searchQuery.withStacked ?? false) : false,
+        isArchive:
+          'isArchive' in searchQuery
+            ? (searchQuery.isArchive ?? undefined)
+            : searchQuery.visibility === AssetVisibility.Archive
+              ? true
+              : undefined,
+        isFavorite: searchQuery.isFavorite ?? undefined,
+        isNotInAlbum: 'isNotInAlbum' in searchQuery ? (searchQuery.isNotInAlbum ?? undefined) : undefined,
+        isOffline: 'isOffline' in searchQuery ? (searchQuery.isOffline ?? undefined) : undefined,
+        isMotion: 'isMotion' in searchQuery ? (searchQuery.isMotion ?? undefined) : undefined,
+        isScreenshot: 'isScreenshot' in searchQuery ? (searchQuery.isScreenshot ?? undefined) : undefined,
+        isTrashed:
+          'isTrashed' in searchQuery
+            ? (searchQuery.isTrashed ?? false)
+            : 'withDeleted' in searchQuery
+              ? (searchQuery.withDeleted ?? false)
+              : false,
+        isStacked:
+          'isStacked' in searchQuery
+            ? (searchQuery.isStacked ?? undefined)
+            : 'withStacked' in searchQuery
+              ? (searchQuery.withStacked ?? undefined)
+              : undefined,
       },
       mediaType:
         searchQuery.type === AssetTypeEnum.Image
@@ -113,13 +129,14 @@
       camera: {},
       date: {},
       display: {
-        isArchive: false,
-        isFavorite: false,
-        isNotInAlbum: false,
-        isOffline: false,
-        isMotion: false,
-        withDeleted: false,
-        withStacked: false,
+        isArchive: undefined,
+        isFavorite: undefined,
+        isNotInAlbum: undefined,
+        isOffline: undefined,
+        isMotion: undefined,
+        isScreenshot: undefined,
+        isTrashed: false,
+        isStacked: undefined,
       },
       mediaType: MediaType.All,
       rating: undefined,
@@ -155,13 +172,15 @@
       takenBefore: filter.date.takenBefore
         ? asLocalTimeISO(filter.date.takenBefore.endOf('day') as DateTime<true>)
         : undefined,
-      visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
-      isFavorite: filter.display.isFavorite || undefined,
-      isNotInAlbum: filter.display.isNotInAlbum || undefined,
-      isOffline: filter.display.isOffline || undefined,
-      isMotion: filter.display.isMotion || undefined,
-      withDeleted: filter.display.withDeleted || undefined,
-      withStacked: filter.display.withStacked || undefined,
+      visibility: filter.display.isArchive === true ? AssetVisibility.Archive : undefined,
+      isArchive: filter.display.isArchive ?? undefined,
+      isFavorite: filter.display.isFavorite ?? undefined,
+      isNotInAlbum: filter.display.isNotInAlbum ?? undefined,
+      isOffline: filter.display.isOffline ?? undefined,
+      isMotion: filter.display.isMotion ?? undefined,
+      isScreenshot: filter.display.isScreenshot ?? undefined,
+      isTrashed: filter.display.isTrashed ?? undefined,
+      isStacked: filter.display.isStacked ?? undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,

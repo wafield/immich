@@ -18,9 +18,11 @@ const BaseSearchSchema = z.object({
   libraryId: z.uuidv4().nullish().describe('Library ID to filter by'),
   type: AssetTypeSchema.optional(),
   isEncoded: z.boolean().optional().describe('Filter by encoded status'),
-  isFavorite: z.boolean().optional().describe('Filter by favorite status'),
-  isMotion: z.boolean().optional().describe('Filter by motion photo status'),
-  isOffline: z.boolean().optional().describe('Filter by offline status'),
+  isFavorite: z.boolean().nullish().describe('Filter by favorite status'),
+  isMotion: z.boolean().nullish().describe('Filter by motion photo status'),
+  isOffline: z.boolean().nullish().describe('Filter by offline status'),
+  isArchive: z.boolean().nullish().describe('Filter by archive status'),
+  isScreenshot: z.boolean().nullish().describe('Filter by screenshot status'),
   visibility: AssetVisibilitySchema.optional(),
   createdBefore: isoDatetimeToDate.optional().describe('Filter by creation date (before)'),
   createdAfter: isoDatetimeToDate.optional().describe('Filter by creation date (after)'),
@@ -36,7 +38,7 @@ const BaseSearchSchema = z.object({
   make: z.string().nullable().optional().describe('Filter by camera make'),
   model: z.string().nullable().optional().describe('Filter by camera model'),
   lensModel: z.string().nullable().optional().describe('Filter by lens model'),
-  isNotInAlbum: z.boolean().optional().describe('Filter assets not in any album'),
+  isNotInAlbum: z.boolean().nullish().describe('Filter assets not in any album'),
   personIds: z.array(z.uuidv4()).optional().describe('Filter by person IDs'),
   tagIds: z.array(z.uuidv4()).nullish().describe('Filter by tag IDs'),
   albumIds: z.array(z.uuidv4()).optional().describe('Filter by album IDs'),
@@ -58,13 +60,13 @@ const BaseSearchSchema = z.object({
 });
 
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
-  withDeleted: z.boolean().optional().describe('Include deleted assets'),
+  isTrashed: z.boolean().nullish().describe('Filter by trashed status'),
   withExif: z.boolean().optional().describe('Include EXIF data in response'),
   size: z.int().min(1).max(1000).optional().describe('Number of results to return'),
 });
 
 const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
-  withStacked: z.boolean().optional().describe('Include stacked assets'),
+  isStacked: z.boolean().nullish().describe('Filter by stacked status'),
   withPeople: z.boolean().optional().describe('Include people data in response'),
 }).meta({ id: 'RandomSearchDto' });
 

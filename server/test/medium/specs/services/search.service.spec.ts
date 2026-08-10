@@ -120,7 +120,7 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      const response = await sut.searchMetadata(auth, { withStacked: false });
+      const response = await sut.searchMetadata(auth, { isStacked: false });
 
       expect(response.assets.items.length).toBe(1);
       expect(response.assets.items[0].id).toBe(unstackedAsset.id);
@@ -135,7 +135,7 @@ describe(SearchService.name, () => {
 
         const auth = factory.auth({ user: { id: user.id } });
 
-        const response = await sut.searchMetadata(auth, { withStacked: false });
+        const response = await sut.searchMetadata(auth, { isStacked: false });
 
         expect(response.assets.items.length).toBe(0);
       });
@@ -148,7 +148,7 @@ describe(SearchService.name, () => {
 
         const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
 
-        const response = await sut.searchMetadata(auth, { withStacked: false });
+        const response = await sut.searchMetadata(auth, { isStacked: false });
 
         expect(response.assets.items.length).toBe(1);
       });

@@ -10281,6 +10281,16 @@
             }
           },
           {
+            "name": "isArchive",
+            "required": false,
+            "in": "query",
+            "description": "Filter by archive status",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            }
+          },
+          {
             "name": "isEncoded",
             "required": false,
             "in": "query",
@@ -10295,7 +10305,8 @@
             "in": "query",
             "description": "Filter by favorite status",
             "schema": {
-              "type": "boolean"
+              "type": "boolean",
+              "nullable": true
             }
           },
           {
@@ -10304,7 +10315,8 @@
             "in": "query",
             "description": "Filter by motion photo status",
             "schema": {
-              "type": "boolean"
+              "type": "boolean",
+              "nullable": true
             }
           },
           {
@@ -10313,7 +10325,8 @@
             "in": "query",
             "description": "Filter assets not in any album",
             "schema": {
-              "type": "boolean"
+              "type": "boolean",
+              "nullable": true
             }
           },
           {
@@ -10322,7 +10335,28 @@
             "in": "query",
             "description": "Filter by offline status",
             "schema": {
-              "type": "boolean"
+              "type": "boolean",
+              "nullable": true
+            }
+          },
+          {
+            "name": "isScreenshot",
+            "required": false,
+            "in": "query",
+            "description": "Filter by screenshot status",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "description": "Filter by trashed status",
+            "schema": {
+              "type": "boolean",
+              "nullable": true
             }
           },
           {
@@ -10556,15 +10590,6 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/AssetVisibility"
-            }
-          },
-          {
-            "name": "withDeleted",
-            "required": false,
-            "in": "query",
-            "description": "Include deleted assets",
-            "schema": {
-              "type": "boolean"
             }
           },
           {
@@ -20858,24 +20883,48 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
+          "isArchive": {
+            "description": "Filter by archive status",
+            "nullable": true,
+            "type": "boolean"
+          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
           },
           "isFavorite": {
             "description": "Filter by favorite status",
+            "nullable": true,
             "type": "boolean"
           },
           "isMotion": {
             "description": "Filter by motion photo status",
+            "nullable": true,
             "type": "boolean"
           },
           "isNotInAlbum": {
             "description": "Filter assets not in any album",
+            "nullable": true,
             "type": "boolean"
           },
           "isOffline": {
             "description": "Filter by offline status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isScreenshot": {
+            "description": "Filter by screenshot status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isStacked": {
+            "description": "Filter by stacked status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isTrashed": {
+            "description": "Filter by trashed status",
+            "nullable": true,
             "type": "boolean"
           },
           "lensModel": {
@@ -21037,20 +21086,12 @@
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
           },
-          "withDeleted": {
-            "description": "Include deleted assets",
-            "type": "boolean"
-          },
           "withExif": {
             "description": "Include EXIF data in response",
             "type": "boolean"
           },
           "withPeople": {
             "description": "Include people data in response",
-            "type": "boolean"
-          },
-          "withStacked": {
-            "description": "Include stacked assets",
             "type": "boolean"
           }
         },
@@ -22597,24 +22638,48 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "type": "string"
           },
+          "isArchive": {
+            "description": "Filter by archive status",
+            "nullable": true,
+            "type": "boolean"
+          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
           },
           "isFavorite": {
             "description": "Filter by favorite status",
+            "nullable": true,
             "type": "boolean"
           },
           "isMotion": {
             "description": "Filter by motion photo status",
+            "nullable": true,
             "type": "boolean"
           },
           "isNotInAlbum": {
             "description": "Filter assets not in any album",
+            "nullable": true,
             "type": "boolean"
           },
           "isOffline": {
             "description": "Filter by offline status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isScreenshot": {
+            "description": "Filter by screenshot status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isStacked": {
+            "description": "Filter by stacked status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isTrashed": {
+            "description": "Filter by trashed status",
+            "nullable": true,
             "type": "boolean"
           },
           "lensModel": {
@@ -22749,20 +22814,12 @@
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
           },
-          "withDeleted": {
-            "description": "Include deleted assets",
-            "type": "boolean"
-          },
           "withExif": {
             "description": "Include EXIF data in response",
             "type": "boolean"
           },
           "withPeople": {
             "description": "Include people data in response",
-            "type": "boolean"
-          },
-          "withStacked": {
-            "description": "Include stacked assets",
             "type": "boolean"
           }
         },
@@ -24078,24 +24135,43 @@
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "type": "string"
           },
+          "isArchive": {
+            "description": "Filter by archive status",
+            "nullable": true,
+            "type": "boolean"
+          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
           },
           "isFavorite": {
             "description": "Filter by favorite status",
+            "nullable": true,
             "type": "boolean"
           },
           "isMotion": {
             "description": "Filter by motion photo status",
+            "nullable": true,
             "type": "boolean"
           },
           "isNotInAlbum": {
             "description": "Filter assets not in any album",
+            "nullable": true,
             "type": "boolean"
           },
           "isOffline": {
             "description": "Filter by offline status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isScreenshot": {
+            "description": "Filter by screenshot status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isTrashed": {
+            "description": "Filter by trashed status",
+            "nullable": true,
             "type": "boolean"
           },
           "language": {
@@ -24250,10 +24326,6 @@
           "visibility": {
             "$ref": "#/components/schemas/AssetVisibility"
           },
-          "withDeleted": {
-            "description": "Include deleted assets",
-            "type": "boolean"
-          },
           "withExif": {
             "description": "Include EXIF data in response",
             "type": "boolean"
@@ -24377,24 +24449,38 @@
             "description": "Filter by description text",
             "type": "string"
           },
+          "isArchive": {
+            "description": "Filter by archive status",
+            "nullable": true,
+            "type": "boolean"
+          },
           "isEncoded": {
             "description": "Filter by encoded status",
             "type": "boolean"
           },
           "isFavorite": {
             "description": "Filter by favorite status",
+            "nullable": true,
             "type": "boolean"
           },
           "isMotion": {
             "description": "Filter by motion photo status",
+            "nullable": true,
             "type": "boolean"
           },
           "isNotInAlbum": {
             "description": "Filter assets not in any album",
+            "nullable": true,
             "type": "boolean"
           },
           "isOffline": {
             "description": "Filter by offline status",
+            "nullable": true,
+            "type": "boolean"
+          },
+          "isScreenshot": {
+            "description": "Filter by screenshot status",
+            "nullable": true,
             "type": "boolean"
           },
           "lensModel": {

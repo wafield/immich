@@ -414,7 +414,7 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 
 export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
-  options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
+  options.isTrashed ||= !!(options.isTrashed || options.trashedAfter || options.trashedBefore);
 
   return kysely
     .withPlugin(joinDeduplicationPlugin)
@@ -508,9 +508,21 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
         .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(options.ocr!).join(' ')})`),
     )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
-    .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
-    .$if(options.isOffline !== undefined, (qb) => qb.where('asset.isOffline', '=', options.isOffline!))
-    .$if(options.isEncoded !== undefined, (qb) =>
+    .$if(options.isArchive !== undefined && options.isArchive !== null, (qb) =>
+      options.isArchive
+        ? qb.where('asset.visibility', '=', AssetVisibility.Archive)
+        : qb.where('asset.visibility', '!=', AssetVisibility.Archive),
+    )
+    .$if(options.isScreenshot !== undefined && options.isScreenshot !== null, (qb) =>
+      qb.where('asset.isScreenshot', '=', options.isScreenshot!),
+    )
+    .$if(options.isFavorite !== undefined && options.isFavorite !== null, (qb) =>
+      qb.where('asset.isFavorite', '=', options.isFavorite!),
+    )
+    .$if(options.isOffline !== undefined && options.isOffline !== null, (qb) =>
+      qb.where('asset.isOffline', '=', options.isOffline!),
+    )
+    .$if(options.isEncoded !== undefined && options.isEncoded !== null, (qb) =>
       qb.where((eb) => {
         const exists = eb.exists((eb) =>
           eb
@@ -521,16 +533,27 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
         return options.isEncoded ? exists : eb.not(exists);
       }),
     )
-    .$if(options.isMotion !== undefined, (qb) =>
+    .$if(options.isMotion !== undefined && options.isMotion !== null, (qb) =>
       qb.where('asset.livePhotoVideoId', options.isMotion ? 'is not' : 'is', null),
     )
-    .$if(!!options.isNotInAlbum && (!options.albumIds || options.albumIds.length === 0), (qb) =>
-      qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetId', '=', 'asset.id')))),
+    .$if(
+      options.isNotInAlbum !== undefined &&
+        options.isNotInAlbum !== null &&
+        (!options.albumIds || options.albumIds.length === 0),
+      (qb) =>
+        qb.where((eb) => {
+          const exists = eb.exists((eb) => eb.selectFrom('album_asset').whereRef('assetId', '=', 'asset.id'));
+          return options.isNotInAlbum ? eb.not(exists) : exists;
+        }),
     )
-    .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
+    .$if(options.isStacked !== undefined && options.isStacked !== null, (qb) =>
+      qb.where('asset.stackId', options.isStacked ? 'is not' : 'is', null),
+    )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
+    .$if(options.isTrashed !== undefined && options.isTrashed !== null, (qb) =>
+      qb.where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null),
+    );
 }
 
 type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;

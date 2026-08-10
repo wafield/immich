@@ -1868,16 +1868,24 @@ export type MetadataSearchDto = {
     encodedVideoPath?: string;
     /** Filter by asset ID */
     id?: string;
+    /** Filter by archive status */
+    isArchive?: boolean | null;
     /** Filter by encoded status */
-    isEncoded?: boolean;
+    isEncoded?: boolean | null;
     /** Filter by favorite status */
-    isFavorite?: boolean;
+    isFavorite?: boolean | null;
     /** Filter by motion photo status */
-    isMotion?: boolean;
+    isMotion?: boolean | null;
     /** Filter assets not in any album */
-    isNotInAlbum?: boolean;
+    isNotInAlbum?: boolean | null;
     /** Filter by offline status */
-    isOffline?: boolean;
+    isOffline?: boolean | null;
+    /** Filter by screenshot status */
+    isScreenshot?: boolean | null;
+    /** Filter by stacked status */
+    isStacked?: boolean | null;
+    /** Filter by trashed status */
+    isTrashed?: boolean | null;
     /** Filter by lens model */
     lensModel?: string | null;
     /** Library ID to filter by */
@@ -1925,13 +1933,13 @@ export type MetadataSearchDto = {
     updatedBefore?: string;
     visibility?: AssetVisibility;
     /** Include deleted assets */
-    withDeleted?: boolean;
+    withDeleted?: boolean | null;
     /** Include EXIF data in response */
     withExif?: boolean;
     /** Include people data in response */
     withPeople?: boolean;
     /** Include stacked assets */
-    withStacked?: boolean;
+    withStacked?: boolean | null;
 };
 export type SearchFacetCountResponseDto = {
     /** Number of assets with this facet value */
