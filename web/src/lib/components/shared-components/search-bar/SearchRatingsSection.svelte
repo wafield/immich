@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Text } from '@immich/ui';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { t } from 'svelte-i18n';
   import Combobox from '../Combobox.svelte';
 
@@ -19,14 +20,16 @@
   ];
 </script>
 
-<div class="flex flex-col">
-  <Text class="mb-2" fontWeight="medium">{$t('rating')}</Text>
-  <Combobox
-    label={$t('rating')}
-    placeholder={$t('search_rating')}
-    hideLabel
-    {options}
-    selectedOption={rating === undefined ? undefined : options[rating === null ? 0 : rating]}
-    onSelect={(r) => (rating = r === undefined ? undefined : Number.parseInt(r.value))}
-  />
-</div>
+{#if authManager.authenticated && authManager.preferences.ratings.enabled}
+  <div class="flex flex-col gap-1">
+    <Text fontWeight="medium">{$t('rating')}</Text>
+    <Combobox
+      label={$t('rating')}
+      placeholder={$t('search_rating')}
+      hideLabel
+      {options}
+      selectedOption={rating === undefined ? undefined : options[rating === null ? 0 : rating]}
+      onSelect={(r) => (rating = r === undefined ? undefined : Number.parseInt(r.value))}
+    />
+  </div>
+{/if}

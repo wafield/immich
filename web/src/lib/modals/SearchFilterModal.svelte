@@ -183,8 +183,13 @@
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
 
-        <!-- TAGS -->
-        <SearchTagsSection bind:selectedTags={filter.tagIds} />
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <!-- TAGS -->
+          <SearchTagsSection bind:selectedTags={filter.tagIds} />
+
+          <!-- RATING -->
+          <SearchRatingsSection bind:rating={filter.rating} />
+        </div>
 
         <!-- DATE -->
         <SearchDateSection bind:filters={filter.date} />
@@ -195,18 +200,11 @@
         <!-- CAMERA MODEL -->
         <SearchCameraSection bind:filters={filter.camera} />
 
-        <!-- RATING -->
-        {#if authManager.authenticated && authManager.preferences.ratings.enabled}
-          <SearchRatingsSection bind:rating={filter.rating} />
-        {/if}
+        <!-- MEDIA TYPE -->
+        <SearchMediaSection bind:filteredMedia={filter.mediaType} />
 
-        <div class="grid gap-x-5 gap-y-10 md:grid-cols-2">
-          <!-- MEDIA TYPE -->
-          <SearchMediaSection bind:filteredMedia={filter.mediaType} />
-
-          <!-- DISPLAY OPTIONS -->
-          <SearchDisplaySection bind:filters={filter.display} />
-        </div>
+        <!-- DISPLAY OPTIONS -->
+        <SearchDisplaySection bind:filters={filter.display} />
       </div>
     </form>
   </ModalBody>

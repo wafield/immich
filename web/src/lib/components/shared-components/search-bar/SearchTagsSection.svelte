@@ -41,9 +41,9 @@
 </script>
 
 {#if authManager.authenticated && authManager.preferences.tags.enabled}
-  <form autocomplete="off" id="create-tag-form">
-    <div class="mb-4 flex flex-col">
-      <Text class="py-3" fontWeight="medium">{$t('tags')}</Text>
+  <div class="flex flex-col gap-1">
+    <Text fontWeight="medium">{$t('tags')}</Text>
+    <form autocomplete="off" id="create-tag-form" class="flex flex-col gap-1">
       <Combobox
         disabled={selectedTags === null}
         hideLabel
@@ -54,26 +54,26 @@
         bind:selectedOption
         placeholder={$t('search_tags')}
       />
-    </div>
-    <div class="flex items-center gap-2">
-      <Checkbox
-        id="untagged-checkbox"
-        size="tiny"
-        checked={selectedTags === null}
-        onCheckedChange={(checked) => {
-          selectedTags = checked ? null : new SvelteSet();
-        }}
-      />
-      <Label label={$t('untagged')} for="untagged-checkbox" class="text-sm font-normal" />
-    </div>
-  </form>
+      <div class="flex items-center gap-2">
+        <Checkbox
+          id="untagged-checkbox"
+          size="tiny"
+          checked={selectedTags === null}
+          onCheckedChange={(checked) => {
+            selectedTags = checked ? null : new SvelteSet();
+          }}
+        />
+        <Label label={$t('untagged')} for="untagged-checkbox" class="text-sm font-normal" />
+      </div>
+    </form>
 
-  <section class="flex flex-wrap gap-1 pt-2">
-    {#each selectedTags ?? [] as tagId (tagId)}
-      {@const tag = tagMap[tagId]}
-      {#if tag}
-        <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
-      {/if}
-    {/each}
-  </section>
+    <section class="flex flex-wrap gap-1 pt-2">
+      {#each selectedTags ?? [] as tagId (tagId)}
+        {@const tag = tagMap[tagId]}
+        {#if tag}
+          <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
+        {/if}
+      {/each}
+    </section>
+  </div>
 {/if}

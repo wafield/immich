@@ -63,8 +63,8 @@
 </script>
 
 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-  <div class="w-full">
-    <Text fontWeight="medium">Time Range</Text>
+  <div class="flex flex-col">
+    <Text class="mb-2" fontWeight="medium">Time Range</Text>
     <FilterableSelectionList
       label={'Time Range Select'}
       hideLabel={true}
