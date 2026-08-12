@@ -6285,12 +6285,15 @@ export function searchAssetStatistics({ statisticsSearchDto }: {
 /**
  * Retrieve search suggestions
  */
-export function getSearchSuggestions({ country, includeNull, lensModel, make, model, state, $type }: {
+export function getSearchSuggestions({ country, endTime, includeNull, lensModel, libraryId, make, model, startTime, state, $type }: {
     country?: string;
+    endTime?: string;
     includeNull?: boolean;
     lensModel?: string;
+    libraryId?: string;
     make?: string;
     model?: string;
+    startTime?: string;
     state?: string;
     $type: SearchSuggestionType;
 }, opts?: Oazapfts.RequestOpts) {
@@ -6299,10 +6302,13 @@ export function getSearchSuggestions({ country, includeNull, lensModel, make, mo
         data: SuggestionResponseDto[];
     }>(`/search/suggestions${QS.query(QS.explode({
         country,
+        endTime,
         includeNull,
         lensModel,
+        libraryId,
         make,
         model,
+        startTime,
         state,
         "type": $type
     }))}`, {

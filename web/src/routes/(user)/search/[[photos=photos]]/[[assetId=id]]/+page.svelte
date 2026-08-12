@@ -27,6 +27,7 @@
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { lang, locale } from '$lib/stores/preferences.store';
+  import { librariesMap } from '$lib/stores/library.store';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
@@ -44,7 +45,7 @@
     type SmartSearchDto,
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
-  import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
+  import { mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
   import { tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -193,6 +194,8 @@
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
+      libraryId: $t('library'),
+      isTrashed: $t('trash'),
     };
     return keyMap[key] || key;
   }
@@ -281,6 +284,8 @@
                   {#await getTagNames(value) then tagNames}
                     {tagNames}
                   {/await}
+                {:else if searchKey === 'libraryId' && typeof value === 'string'}
+                  {$librariesMap.get(value)?.name || value}
                 {:else if searchKey === 'rating'}
                   {$t('rating_count', { values: { count: value ?? 0 } })}
                 {:else if value === null || value === ''}

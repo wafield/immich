@@ -3,25 +3,43 @@
     asSelectedOption,
     asSuggestionOptions,
   } from '$lib/components/shared-components/FilterableSelectionList.svelte';
-  import type { SearchCameraFilter } from '$lib/types';
+  import type { SearchCameraFilter, SearchDateFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
+  import { asLocalTimeISO } from '$lib/utils/date-time';
   import { SearchSuggestionType, getSearchSuggestions, type SuggestionResponseDto } from '@immich/sdk';
   import { Text } from '@immich/ui';
+  import type { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   type Props = {
     filters: SearchCameraFilter;
+    libraryId?: string;
+    dateFilter?: SearchDateFilter;
   };
 
-  let { filters = $bindable() }: Props = $props();
+  let { filters = $bindable(), libraryId, dateFilter }: Props = $props();
 
   let makes: SuggestionResponseDto[] = $state([]);
   let models: SuggestionResponseDto[] = $state([]);
   let lensModels: SuggestionResponseDto[] = $state([]);
 
-  async function updateMakes() {
+  const startTime = $derived(
+    dateFilter?.takenAfter
+      ? (asLocalTimeISO(dateFilter.takenAfter.startOf('day') as DateTime<true>) ?? undefined)
+      : undefined,
+  );
+  const endTime = $derived(
+    dateFilter?.takenBefore
+      ? (asLocalTimeISO(dateFilter.takenBefore.endOf('day') as DateTime<true>) ?? undefined)
+      : undefined,
+  );
+
+  async function updateMakes(libraryId?: string, startTime?: string, endTime?: string) {
     makes = await getSearchSuggestions({
       $type: SearchSuggestionType.CameraMake,
+      libraryId,
+      startTime,
+      endTime,
       includeNull: true,
     });
 
@@ -30,10 +48,13 @@
     }
   }
 
-  async function updateModels(make?: string) {
+  async function updateModels(make?: string, libraryId?: string, startTime?: string, endTime?: string) {
     models = await getSearchSuggestions({
       $type: SearchSuggestionType.CameraModel,
       make,
+      libraryId,
+      startTime,
+      endTime,
       includeNull: true,
     });
 
@@ -42,11 +63,20 @@
     }
   }
 
-  async function updateLensModels(make?: string, model?: string) {
+  async function updateLensModels(
+    make?: string,
+    model?: string,
+    libraryId?: string,
+    startTime?: string,
+    endTime?: string,
+  ) {
     lensModels = await getSearchSuggestions({
       $type: SearchSuggestionType.CameraLensModel,
       make,
       model,
+      libraryId,
+      startTime,
+      endTime,
       includeNull: true,
     });
 
@@ -58,16 +88,16 @@
   const makeFilter = $derived(filters.make);
   const modelFilter = $derived(filters.model);
   const lensModelFilter = $derived(filters.lensModel);
+  const currentLibraryId = $derived(libraryId);
 
-  // TODO replace by async $derived, at the latest when it's in stable https://svelte.dev/docs/svelte/await-expressions
   $effect(() => {
-    handlePromiseError(updateMakes());
+    handlePromiseError(updateMakes(currentLibraryId, startTime, endTime));
   });
   $effect(() => {
-    handlePromiseError(updateModels(makeFilter));
+    handlePromiseError(updateModels(makeFilter, currentLibraryId, startTime, endTime));
   });
   $effect(() => {
-    handlePromiseError(updateLensModels(makeFilter, modelFilter));
+    handlePromiseError(updateLensModels(makeFilter, modelFilter, currentLibraryId, startTime, endTime));
   });
 </script>
 

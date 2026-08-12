@@ -14,17 +14,22 @@
 
   type Props = {
     filters: SearchDateFilter;
+    libraryId?: string;
   };
 
-  let { filters = $bindable() }: Props = $props();
+  let { filters = $bindable(), libraryId }: Props = $props();
 
   let presetTimeRanges: SuggestionResponseDto[] = $state([]);
 
-  async function loadAllPresetTimeRanges() {
+  async function loadAllPresetTimeRanges(libraryId?: string) {
     presetTimeRanges = await getSearchSuggestions({
       $type: SearchSuggestionType.PresetTimeRange,
+      libraryId,
     });
   }
+
+  let currentLibraryId = $derived(libraryId);
+  $effect(() => handlePromiseError(loadAllPresetTimeRanges(currentLibraryId)));
 
   const handlePresetTimeRangeSelect = (option: FilterableSelectionListOptions | undefined) => {
     if (option?.value) {

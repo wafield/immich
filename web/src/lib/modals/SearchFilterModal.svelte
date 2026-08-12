@@ -2,14 +2,13 @@
   import SearchCameraSection from '$lib/components/shared-components/search-bar/SearchCameraSection.svelte';
   import SearchDateSection from '$lib/components/shared-components/search-bar/SearchDateSection.svelte';
   import SearchDisplaySection from '$lib/components/shared-components/search-bar/SearchDisplaySection.svelte';
+  import SearchLibrarySection from '$lib/components/shared-components/search-bar/SearchLibrarySection.svelte';
   import SearchLocationSection from '$lib/components/shared-components/search-bar/SearchLocationSection.svelte';
   import SearchMediaSection from '$lib/components/shared-components/search-bar/SearchMediaSection.svelte';
-  import SearchPeopleSection from '$lib/components/shared-components/search-bar/SearchPeopleSection.svelte';
   import SearchRatingsSection from '$lib/components/shared-components/search-bar/SearchRatingsSection.svelte';
   import SearchTagsSection from '$lib/components/shared-components/search-bar/SearchTagsSection.svelte';
   import SearchTextSection from '$lib/components/shared-components/search-bar/SearchTextSection.svelte';
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { SearchFilter } from '$lib/types';
   import { asLocalTimeISO, parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
@@ -113,6 +112,7 @@
             ? MediaType.Video
             : MediaType.All,
       rating: searchQuery.rating,
+      libraryId: searchQuery.libraryId ?? undefined,
     };
   };
 
@@ -140,6 +140,7 @@
       },
       mediaType: MediaType.All,
       rating: undefined,
+      libraryId: undefined,
     };
   };
 
@@ -185,6 +186,7 @@
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
+      libraryId: filter.libraryId || undefined,
     };
 
     onClose(payload);
@@ -222,14 +224,25 @@
           <SearchRatingsSection bind:rating={filter.rating} />
         </div>
 
+        <!-- LIBRARY -->
+        <SearchLibrarySection bind:libraryId={filter.libraryId} />
+
         <!-- DATE -->
-        <SearchDateSection bind:filters={filter.date} />
+        <SearchDateSection bind:filters={filter.date} libraryId={filter.libraryId} />
 
         <!-- LOCATION -->
-        <SearchLocationSection bind:filters={filter.location} />
+        <SearchLocationSection
+          bind:filters={filter.location}
+          libraryId={filter.libraryId}
+          dateFilter={filter.date}
+        />
 
         <!-- CAMERA MODEL -->
-        <SearchCameraSection bind:filters={filter.camera} />
+        <SearchCameraSection
+          bind:filters={filter.camera}
+          libraryId={filter.libraryId}
+          dateFilter={filter.date}
+        />
 
         <!-- MEDIA TYPE -->
         <SearchMediaSection bind:filteredMedia={filter.mediaType} />
