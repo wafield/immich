@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { AssetFile } from 'src/database';
 import { OnJob } from 'src/decorators';
@@ -53,6 +52,7 @@ import { getLivePhotoMotionFilename } from 'src/utils/file';
 
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { batched, findOrFail } from 'src/utils/misc';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
@@ -287,30 +287,11 @@ export class AssetService extends BaseService {
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
 
-    let chunk: Array<{ id: string; isOffline: boolean }> = [];
-    const queueChunk = async () => {
-      if (chunk.length === 0) {
-        return;
-      }
-
+    for await (const assets of batched(this.assetJobRepository.streamForDeletedJob(trashedBefore))) {
       await this.jobRepository.queueAll(
-        chunk.map(({ id, isOffline }) => ({
-          name: JobName.AssetDelete,
-          data: { id, deleteOnDisk: !isOffline },
-        })),
+        assets.map(({ id, isOffline }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: !isOffline } })),
       );
-      chunk = [];
-    };
-
-    const assets = this.assetJobRepository.streamForDeletedJob(trashedBefore);
-    for await (const asset of assets) {
-      chunk.push(asset);
-      if (chunk.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueChunk();
-      }
     }
-
-    await queueChunk();
 
     return JobStatus.Success;
   }
@@ -505,12 +486,8 @@ export class AssetService extends BaseService {
     await this.jobRepository.queueAll(jobs);
   }
 
-  private async findOrFail(id: string) {
-    const asset = await this.assetRepository.getById(id);
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-    return asset;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.assetRepository.getById(id), 'Asset');
   }
 
   private async updateExif(dto: {

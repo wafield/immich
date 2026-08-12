@@ -536,7 +536,7 @@
     </div>
   {/if}
 
-  {#if $slideshowState != SlideshowState.None}
+  {#if $slideshowState !== SlideshowState.None}
     <div class="absolute inset-s-0 top-0 flex w-full justify-start">
       <SlideshowBar
         {isFullScreen}
