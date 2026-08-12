@@ -7934,6 +7934,7 @@ export enum JobName {
     IntegrityDeleteReports = "IntegrityDeleteReports"
 }
 export enum SearchSuggestionType {
+    Library = "library",
     Country = "country",
     State = "state",
     City = "city",

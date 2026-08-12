@@ -11,6 +11,7 @@ import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import {
   anyUuid,
+  asUuid,
   searchAssetBuilder,
   searchAssetBuilderLegacy,
   searchMetadataV3Examples,
@@ -183,7 +184,19 @@ export interface AssetDuplicateResult {
   distance: number;
 }
 
-export interface GetStatesOptions {
+export interface GetPresetTimeRangesOptions {
+  libraryId?: string;
+}
+
+export interface BaseSearchSuggestionOptions {
+  libraryId?: string;
+  startTime?: Date;
+  endTime?: Date;
+}
+
+export interface GetCountriesOptions extends BaseSearchSuggestionOptions {}
+
+export interface GetStatesOptions extends BaseSearchSuggestionOptions {
   country?: string;
 }
 
@@ -191,17 +204,17 @@ export interface GetCitiesOptions extends GetStatesOptions {
   state?: string;
 }
 
-export interface GetCameraModelsOptions {
+export interface GetCameraModelsOptions extends BaseSearchSuggestionOptions {
   make?: string;
   lensModel?: string;
 }
 
-export interface GetCameraMakesOptions {
+export interface GetCameraMakesOptions extends BaseSearchSuggestionOptions {
   model?: string;
   lensModel?: string;
 }
 
-export interface GetCameraLensModelsOptions {
+export interface GetCameraLensModelsOptions extends BaseSearchSuggestionOptions {
   make?: string;
   model?: string;
 }
@@ -462,8 +475,9 @@ export class SearchRepository {
       .execute();
   }
 
-  async getCountries(userIds: string[]): Promise<SuggestionResponseDto[]> {
-    return this.getExifSuggestions('country', userIds);
+  @GenerateSql({ params: [[DummyValue.UUID], { country: DummyValue.STRING }] })
+  async getCountries(userIds: string[], options: GetCountriesOptions = {}): Promise<SuggestionResponseDto[]> {
+    return this.getExifSuggestions('country', userIds, options);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { country: DummyValue.STRING }] })
@@ -492,7 +506,42 @@ export class SearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  async getPresetTimeRanges(userIds: string[]): Promise<SuggestionResponseDto[]> {
+  async getLibraries(userIds: string[]): Promise<SuggestionResponseDto[]> {
+    const res = await this.db
+      .selectFrom('library')
+      .leftJoin('asset', (join) =>
+        join
+          .onRef('asset.libraryId', '=', 'library.id')
+          .on('asset.visibility', '=', AssetVisibility.Timeline)
+          .on('asset.deletedAt', 'is', null),
+      )
+      .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .select([
+        'library.name as suggestion',
+        (eb) => eb.fn.count<number>('asset.id').as('assetCount'),
+        (eb) => eb.fn.min<Date>('asset_exif.dateTimeOriginal').as('startTime'),
+        (eb) => eb.fn.max<Date>('asset_exif.dateTimeOriginal').as('endTime'),
+      ])
+      .where('library.ownerId', '=', anyUuid(userIds))
+      .where('library.deletedAt', 'is', null)
+      .groupBy(['library.id', 'library.name'])
+      .orderBy('library.name', 'asc')
+      .execute();
+
+    return res.map((row) => ({
+      suggestion: row.suggestion,
+      startTime: row.startTime ? new Date(row.startTime) : null,
+      endTime: row.endTime ? new Date(row.endTime) : null,
+      assetCount: Number(row.assetCount),
+    }));
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], { libraryId: DummyValue.UUID }] })
+  async getPresetTimeRanges(
+    userIds: string[],
+    options: GetPresetTimeRangesOptions = {},
+  ): Promise<SuggestionResponseDto[]> {
+    const { libraryId } = options;
     const now = new Date();
     const lastWeekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const lastMonthStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -517,6 +566,7 @@ export class SearchRepository {
         .where('deletedAt', 'is', null)
         .where('dateTimeOriginal', '>=', range.startTime)
         .where('dateTimeOriginal', '<=', range.endTime)
+        .$if(!!libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(libraryId!)))
         .executeTakeFirst();
 
       presets.push({
@@ -539,6 +589,7 @@ export class SearchRepository {
       .where('visibility', '=', AssetVisibility.Timeline)
       .where('deletedAt', 'is', null)
       .where('dateTimeOriginal', 'is not', null)
+      .$if(!!libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(libraryId!)))
       .groupBy(sql`TO_CHAR("dateTimeOriginal", 'YYYY')`)
       .orderBy(sql`TO_CHAR("dateTimeOriginal", 'YYYY')`, 'desc')
       .execute();
@@ -586,9 +637,12 @@ export class SearchRepository {
       make?: string;
       model?: string;
       lensModel?: string;
+      libraryId?: string;
+      startTime?: Date;
+      endTime?: Date;
     } = {},
   ): Promise<SuggestionResponseDto[]> {
-    const { country, state, make, model, lensModel } = options;
+    const { country, state, make, model, lensModel, libraryId, startTime, endTime } = options;
 
     const res = await this.db
       .selectFrom('asset_exif')
@@ -609,6 +663,9 @@ export class SearchRepository {
       .$if(!!make, (qb) => qb.where('make', '=', make!))
       .$if(!!model, (qb) => qb.where('model', '=', model!))
       .$if(!!lensModel, (qb) => qb.where('lensModel', '=', lensModel!))
+      .$if(!!libraryId, (qb) => qb.where('asset.libraryId', '=', asUuid(libraryId!)))
+      .$if(!!startTime, (qb) => qb.where('dateTimeOriginal', '>=', startTime!))
+      .$if(!!endTime, (qb) => qb.where('dateTimeOriginal', '<=', endTime!))
       .groupBy(field)
       .execute();
 

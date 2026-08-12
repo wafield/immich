@@ -123,6 +123,7 @@ const PlacesResponseSchema = z
   .meta({ id: 'PlacesResponseDto' });
 
 export enum SearchSuggestionType {
+  LIBRARY = 'library',
   /** A list of all possible years, plus a few preset options (e.g. "Last Year"). */
   PRESET_TIME_RANGE = 'preset-time-range',
   COUNTRY = 'country',
@@ -146,6 +147,9 @@ const SearchSuggestionRequestSchema = z
     make: z.string().optional().describe('Filter by camera make'),
     model: z.string().optional().describe('Filter by camera model'),
     lensModel: z.string().optional().describe('Filter by lens model'),
+    libraryId: z.uuidv4().optional().describe('Filter by library ID'),
+    startTime: isoDatetimeToDate.optional().describe('Filter by start date taken'),
+    endTime: isoDatetimeToDate.optional().describe('Filter by end date taken'),
     includeNull: stringToBool
       .optional()
       .describe('Include null values in suggestions')

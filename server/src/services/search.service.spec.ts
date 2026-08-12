@@ -103,7 +103,7 @@ describe(SearchService.name, () => {
       await expect(
         sut.getSearchSuggestions(authStub.user1, dto),
       ).resolves.toEqual(mockResult);
-      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id], dto);
     });
 
     it('should return search suggestions for country (including null)', async () => {
@@ -118,7 +118,7 @@ describe(SearchService.name, () => {
         ...mockResult,
         { suggestion: null, startTime: null, endTime: null, assetCount: 0 },
       ]);
-      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(mocks.search.getCountries).toHaveBeenCalledWith([authStub.user1.user.id], dto);
     });
 
     it('should return search suggestions for state', async () => {
@@ -246,20 +246,23 @@ describe(SearchService.name, () => {
       mocks.search.getPresetTimeRanges.mockResolvedValue([...mockResult]);
       mocks.partner.getAll.mockResolvedValue([]);
 
-      const dto = { includeNull: false, type: SearchSuggestionType.PRESET_TIME_RANGE };
+      const dto = { includeNull: false, type: SearchSuggestionType.PRESET_TIME_RANGE, libraryId: 'library-id-123' };
       await expect(
         sut.getSearchSuggestions(authStub.user1, dto),
       ).resolves.toEqual(mockResult);
-      expect(mocks.search.getPresetTimeRanges).toHaveBeenCalledWith([authStub.user1.user.id]);
+      expect(mocks.search.getPresetTimeRanges).toHaveBeenCalledWith([authStub.user1.user.id], dto);
     });
 
-    it('should return empty list for library-name search suggestions', async () => {
+    it('should return search suggestions for libraries', async () => {
+      const mockResult = [{ suggestion: 'My Library', startTime: new Date(), endTime: new Date(), assetCount: 15 }];
+      mocks.search.getLibraries.mockResolvedValue([...mockResult]);
       mocks.partner.getAll.mockResolvedValue([]);
 
-      const dto = { includeNull: false, type: SearchSuggestionType.LIBRARY_NAME };
+      const dto = { includeNull: false, type: SearchSuggestionType.LIBRARY };
       await expect(
         sut.getSearchSuggestions(authStub.user1, dto),
-      ).resolves.toEqual([]);
+      ).resolves.toEqual(mockResult);
+      expect(mocks.search.getLibraries).toHaveBeenCalledWith([authStub.user1.user.id]);
     });
   });
 

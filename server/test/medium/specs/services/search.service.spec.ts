@@ -224,6 +224,80 @@ describe(SearchService.name, () => {
         },
       ]);
     });
+
+    it('should return library search suggestions', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const library = await ctx.newLibrary({ ownerId: user.id, name: 'Upload Library' });
+      const { asset } = await ctx.newAsset({ ownerId: user.id, libraryId: library.id });
+      await ctx.newExif({ assetId: asset.id, dateTimeOriginal: new Date('2024-05-10T10:00:00Z') });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const suggestions = await sut.getSearchSuggestions(auth, {
+        type: SearchSuggestionType.LIBRARY,
+      });
+
+      expect(suggestions).toEqual([
+        {
+          suggestion: 'Upload Library',
+          startTime: new Date('2024-05-10T10:00:00Z'),
+          endTime: new Date('2024-05-10T10:00:00Z'),
+          assetCount: 1,
+        },
+      ]);
+    });
+
+    it('should filter preset time ranges by libraryId', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const library1 = await ctx.newLibrary({ ownerId: user.id, name: 'Lib 1' });
+      const library2 = await ctx.newLibrary({ ownerId: user.id, name: 'Lib 2' });
+
+      const { asset: asset1 } = await ctx.newAsset({ ownerId: user.id, libraryId: library1.id });
+      await ctx.newExif({ assetId: asset1.id, dateTimeOriginal: new Date('2024-06-15T10:00:00Z') });
+
+      const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id, libraryId: library2.id });
+      await ctx.newExif({ assetId: asset2.id, dateTimeOriginal: new Date('2024-06-15T10:00:00Z') });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const suggestions = await sut.getSearchSuggestions(auth, {
+        type: SearchSuggestionType.PRESET_TIME_RANGE,
+        libraryId: library1.id,
+      });
+
+      const year2024Suggestion = suggestions.find((s) => s.suggestion === '2024');
+      expect(year2024Suggestion).toBeDefined();
+      expect(year2024Suggestion?.assetCount).toBe(1);
+    });
+
+    it('should filter EXIF suggestions by startTime and endTime', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      const { asset: assetEarly } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: assetEarly.id, country: 'USA', dateTimeOriginal: new Date('2023-01-01T10:00:00Z') });
+
+      const { asset: assetLate } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: assetLate.id, country: 'Canada', dateTimeOriginal: new Date('2024-01-01T10:00:00Z') });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const suggestions = await sut.getSearchSuggestions(auth, {
+        type: SearchSuggestionType.COUNTRY,
+        startTime: new Date('2023-12-01T00:00:00Z'),
+        endTime: new Date('2024-12-31T23:59:59Z'),
+      });
+
+      expect(suggestions).toEqual([
+        {
+          suggestion: 'Canada',
+          startTime: new Date('2024-01-01T10:00:00Z'),
+          endTime: new Date('2024-01-01T10:00:00Z'),
+          assetCount: 1,
+        },
+      ]);
+    });
   });
 
   describe('searchRandom', () => {
