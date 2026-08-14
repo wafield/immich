@@ -242,13 +242,7 @@
     style:width="inherit"
     style:height="inherit"
   >
-    <div
-      class={[
-        'absolute size-full bg-transparent transition-transform select-none',
-        { 'scale-[0.95]': selected },
-        { 'rounded-xl ring-4 ring-primary': selected },
-      ]}
-    >
+    <div class={['absolute size-full bg-transparent transition-transform select-none']}>
       <ImageThumbnail
         class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
         brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', selected && 'rounded-2xl', brokenAssetClass]}
@@ -475,9 +469,18 @@
     <div
       class={[
         'pointer-events-none absolute z-1 size-full outline-immich-primary group-focus-visible:outline-4 group-focus-visible:-outline-offset-4 dark:outline-immich-dark-primary',
-        { 'rounded-xl': selected },
       ]}
       data-outline
     ></div>
+
+    <!-- Overall selection status -->
+    {#if selected}
+      <div
+        class={[
+          'border-5 border-indigo-400 dark:border-indigo-600 pointer-events-none absolute z-1 size-full rounded-xl',
+        ]}
+        data-outline
+      ></div>
+    {/if}
   </div>
 </div>
