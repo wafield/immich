@@ -299,6 +299,7 @@ export enum Permission {
   WorkflowRead = 'workflow.read',
   WorkflowUpdate = 'workflow.update',
   WorkflowDelete = 'workflow.delete',
+  WorkflowLogs = 'workflow.logs',
 
   AdminUserCreate = 'adminUser.create',
   AdminUserRead = 'adminUser.read',
@@ -1235,6 +1236,17 @@ export enum CalendarHeatmapType {
   Upload = 'Upload',
   Taken = 'Taken',
 }
+
+export enum WorkflowResult {
+  Completed = 'completed',
+  Halted = 'halted',
+  Error = 'error',
+}
+
+export const WorkflowResultSchema = z
+  .enum(WorkflowResult)
+  .describe('Workflow run result')
+  .meta({ id: 'WorkflowResult' });
 
 export enum SearchOrderField {
   FileCreatedAt = 'fileCreatedAt',
