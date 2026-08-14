@@ -29812,8 +29812,7 @@
         "description": "Plugin trigger type",
         "enum": [
           "AssetCreate",
-          "AssetMetadataExtraction",
-          "AssetTagged"
+          "AssetMetadataExtraction"
         ],
         "type": "string"
       },

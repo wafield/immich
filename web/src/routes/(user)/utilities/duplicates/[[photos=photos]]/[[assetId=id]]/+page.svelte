@@ -8,6 +8,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
@@ -55,6 +56,7 @@
   let duplicates = $state(data.duplicates);
   let showMore = $state(false);
   let imageSize = $state<'S' | 'M' | 'L' | 'Full'>('M');
+  let usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -274,15 +276,17 @@
           Full
         </Button>
       </div>
-      <IconButton
-        shape="round"
-        variant="ghost"
-        color="secondary"
-        icon={mdiKeyboard}
-        title={$t('show_keyboard_shortcuts')}
-        onclick={() => modalManager.show(ShortcutsModal, { shortcuts: duplicateShortcuts })}
-        aria-label={$t('show_keyboard_shortcuts')}
-      />
+      {#if !usingMobileDevice}
+        <IconButton
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          icon={mdiKeyboard}
+          title={$t('show_keyboard_shortcuts')}
+          onclick={() => modalManager.show(ShortcutsModal, { shortcuts: duplicateShortcuts })}
+          aria-label={$t('show_keyboard_shortcuts')}
+        />
+      {/if}
     </HStack>
   {/snippet}
 
