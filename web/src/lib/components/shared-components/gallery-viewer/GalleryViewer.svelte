@@ -33,6 +33,8 @@
     TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
   } = TUNABLES;
 
+  const ASSET_NAME_HEIGHT = 42;
+
   type Props = {
     assets: AssetResponseDto[];
     viewerAssets?: AssetResponseDto[];
@@ -76,14 +78,51 @@
     }),
   );
 
+  // Build an array of row indices for each asset.
+  // This is used to calculate the top offset for each asset, in case asset names are shown.
+  const itemRowIndices = $derived.by(() => {
+    if (assets.length === 0) {
+      return [];
+    }
+
+    const indices: number[] = new Array(assets.length);
+    let currentRow = 0;
+    let lastTop = geometry.getTop(0);
+    indices[0] = 0;
+    for (let i = 1; i < assets.length; i++) {
+      const top = geometry.getTop(i);
+      if (Math.abs(top - lastTop) > 1) {
+        currentRow++;
+        lastTop = top;
+      }
+      indices[i] = currentRow;
+    }
+    return indices;
+  });
+
+  const rowCount = $derived(assets.length === 0 ? 0 : (itemRowIndices[assets.length - 1] ?? 0) + 1);
+
+  // Overall container height may need to account for the asset name height if they are shown.
+  const containerHeight = $derived(geometry.containerHeight + (showAssetName ? rowCount * ASSET_NAME_HEIGHT : 0));
+
+  const getTop = (index: number) => {
+    const baseTop = geometry.getTop(index);
+    if (!showAssetName) {
+      return baseTop;
+    }
+    const rowIndex = itemRowIndices[index] ?? 0;
+    return baseTop + rowIndex * ASSET_NAME_HEIGHT;
+  };
+
   const getStyle = (index: number) => {
-    return `top: ${geometry.getTop(index)}px; left: ${geometry.getLeft(index)}px; width: ${geometry.getWidth(index)}px; height: ${geometry.getHeight(index)}px;`;
+    return `top: ${getTop(index)}px; left: ${geometry.getLeft(index)}px; width: ${geometry.getWidth(index)}px; height: ${geometry.getHeight(index)}px;`;
   };
 
   const isInOrNearViewport = (index: number) => {
     const window = slidingWindow;
-    const top = geometry.getTop(index);
-    return top + pageHeaderOffset < window.bottom && top + geometry.getHeight(index) > window.top;
+    const top = getTop(index);
+    const itemHeight = geometry.getHeight(index) + (showAssetName ? ASSET_NAME_HEIGHT : 0);
+    return top + pageHeaderOffset < window.bottom && top + itemHeight > window.top;
   };
 
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
@@ -158,14 +197,13 @@
   let lastEndReachedHeight = 0;
   $effect(() => {
     const viewHeight = effectiveViewportHeight;
-    if (geometry.containerHeight - slidingWindow.bottom > viewHeight) {
+    if (containerHeight - slidingWindow.bottom > viewHeight) {
       return;
     }
 
-    const contentHeight = geometry.containerHeight;
-    if (lastEndReachedHeight !== contentHeight) {
+    if (lastEndReachedHeight !== containerHeight) {
       debouncedOnEndReached();
-      lastEndReachedHeight = contentHeight;
+      lastEndReachedHeight = containerHeight;
     }
   });
 
@@ -393,13 +431,13 @@
   <div
     bind:this={containerElement}
     style:position="relative"
-    style:height={geometry.containerHeight + 'px'}
+    style:height={containerHeight + 'px'}
     style:width={geometry.containerWidth + 'px'}
   >
     {#each assets as asset, index (asset.id + '-' + index)}
       {#if isInOrNearViewport(index)}
         {@const currentAsset = toTimelineAsset(asset)}
-        <div class="absolute" style:overflow="clip" style={getStyle(index)}>
+        <div class="absolute" style={getStyle(index)}>
           <Thumbnail
             readonly={disableAssetSelect}
             onClick={() => {
@@ -421,7 +459,7 @@
           />
           {#if showAssetName && !isTimelineAsset(asset)}
             <div
-              class="absolute bottom-0 w-full overflow-clip bg-slate-50/75 bg-linear-to-t p-1 text-center font-mono text-xs font-semibold text-ellipsis whitespace-pre-wrap dark:bg-slate-800/75"
+              class="absolute top-[100%] h-[42px] w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs font-semibold whitespace-pre-wrap dark:bg-slate-800"
             >
               {asset.originalFileName}
             </div>
