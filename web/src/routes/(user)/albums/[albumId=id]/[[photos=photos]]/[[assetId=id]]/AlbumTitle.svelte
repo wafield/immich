@@ -35,7 +35,7 @@
     }
   };
 
-  const textClasses = 'text-2xl lg:text-6xl text-primary';
+  const textClasses = 'text-2xl md:text-4xl text-primary';
 </script>
 
 <div class="mb-2">

@@ -59,7 +59,7 @@
 <nav id="dashboard-navbar" class="h-(--navbar-height) w-dvw text-sm max-md:h-(--navbar-height-md)">
   <SkipLink text={$t('skip_to_content')} />
   <div
-    class="grid h-full grid-cols-[--spacing(32)_auto] items-center py-2 sidebar:grid-cols-[--spacing(64)_auto] {noBorder
+    class="grid h-full grid-cols-[--spacing(20)_auto] items-center py-2 sidebar:grid-cols-[--spacing(64)_auto] {noBorder
       ? ''
       : 'border-b'}"
   >

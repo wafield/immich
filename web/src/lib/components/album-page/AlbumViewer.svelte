@@ -76,7 +76,7 @@
   <Timeline enableRouting={true} {album} bind:timelineManager {options} assetInteraction={assetMultiSelectManager}>
     <section class="px-2 pt-8 md:px-0 md:pt-24">
       <!-- ALBUM TITLE -->
-      <h1 class="text-2xl text-primary transition-all outline-none md:text-4xl lg:text-6xl">
+      <h1 class="text-2xl text-primary transition-all outline-none md:text-4xl">
         {album.albumName}
       </h1>
 
