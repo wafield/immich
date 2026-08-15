@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import path, { parse } from 'node:path';
 import {
   ExpressionBuilder,
   Insertable,
@@ -15,6 +14,7 @@ import {
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
+import path, { parse } from 'node:path';
 import { LockableProperty, Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -1021,7 +1021,13 @@ export class AssetRepository {
               .as('ratio'),
           ])
           .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
-            qb.select(['asset_exif.city', 'asset_exif.country']),
+            qb.select([
+              'asset_exif.model',
+              'asset_exif.city',
+              'asset_exif.country',
+              'asset_exif.dateTimeOriginal',
+              'asset_exif.description',
+            ]),
           )
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
@@ -1147,8 +1153,11 @@ export class AssetRepository {
           ])
           .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
             qb.select((eb) => [
+              eb.fn.coalesce(eb.fn('array_agg', ['model']), sql.lit('{}')).as('model'),
               eb.fn.coalesce(eb.fn('array_agg', ['city']), sql.lit('{}')).as('city'),
               eb.fn.coalesce(eb.fn('array_agg', ['country']), sql.lit('{}')).as('country'),
+              eb.fn.coalesce(eb.fn('array_agg', ['dateTimeOriginal']), sql.lit('{}')).as('dateTimeOriginal'),
+              eb.fn.coalesce(eb.fn('array_agg', ['description']), sql.lit('{}')).as('description'),
             ]),
           )
           .$if(!!options.withCoordinates, (qb) =>

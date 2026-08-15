@@ -142,6 +142,12 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const country = assetResponse.exifInfo?.country;
   const people = assetResponse.people?.map((person) => person.name) || [];
 
+  const model = assetResponse.exifInfo?.model || null;
+  const description = assetResponse.exifInfo?.description || null;
+  const dateTimeOriginal = assetResponse.exifInfo?.dateTimeOriginal
+    ? fromISODateTimeUTCToObject(assetResponse.exifInfo.dateTimeOriginal)
+    : null;
+
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
   // Keep this consistent with the bucket loader (getTimes), which stores fileCreatedAt as UTC
   // components. The timeline sorts assets within a day by fileCreatedAt, so a mismatched
@@ -176,6 +182,9 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     latitude: assetResponse.exifInfo?.latitude || null,
     longitude: assetResponse.exifInfo?.longitude || null,
     originalFileName: assetResponse.originalFileName,
+    model,
+    dateTimeOriginal,
+    description,
   };
 };
 

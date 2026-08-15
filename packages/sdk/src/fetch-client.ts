@@ -2948,12 +2948,18 @@ export type TagUpdateDto = {
     color?: string | null;
 };
 export type TimeBucketAssetResponseDto = {
+    /** Array of camera model strings extracted from EXIF data */
+    model?: (string | null)[];
     /** Array of city names extracted from EXIF GPS data */
     city?: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country?: (string | null)[];
     /** Array of UTC timestamps when each asset was originally uploaded to Immich */
     createdAt: string[];
+    /** Array of original date taken timestamps in UTC extracted from EXIF data */
+    dateTimeOriginal?: (string | null)[];
+    /** Array of asset descriptions extracted from EXIF data */
+    description?: (string | null)[];
     /** Array of video/gif durations in milliseconds (null for static images) */
     duration: (number | null)[];
     /** Array of file creation timestamps in UTC */

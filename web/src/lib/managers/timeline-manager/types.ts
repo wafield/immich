@@ -43,6 +43,9 @@ export type TimelineAsset = {
   latitude?: number | null;
   longitude?: number | null;
   originalFileName?: string;
+  model?: string | null;
+  dateTimeOriginal?: TimelineDateTime | null;
+  description?: string | null;
 };
 
 export type MoveAsset = { asset: TimelineAsset; date: TimelineDate };

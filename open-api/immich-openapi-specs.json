@@ -28418,8 +28418,24 @@
             },
             "type": "array"
           },
+          "dateTimeOriginal": {
+            "description": "Array of original date taken timestamps extracted from EXIF data",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
           "deletedAt": {
             "description": "Array of UTC timestamps when each asset was moved to trash",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "description": {
+            "description": "Array of asset descriptions extracted from EXIF data",
             "items": {
               "nullable": true,
               "type": "string"
@@ -28521,6 +28537,14 @@
             "items": {
               "nullable": true,
               "type": "number"
+            },
+            "type": "array"
+          },
+          "model": {
+            "description": "Array of camera model strings extracted from EXIF data",
+            "items": {
+              "nullable": true,
+              "type": "string"
             },
             "type": "array"
           },

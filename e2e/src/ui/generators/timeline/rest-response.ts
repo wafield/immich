@@ -24,11 +24,14 @@ import type { MockTimelineAsset, MockTimelineData } from './timeline-config';
  */
 export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetResponseDto {
   const result: TimeBucketAssetResponseDto = {
+    model: [],
     id: [],
     ownerId: [],
     ratio: [],
     thumbhash: [],
     createdAt: [],
+    dateTimeOriginal: [],
+    description: [],
     fileCreatedAt: [],
     localOffsetHours: [],
     isFavorite: [],
@@ -44,11 +47,14 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
   };
 
   for (const asset of assets) {
+    result.model?.push(null);
     result.id.push(asset.id);
     result.ownerId.push(asset.ownerId);
     result.originalFileName.push(`${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`);
     result.ratio.push(asset.ratio);
     result.thumbhash.push(asset.thumbhash);
+    result.dateTimeOriginal?.push(asset.fileCreatedAt);
+    result.description?.push(null);
     result.fileCreatedAt.push(asset.fileCreatedAt);
     result.localOffsetHours.push(0); // Assuming UTC for mocks
     result.isFavorite.push(asset.isFavorite);

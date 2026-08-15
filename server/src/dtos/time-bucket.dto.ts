@@ -140,8 +140,17 @@ const TimeBucketAssetResponseSchema = z
     livePhotoVideoId: z
       .array(z.string().nullable())
       .describe('Array of live photo video asset IDs (null for non-live photos)'),
+    model: z.array(z.string().nullable()).optional().describe('Array of camera model strings extracted from EXIF data'),
     city: z.array(z.string().nullable()).optional().describe('Array of city names extracted from EXIF GPS data'),
     country: z.array(z.string().nullable()).optional().describe('Array of country names extracted from EXIF GPS data'),
+    dateTimeOriginal: z
+      .array(z.string().nullable())
+      .optional()
+      .describe('Array of original date taken timestamps extracted from EXIF data'),
+    description: z
+      .array(z.string().nullable())
+      .optional()
+      .describe('Array of asset descriptions extracted from EXIF data'),
     latitude: z
       .array(z.number().nullable())
       .optional()

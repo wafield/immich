@@ -129,9 +129,12 @@ describe(TimelineService.name, () => {
       const rawResponse = await sut.getTimeBucket(factory.auth(), { timeBucket: '1970-02-01' });
       const response = JSON.parse(rawResponse);
       expect(response).toEqual({
+        model: [],
         city: [],
         country: [],
         createdAt: [],
+        dateTimeOriginal: [],
+        description: [],
         duration: [],
         id: [],
         visibility: [],

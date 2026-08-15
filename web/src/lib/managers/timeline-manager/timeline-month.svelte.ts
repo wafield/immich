@@ -215,6 +215,11 @@ export class TimelineMonth {
         thumbhash: bucketAssets.thumbhash[i],
         people: null, // People are not included in the bucket assets
         originalFileName: bucketAssets.originalFileName[i],
+        model: bucketAssets.model?.[i] ?? null,
+        description: bucketAssets.description?.[i] ?? null,
+        dateTimeOriginal: bucketAssets.dateTimeOriginal?.at(i)
+          ? fromISODateTimeUTC(bucketAssets.dateTimeOriginal[i]!).toLocal().toObject()
+          : null,
       };
 
       if (bucketAssets.latitude?.at(i) && bucketAssets.longitude?.at(i)) {

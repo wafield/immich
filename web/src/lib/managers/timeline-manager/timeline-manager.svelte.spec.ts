@@ -94,11 +94,14 @@ describe('TimelineManager', () => {
       expect(timelineManager.totalViewerHeight).toBe(8337);
     });
 
-    it('populates originalFileName on timeline assets', () => {
+    it('populates originalFileName, model, dateTimeOriginal, description on timeline assets', () => {
       const firstAsset = timelineManager.getFirstAsset();
       expect(firstAsset).toBeDefined();
       expect(firstAsset?.originalFileName).toBeDefined();
       expect(typeof firstAsset?.originalFileName).toBe('string');
+      expect(firstAsset).toHaveProperty('model');
+      expect(firstAsset).toHaveProperty('dateTimeOriginal');
+      expect(firstAsset).toHaveProperty('description');
     });
   });
 

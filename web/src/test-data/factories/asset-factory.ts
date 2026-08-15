@@ -56,12 +56,18 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   country: faker.location.country(),
   people: [faker.person.fullName()],
   originalFileName: Sync.each(() => faker.system.fileName()),
+  model: null,
+  dateTimeOriginal: null,
+  description: null,
 });
 
 export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
   const bucketAssets: TimeBucketAssetResponseDto = {
+    model: [],
     city: [],
     country: [],
+    dateTimeOriginal: [],
+    description: [],
     duration: [],
     id: [],
     visibility: [],
@@ -85,8 +91,13 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
   };
   for (const asset of timelineAsset) {
     const fileCreatedAt = fromTimelinePlainDateTime(asset.fileCreatedAt).toISO();
+    bucketAssets.model?.push(asset.model);
     bucketAssets.city?.push(asset.city);
     bucketAssets.country?.push(asset.country);
+    bucketAssets.dateTimeOriginal?.push(
+      asset.dateTimeOriginal ? fromTimelinePlainDateTime(asset.dateTimeOriginal).toISO() : null,
+    );
+    bucketAssets.description?.push(asset.description ?? null);
     bucketAssets.duration.push(asset.duration!);
     bucketAssets.id.push(asset.id);
     bucketAssets.visibility.push(asset.visibility);
