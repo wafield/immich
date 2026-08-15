@@ -1,5 +1,6 @@
 import { AssetOrder, AssetOrderBy } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
+import { ASSET_NAME_HEIGHT } from '$lib/constants';
 import type { CommonLayoutOptions, CommonPosition } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { getOrderingDate, plainDateTimeCompare } from '$lib/utils/timeline-util';
@@ -163,13 +164,42 @@ export class TimelineDay {
       this.#deferredLayout = true;
       return;
     }
+    const showAssetName = this.timelineMonth.timelineManager.showAssetName;
     const assets = this.viewerAssets.map((viewerAsset) => viewerAsset.asset!);
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
-    this.height = assets.length === 0 ? 0 : geometry.containerHeight;
-    // TODO: lazily get positions instead of loading them all here
-    for (let i = 0; i < this.viewerAssets.length; i++) {
-      this.viewerAssets[i].position = geometry.getPosition(i);
+
+    if (assets.length === 0) {
+      this.height = 0;
+    } else if (showAssetName) {
+      const itemRowIndices: number[] = new Array(assets.length);
+      let currentRow = 0;
+      let lastTop = geometry.getTop(0);
+      itemRowIndices[0] = 0;
+      for (let i = 1; i < assets.length; i++) {
+        const top = geometry.getTop(i);
+        if (Math.abs(top - lastTop) > 1) {
+          currentRow++;
+          lastTop = top;
+        }
+        itemRowIndices[i] = currentRow;
+      }
+      const rowCount = (itemRowIndices[assets.length - 1] ?? 0) + 1;
+      this.height = geometry.containerHeight + rowCount * ASSET_NAME_HEIGHT;
+
+      for (let i = 0; i < this.viewerAssets.length; i++) {
+        const basePosition = geometry.getPosition(i);
+        const rowIndex = itemRowIndices[i] ?? 0;
+        this.viewerAssets[i].position = {
+          ...basePosition,
+          top: basePosition.top + rowIndex * ASSET_NAME_HEIGHT,
+        };
+      }
+    } else {
+      this.height = geometry.containerHeight;
+      for (let i = 0; i < this.viewerAssets.length; i++) {
+        this.viewerAssets[i].position = geometry.getPosition(i);
+      }
     }
     this.updateAssetBoundaries();
   }
@@ -188,7 +218,8 @@ export class TimelineDay {
     const expandedTop = visibleWindow.top - headerHeight - INTERSECTION_EXPAND_TOP - dayOffset;
     const expandedBottom = visibleWindow.bottom + headerHeight + INTERSECTION_EXPAND_BOTTOM - dayOffset;
 
-    const first = lowerBound(this.viewerAssets, expandedTop, (p) => p.top + p.height);
+    const assetNameHeight = manager.showAssetName ? ASSET_NAME_HEIGHT : 0;
+    const first = lowerBound(this.viewerAssets, expandedTop, (p) => p.top + p.height + assetNameHeight);
     const last = lowerBound(this.viewerAssets, expandedBottom, (p) => p.top) - 1;
 
     const hasActive = last >= first && first < this.viewerAssets.length;

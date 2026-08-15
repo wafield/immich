@@ -1,4 +1,5 @@
 import { AssetOrder, AssetOrderBy, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { ASSET_NAME_HEIGHT } from '$lib/constants';
 import { t } from 'svelte-i18n';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
@@ -348,9 +349,10 @@ export class TimelineMonth {
           console.warn('No position for asset');
           return;
         }
+        const assetNameExtra = this.timelineManager.showAssetName ? ASSET_NAME_HEIGHT : 0;
         return {
           top: this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight,
-          height: viewerAsset.position.height,
+          height: viewerAsset.position.height + assetNameExtra,
         };
       }
     }

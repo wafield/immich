@@ -109,6 +109,20 @@ export class TimelineManager extends VirtualScrollManager {
     this.#showAssetOwners.current = !this.#showAssetOwners.current;
   }
 
+  #showAssetName = $state(false);
+
+  get showAssetName() {
+    return this.#showAssetName;
+  }
+
+  set showAssetName(value: boolean) {
+    if (this.#showAssetName === value) {
+      return;
+    }
+    this.#showAssetName = value;
+    this.updateViewportGeometry(true);
+  }
+
   constructor() {
     super();
 

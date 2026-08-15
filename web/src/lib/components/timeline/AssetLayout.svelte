@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ASSET_NAME_HEIGHT } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
   import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
@@ -24,9 +25,18 @@
       ]
     >;
     customThumbnailLayout?: Snippet<[asset: TimelineAsset]>;
+    showAssetName?: boolean;
   };
 
-  const { viewerAssets, width, height, manager, thumbnail, customThumbnailLayout }: Props = $props();
+  const {
+    viewerAssets,
+    width,
+    height,
+    manager,
+    thumbnail,
+    customThumbnailLayout,
+    showAssetName = false,
+  }: Props = $props();
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
@@ -51,6 +61,14 @@
     >
       {@render thumbnail({ asset, position })}
       {@render customThumbnailLayout?.(asset)}
+      {#if showAssetName}
+        <div
+          class="absolute top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs font-semibold whitespace-pre-wrap dark:bg-slate-800"
+          style:height="{ASSET_NAME_HEIGHT}px"
+        >
+          {asset.originalFileName ?? ''}
+        </div>
+      {/if}
     </div>
   {/each}
 </div>

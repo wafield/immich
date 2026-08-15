@@ -29,6 +29,7 @@
     assetInteraction: AssetMultiSelectManager;
     timelineMonth: TimelineMonth;
     manager: VirtualScrollManager;
+    showAssetName?: boolean;
     onTimelineDaySelect: (timelineDay: TimelineDay, assets: TimelineAsset[]) => void;
   };
   let {
@@ -38,6 +39,7 @@
     assetInteraction,
     timelineMonth,
     manager,
+    showAssetName = false,
     onTimelineDaySelect,
   }: Props = $props();
 
@@ -102,6 +104,7 @@
       height={timelineDay.height}
       width={timelineDay.width}
       {customThumbnailLayout}
+      {showAssetName}
     >
       {#snippet thumbnail({ asset, position })}
         {@render thumbnailWithGroup({ asset, position, timelineDay, groupIndex })}

@@ -59,6 +59,7 @@
     children?: Snippet;
     empty?: Snippet;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
+    showAssetName?: boolean;
     onThumbnailClick?: (
       asset: TimelineAsset,
       timelineManager: TimelineManager,
@@ -91,6 +92,7 @@
     children,
     empty,
     customThumbnailLayout,
+    showAssetName = false,
     onThumbnailClick,
   }: Props = $props();
 
@@ -116,6 +118,10 @@
   $effect(() => {
     const layoutOptions = ROW_SIZE_LAYOUT_OPTIONS[$rowSize] ?? ROW_SIZE_LAYOUT_OPTIONS[RowSize.M];
     timelineManager.setLayoutOptions(layoutOptions);
+  });
+
+  $effect(() => {
+    timelineManager.showAssetName = showAssetName;
   });
 
   $effect(() => {
@@ -690,6 +696,7 @@
             {customThumbnailLayout}
             {singleSelect}
             {timelineMonth}
+            {showAssetName}
             manager={timelineManager}
             onTimelineDaySelect={handleGroupSelect}
           >
