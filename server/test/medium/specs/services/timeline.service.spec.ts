@@ -142,6 +142,7 @@ describe(TimelineService.name, () => {
         fileCreatedAt: [],
         localOffsetHours: [],
         ownerId: [],
+        originalFileName: [],
         projectionType: [],
         ratio: [],
         status: [],

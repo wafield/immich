@@ -40,11 +40,13 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     city: [],
     country: [],
     visibility: [],
+    originalFileName: [],
   };
 
   for (const asset of assets) {
     result.id.push(asset.id);
     result.ownerId.push(asset.ownerId);
+    result.originalFileName.push(`${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`);
     result.ratio.push(asset.ratio);
     result.thumbhash.push(asset.thumbhash);
     result.fileCreatedAt.push(asset.fileCreatedAt);

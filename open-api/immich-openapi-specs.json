@@ -28524,6 +28524,13 @@
             },
             "type": "array"
           },
+          "originalFileName": {
+            "description": "Array of original file names for each asset",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "ownerId": {
             "description": "Array of owner IDs for each asset",
             "items": {
@@ -28589,6 +28596,7 @@
           "libraryId",
           "livePhotoVideoId",
           "localOffsetHours",
+          "originalFileName",
           "ownerId",
           "projectionType",
           "ratio",

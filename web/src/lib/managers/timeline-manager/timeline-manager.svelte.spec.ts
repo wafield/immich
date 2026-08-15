@@ -93,6 +93,13 @@ describe('TimelineManager', () => {
     it('calculates timeline height', () => {
       expect(timelineManager.totalViewerHeight).toBe(8337);
     });
+
+    it('populates originalFileName on timeline assets', () => {
+      const firstAsset = timelineManager.getFirstAsset();
+      expect(firstAsset).toBeDefined();
+      expect(firstAsset?.originalFileName).toBeDefined();
+      expect(typeof firstAsset?.originalFileName).toBe('string');
+    });
   });
 
   describe('loadTimelineMonth', () => {

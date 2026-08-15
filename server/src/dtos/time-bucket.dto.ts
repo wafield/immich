@@ -101,6 +101,7 @@ const TimeBucketAssetResponseSchema = z
     ratio: z.array(z.number()).describe('Array of aspect ratios (width/height) for each asset'),
     isFavorite: z.array(z.boolean()).describe('Array indicating whether each asset is favorited'),
     isEdited: z.array(z.boolean()).describe('Array indicating whether each asset has been edited within Immich'),
+    originalFileName: z.array(z.string()).describe('Array of original file names for each asset'),
     hasSidecar: z.array(z.boolean()).describe('Array indicating whether each asset has an XMP sidecar file'),
     libraryId: z
       .array(z.string().nullable())

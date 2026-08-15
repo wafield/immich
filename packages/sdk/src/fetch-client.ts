@@ -2982,6 +2982,8 @@ export type TimeBucketAssetResponseDto = {
     longitude?: (number | null)[];
     /** Array of owner IDs for each asset */
     ownerId: string[];
+    /** Array of original file names for each asset */
+    originalFileName: string[];
     /** Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL") */
     projectionType: (string | null)[];
     /** Array of aspect ratios (width/height) for each asset */
