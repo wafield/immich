@@ -159,6 +159,10 @@ const TimeBucketAssetResponseSchema = z
       .array(z.number().nullable())
       .optional()
       .describe('Array of longitude coordinates extracted from EXIF GPS data'),
+    timeZone: z
+      .array(z.string().nullable())
+      .optional()
+      .describe('Array of time zones extracted from EXIF data'),
   })
   .meta({ id: 'TimeBucketAssetResponseDto' });
 

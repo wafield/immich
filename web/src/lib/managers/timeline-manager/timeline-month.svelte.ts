@@ -220,6 +220,7 @@ export class TimelineMonth {
         dateTimeOriginal: bucketAssets.dateTimeOriginal?.at(i)
           ? fromISODateTimeUTC(bucketAssets.dateTimeOriginal[i]!).toLocal().toObject()
           : null,
+        timeZone: bucketAssets.timeZone?.[i] ?? null,
       };
 
       if (bucketAssets.latitude?.at(i) && bucketAssets.longitude?.at(i)) {

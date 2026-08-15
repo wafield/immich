@@ -44,6 +44,7 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     country: [],
     visibility: [],
     originalFileName: [],
+    timeZone: [],
   };
 
   for (const asset of assets) {
@@ -66,6 +67,7 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     result.city?.push(asset.city);
     result.country?.push(asset.country);
     result.visibility.push(asset.visibility);
+    result.timeZone?.push(null);
   }
 
   if (assets.some((a) => a.latitude !== null || a.longitude !== null)) {

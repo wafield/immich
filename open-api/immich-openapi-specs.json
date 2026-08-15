@@ -28599,6 +28599,14 @@
             },
             "type": "array"
           },
+          "timeZone": {
+            "description": "Array of time zones extracted from EXIF data",
+            "items": {
+              "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
           "visibility": {
             "description": "Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)",
             "items": {

@@ -185,6 +185,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     model,
     dateTimeOriginal,
     description,
+    timeZone: assetResponse.exifInfo?.timeZone || null,
   };
 };
 

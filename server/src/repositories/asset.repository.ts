@@ -1027,6 +1027,7 @@ export class AssetRepository {
               'asset_exif.country',
               'asset_exif.dateTimeOriginal',
               'asset_exif.description',
+              'asset_exif.timeZone',
             ]),
           )
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
@@ -1158,6 +1159,7 @@ export class AssetRepository {
               eb.fn.coalesce(eb.fn('array_agg', ['country']), sql.lit('{}')).as('country'),
               eb.fn.coalesce(eb.fn('array_agg', ['dateTimeOriginal']), sql.lit('{}')).as('dateTimeOriginal'),
               eb.fn.coalesce(eb.fn('array_agg', ['description']), sql.lit('{}')).as('description'),
+              eb.fn.coalesce(eb.fn('array_agg', ['timeZone']), sql.lit('{}')).as('timeZone'),
             ]),
           )
           .$if(!!options.withCoordinates, (qb) =>

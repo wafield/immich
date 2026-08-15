@@ -46,6 +46,7 @@ export type TimelineAsset = {
   model?: string | null;
   dateTimeOriginal?: TimelineDateTime | null;
   description?: string | null;
+  timeZone?: string | null;
 };
 
 export type MoveAsset = { asset: TimelineAsset; date: TimelineDate };

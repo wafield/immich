@@ -2998,6 +2998,8 @@ export type TimeBucketAssetResponseDto = {
     stack?: (string[] | null)[];
     /** Array of BlurHash strings for generating asset previews (base64 encoded) */
     thumbhash: (string | null)[];
+    /** Array of time zones extracted from EXIF data */
+    timeZone?: (string | null)[];
     /** Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED) */
     visibility: AssetVisibility[];
 };

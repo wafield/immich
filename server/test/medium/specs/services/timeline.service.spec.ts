@@ -150,6 +150,7 @@ describe(TimelineService.name, () => {
         ratio: [],
         status: [],
         thumbhash: [],
+        timeZone: [],
       });
     });
 

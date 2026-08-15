@@ -59,6 +59,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   model: null,
   dateTimeOriginal: null,
   description: null,
+  timeZone: null,
 });
 
 export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
@@ -88,6 +89,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     ratio: [],
     stack: [],
     thumbhash: [],
+    timeZone: [],
   };
   for (const asset of timelineAsset) {
     const fileCreatedAt = fromTimelinePlainDateTime(asset.fileCreatedAt).toISO();
@@ -118,6 +120,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
       asset.stack ? [asset.stack.id, asset.stack.assetCount.toString(), asset.stack.stackType ?? null] : null,
     );
     bucketAssets.thumbhash.push(asset.thumbhash!);
+    bucketAssets.timeZone?.push(asset.timeZone ?? null);
   }
 
   return bucketAssets;
