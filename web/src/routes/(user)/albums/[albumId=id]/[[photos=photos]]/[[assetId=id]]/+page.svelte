@@ -512,7 +512,7 @@
     </AssetSelectControlBar>
   {/if}
   {#if viewMode === AlbumPageViewMode.VIEW}
-    <ControlAppBar class="w-fit ms-auto me-1 md:me-[60px] max-w-full mt-2">
+    <ControlAppBar>
       {#snippet trailing()}
         <ActionButton action={Cast} />
 
@@ -582,7 +582,7 @@
   {/if}
 
   {#if viewMode === AlbumPageViewMode.SELECT_ASSETS}
-    <ControlAppBar class="mx-auto w-fit max-w-full mt-2" onClose={handleCloseSelectAssets}>
+    <ControlAppBar onClose={handleCloseSelectAssets}>
       {#snippet leading()}
         <p class="text-lg dark:text-immich-dark-fg">
           {#if !timelineMultiSelectManager.selectionActive}
@@ -601,7 +601,7 @@
   {/if}
 
   {#if viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
-    <ControlAppBar class="mx-auto w-fit max-w-full mt-2" onClose={() => (viewMode = AlbumPageViewMode.VIEW)}>
+    <ControlAppBar onClose={() => (viewMode = AlbumPageViewMode.VIEW)}>
       {#snippet leading()}
         {$t('select_album_cover')}
       {/snippet}

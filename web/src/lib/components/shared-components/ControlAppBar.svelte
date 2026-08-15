@@ -28,41 +28,35 @@
 </script>
 
 <div
-  class="pointer-events-none inset-x-0 flex justify-center {placement === 'bottom'
-    ? 'fixed bottom-4 z-2'
-    : 'absolute top-0'}"
+  class="inset-e-0 me-1 w-fit max-w-full md:me-18 {placement === 'bottom' ? 'fixed bottom-4' : 'absolute top-4'}"
+  id="control-bar"
 >
-  <div
-    class="pointer-events-auto bg-transparent p-2 {placement === 'bottom' ? 'w-fit max-w-full' : 'w-full'}"
-    id="control-bar"
-  >
-    <ControlBar closeIcon={backIcon} {onClose} shape="semi-round" class={className}>
-      {#if title || leading}
-        <ControlBarHeader>
-          {#if title}
-            <ControlBarTitle>
-              {#if typeof title === 'string'}
-                {title}
-              {:else}
-                {@render title()}
-              {/if}
-            </ControlBarTitle>
-          {/if}
-          {@render leading?.()}
-        </ControlBarHeader>
-      {/if}
+  <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
+    {#if title || leading}
+      <ControlBarHeader>
+        {#if title}
+          <ControlBarTitle>
+            {#if typeof title === 'string'}
+              {title}
+            {:else}
+              {@render title()}
+            {/if}
+          </ControlBarTitle>
+        {/if}
+        {@render leading?.()}
+      </ControlBarHeader>
+    {/if}
 
-      {#if children}
-        <ControlBarContent>
-          {@render children()}
-        </ControlBarContent>
-      {/if}
+    {#if children}
+      <ControlBarContent>
+        {@render children()}
+      </ControlBarContent>
+    {/if}
 
-      {#if trailing}
-        <ControlBarOverflow>
-          {@render trailing()}
-        </ControlBarOverflow>
-      {/if}
-    </ControlBar>
-  </div>
+    {#if trailing}
+      <ControlBarOverflow>
+        {@render trailing()}
+      </ControlBarOverflow>
+    {/if}
+  </ControlBar>
 </div>
