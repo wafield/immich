@@ -511,10 +511,6 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LibrarySyncAssetsQueueAll, data: { id } });
   }
 
-  async queueScanAll() {
-    await this.jobRepository.queue({ name: JobName.LibraryScanQueueAll, data: {} });
-  }
-
   @OnJob({ name: JobName.LibraryScanQueueAll, queue: QueueName.Library })
   async handleQueueScanAll(): Promise<JobStatus> {
     this.logger.log(`Initiating scan of all external libraries...`);
