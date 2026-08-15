@@ -1,6 +1,6 @@
 import { AssetOrder, AssetOrderBy } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
-import { AssetInfoBarHeight } from '$lib/constants';
+import { AssetInfoBarHeight, AssetInfoDisplay } from '$lib/constants';
 import type { CommonLayoutOptions, CommonPosition } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { getOrderingDate, plainDateTimeCompare } from '$lib/utils/timeline-util';
@@ -164,14 +164,14 @@ export class TimelineDay {
       this.#deferredLayout = true;
       return;
     }
-    const showAssetName = this.timelineMonth.timelineManager.showAssetName;
+    const assetInfoDisplay = this.timelineMonth.timelineManager.assetInfoDisplay;
     const assets = this.viewerAssets.map((viewerAsset) => viewerAsset.asset!);
     const geometry = getJustifiedLayoutFromAssets(assets, options);
     this.width = geometry.containerWidth;
 
     if (assets.length === 0) {
       this.height = 0;
-    } else if (showAssetName) {
+    } else if (assetInfoDisplay !== AssetInfoDisplay.NONE) {
       const itemRowIndices: number[] = new Array(assets.length);
       let currentRow = 0;
       let lastTop = geometry.getTop(0);
@@ -218,8 +218,8 @@ export class TimelineDay {
     const expandedTop = visibleWindow.top - headerHeight - INTERSECTION_EXPAND_TOP - dayOffset;
     const expandedBottom = visibleWindow.bottom + headerHeight + INTERSECTION_EXPAND_BOTTOM - dayOffset;
 
-    const assetNameHeight = manager.showAssetName ? AssetInfoBarHeight : 0;
-    const first = lowerBound(this.viewerAssets, expandedTop, (p) => p.top + p.height + assetNameHeight);
+    const assetInfoBarHeight = manager.assetInfoDisplay !== AssetInfoDisplay.NONE ? AssetInfoBarHeight : 0;
+    const first = lowerBound(this.viewerAssets, expandedTop, (p) => p.top + p.height + assetInfoBarHeight);
     const last = lowerBound(this.viewerAssets, expandedBottom, (p) => p.top) - 1;
 
     const hasActive = last >= first && first < this.viewerAssets.length;

@@ -1,4 +1,4 @@
-import { AssetInfoBarHeight } from '$lib/constants';
+import { AssetInfoBarHeight, AssetInfoDisplay } from '$lib/constants';
 import { TimelineManager } from '../timeline-manager.svelte';
 import type { TimelineMonth } from '../timeline-month.svelte';
 import type { UpdateGeometryOptions } from '../types';
@@ -13,8 +13,9 @@ export function updateGeometry(timelineManager: TimelineManager, month: Timeline
     if (!month.isHeightActual) {
       const unwrappedWidth = (3 / 2) * month.assetsCount * timelineManager.rowHeight * (7 / 10);
       const rows = Math.ceil(unwrappedWidth / viewportWidth);
-      const assetNameExtra = timelineManager.showAssetName ? AssetInfoBarHeight : 0;
-      const height = timelineManager.headerHeight + Math.max(1, rows) * (timelineManager.rowHeight + assetNameExtra);
+      const assetInfoBarHeight = timelineManager.assetInfoDisplay !== AssetInfoDisplay.NONE ? AssetInfoBarHeight : 0;
+      const height =
+        timelineManager.headerHeight + Math.max(1, rows) * (timelineManager.rowHeight + assetInfoBarHeight);
       month.height = height;
     }
     return;

@@ -1,6 +1,7 @@
 import { AssetOrder, AssetOrderBy, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
+import { AssetInfoDisplay } from '$lib/constants';
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
@@ -109,17 +110,17 @@ export class TimelineManager extends VirtualScrollManager {
     this.#showAssetOwners.current = !this.#showAssetOwners.current;
   }
 
-  #showAssetName = $state(false);
+  #assetInfoDisplay = $state(AssetInfoDisplay.NONE);
 
-  get showAssetName() {
-    return this.#showAssetName;
+  get assetInfoDisplay() {
+    return this.#assetInfoDisplay;
   }
 
-  set showAssetName(value: boolean) {
-    if (this.#showAssetName === value) {
+  set assetInfoDisplay(value: AssetInfoDisplay) {
+    if (this.#assetInfoDisplay === value) {
       return;
     }
-    this.#showAssetName = value;
+    this.#assetInfoDisplay = value;
     this.updateViewportGeometry(true);
   }
 

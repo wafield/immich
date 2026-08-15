@@ -12,6 +12,7 @@
   import { Icon } from '@immich/ui';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import type { Snippet } from 'svelte';
+  import { AssetInfoDisplay } from '$lib/constants';
 
   type Props = {
     thumbnail: Snippet<
@@ -29,7 +30,7 @@
     assetInteraction: AssetMultiSelectManager;
     timelineMonth: TimelineMonth;
     manager: VirtualScrollManager;
-    showAssetName?: boolean;
+    assetInfoDisplay?: AssetInfoDisplay;
     onTimelineDaySelect: (timelineDay: TimelineDay, assets: TimelineAsset[]) => void;
   };
   let {
@@ -39,7 +40,7 @@
     assetInteraction,
     timelineMonth,
     manager,
-    showAssetName = false,
+    assetInfoDisplay = AssetInfoDisplay.NONE,
     onTimelineDaySelect,
   }: Props = $props();
 
@@ -104,7 +105,7 @@
       height={timelineDay.height}
       width={timelineDay.width}
       {customThumbnailLayout}
-      {showAssetName}
+      {assetInfoDisplay}
     >
       {#snippet thumbnail({ asset, position })}
         {@render thumbnailWithGroup({ asset, position, timelineDay, groupIndex })}

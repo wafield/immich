@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AssetInfoBarHeight } from '$lib/constants';
+  import { AssetInfoDisplay, AssetInfoBarHeight } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
   import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
@@ -25,7 +25,7 @@
       ]
     >;
     customThumbnailLayout?: Snippet<[asset: TimelineAsset]>;
-    showAssetName?: boolean;
+    assetInfoDisplay?: AssetInfoDisplay;
   };
 
   const {
@@ -35,7 +35,7 @@
     manager,
     thumbnail,
     customThumbnailLayout,
-    showAssetName = false,
+    assetInfoDisplay = AssetInfoDisplay.NONE,
   }: Props = $props();
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
@@ -61,7 +61,21 @@
     >
       {@render thumbnail({ asset, position })}
       {@render customThumbnailLayout?.(asset)}
-      {#if showAssetName}
+      {#if assetInfoDisplay === AssetInfoDisplay.FILE_NAME}
+        <div
+          class="absolute top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs font-semibold whitespace-pre-wrap dark:bg-slate-800"
+          style:height="{AssetInfoBarHeight}px"
+        >
+          {asset.originalFileName ?? ''}
+        </div>
+      {:else if assetInfoDisplay === AssetInfoDisplay.FILE_NAME_CAMERA_DATE_TIME}
+        <div
+          class="absolute top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs font-semibold whitespace-pre-wrap dark:bg-slate-800"
+          style:height="{AssetInfoBarHeight}px"
+        >
+          {asset.originalFileName ?? ''}
+        </div>
+      {:else if assetInfoDisplay === AssetInfoDisplay.DESCRIPTION}
         <div
           class="absolute top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs font-semibold whitespace-pre-wrap dark:bg-slate-800"
           style:height="{AssetInfoBarHeight}px"

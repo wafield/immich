@@ -2,7 +2,7 @@ import { AssetOrder, AssetOrderBy, type TimeBucketAssetResponseDto } from '@immi
 import { t } from 'svelte-i18n';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
-import { AssetInfoBarHeight } from '$lib/constants';
+import { AssetInfoDisplay, AssetInfoBarHeight } from '$lib/constants';
 import {
   ViewportProximity,
   isInOrNearViewport as isInOrNearViewportUtil,
@@ -350,10 +350,13 @@ export class TimelineMonth {
           console.warn('No position for asset');
           return;
         }
-        const assetNameExtra = this.timelineManager.showAssetName ? AssetInfoBarHeight : 0;
+        let assetInfoBarHeight = 0;
+        if (this.timelineManager.assetInfoDisplay !== AssetInfoDisplay.NONE) {
+          assetInfoBarHeight = AssetInfoBarHeight;
+        }
         return {
           top: this.top + group.top + viewerAsset.position.top + this.timelineManager.headerHeight,
-          height: viewerAsset.position.height + assetNameExtra,
+          height: viewerAsset.position.height + assetInfoBarHeight,
         };
       }
     }

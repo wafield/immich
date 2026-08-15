@@ -25,7 +25,7 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import { AlbumPageViewMode } from '$lib/constants';
+  import { AssetInfoDisplay, AlbumPageViewMode } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetMultiSelectManager, AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -356,7 +356,7 @@
     {onSelect}
     onEscape={handleEscape}
     withStacked={true}
-    showAssetName={true}
+    assetInfoDisplay={AssetInfoDisplay.FILE_NAME_CAMERA_DATE_TIME}
   >
     {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
       {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}

@@ -7,7 +7,7 @@
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
-  import { AssetAction } from '$lib/constants';
+  import { AssetAction, AssetInfoDisplay } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
@@ -59,7 +59,7 @@
     children?: Snippet;
     empty?: Snippet;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
-    showAssetName?: boolean;
+    assetInfoDisplay?: AssetInfoDisplay;
     onThumbnailClick?: (
       asset: TimelineAsset,
       timelineManager: TimelineManager,
@@ -92,7 +92,7 @@
     children,
     empty,
     customThumbnailLayout,
-    showAssetName = false,
+    assetInfoDisplay = AssetInfoDisplay.NONE,
     onThumbnailClick,
   }: Props = $props();
 
@@ -121,7 +121,7 @@
   });
 
   $effect(() => {
-    timelineManager.showAssetName = showAssetName;
+    timelineManager.assetInfoDisplay = assetInfoDisplay;
   });
 
   $effect(() => {
@@ -696,7 +696,7 @@
             {customThumbnailLayout}
             {singleSelect}
             {timelineMonth}
-            {showAssetName}
+            {assetInfoDisplay}
             manager={timelineManager}
             onTimelineDaySelect={handleGroupSelect}
           >

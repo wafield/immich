@@ -2,6 +2,20 @@ export const UUID_REGEX = /^[\dA-Fa-f]{8}(?:\b-[\dA-Fa-f]{4}){3}\b-[\dA-Fa-f]{12
 
 export const AssetInfoBarHeight = 42;
 
+export enum AssetInfoDisplay {
+  /** Does not show the asset info bar at all */
+  NONE = 'none',
+
+  /** Show file name only */
+  FILE_NAME = 'filename',
+
+  /** Show file name, camera, and date time */
+  FILE_NAME_CAMERA_DATE_TIME = 'file-name-camera-date-time',
+
+  /** Show description only */
+  DESCRIPTION = 'description',
+}
+
 export enum AssetAction {
   ARCHIVE = 'archive',
   UNARCHIVE = 'unarchive',
