@@ -356,7 +356,6 @@
     {onSelect}
     onEscape={handleEscape}
     withStacked={true}
-    assetInfoDisplay={AssetInfoDisplay.FILE_NAME_CAMERA_DATE_TIME}
   >
     {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
       {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}

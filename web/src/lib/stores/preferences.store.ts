@@ -1,6 +1,6 @@
 import { persisted } from 'svelte-persisted-store';
 import { browser } from '$app/environment';
-import { defaultLang } from '$lib/constants';
+import { AssetInfoDisplay, defaultLang } from '$lib/constants';
 import { convertBCP47, getPreferredLocale } from '$lib/utils/i18n';
 
 // Locale to use for formatting dates, numbers, etc.
@@ -170,3 +170,5 @@ export const ROW_SIZE_LAYOUT_OPTIONS: Record<RowSize, { rowHeight: number; heade
 };
 
 export const rowSize = persisted<RowSize>('row-size', RowSize.M, {});
+
+export const assetInfoDisplay = persisted<AssetInfoDisplay>('asset-info-display', AssetInfoDisplay.NONE, {});

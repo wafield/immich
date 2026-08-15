@@ -5,6 +5,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
+  import { AssetInfoDisplay } from '$lib/constants';
   import {
     recentAlbumsDropdown,
     hideScreenshots,
@@ -12,11 +13,12 @@
     showLibraryIndicator,
     rowSize,
     RowSize,
+    assetInfoDisplay,
   } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { loadUserLibraries, userLibraries } from '$lib/stores/library.store';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { NavbarGroup, NavbarItem, Checkbox, Label, Button } from '@immich/ui';
+  import { NavbarGroup, NavbarItem, Checkbox, Label, Button, Select } from '@immich/ui';
   import { type LibraryResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import {
@@ -231,6 +233,20 @@
         />
         <Label label="Show Library Indicator" for="library-indicator-checkbox" size="tiny" />
       </div>
+    </div>
+
+    <NavbarGroup title="Info Display" size="tiny" />
+    <div class="flex ps-5 pb-4 pe-4">
+      <Select
+        class="w-full"
+        options={[
+          { label: 'None', value: AssetInfoDisplay.NONE },
+          { label: 'File name', value: AssetInfoDisplay.FILE_NAME },
+          { label: 'File name, Camera and Time', value: AssetInfoDisplay.FILE_NAME_CAMERA_DATE_TIME },
+          { label: 'Description', value: AssetInfoDisplay.DESCRIPTION },
+        ]}
+        bind:value={$assetInfoDisplay}
+      />
     </div>
 
     <NavbarGroup title="Row size" size="tiny" />

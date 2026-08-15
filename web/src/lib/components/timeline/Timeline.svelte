@@ -7,7 +7,7 @@
   import TimelineAssetViewer from '$lib/components/timeline/TimelineAssetViewer.svelte';
   import TimelineKeyboardActions from '$lib/components/timeline/actions/TimelineKeyboardActions.svelte';
   import { focusAsset } from '$lib/components/timeline/actions/focus-actions';
-  import { AssetAction, AssetInfoDisplay } from '$lib/constants';
+  import { AssetAction } from '$lib/constants';
   import HotModuleReload from '$lib/elements/HotModuleReload.svelte';
   import Portal from '$lib/elements/Portal.svelte';
   import Skeleton from '$lib/elements/Skeleton.svelte';
@@ -21,7 +21,7 @@
   import { assetsSnapshot } from '$lib/managers/timeline-manager/utils.svelte';
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { rowSize, RowSize, ROW_SIZE_LAYOUT_OPTIONS } from '$lib/stores/preferences.store';
+  import { rowSize, RowSize, ROW_SIZE_LAYOUT_OPTIONS, assetInfoDisplay } from '$lib/stores/preferences.store';
   import { isAssetViewerRoute, navigate } from '$lib/utils/navigation';
   import {
     fromTimelinePlainDate,
@@ -59,7 +59,6 @@
     children?: Snippet;
     empty?: Snippet;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
-    assetInfoDisplay?: AssetInfoDisplay;
     onThumbnailClick?: (
       asset: TimelineAsset,
       timelineManager: TimelineManager,
@@ -92,7 +91,6 @@
     children,
     empty,
     customThumbnailLayout,
-    assetInfoDisplay = AssetInfoDisplay.NONE,
     onThumbnailClick,
   }: Props = $props();
 
@@ -121,7 +119,7 @@
   });
 
   $effect(() => {
-    timelineManager.assetInfoDisplay = assetInfoDisplay;
+    timelineManager.assetInfoDisplay = $assetInfoDisplay;
   });
 
   $effect(() => {
@@ -696,7 +694,7 @@
             {customThumbnailLayout}
             {singleSelect}
             {timelineMonth}
-            {assetInfoDisplay}
+            assetInfoDisplay={$assetInfoDisplay}
             manager={timelineManager}
             onTimelineDaySelect={handleGroupSelect}
           >
