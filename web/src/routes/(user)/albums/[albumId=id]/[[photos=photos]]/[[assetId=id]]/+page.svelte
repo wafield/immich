@@ -512,7 +512,7 @@
     </AssetSelectControlBar>
   {/if}
   {#if viewMode === AlbumPageViewMode.VIEW}
-    <ControlAppBar class="mx-auto w-fit max-w-full mt-2">
+    <ControlAppBar class="w-fit ms-auto me-1 md:me-[60px] max-w-full mt-2">
       {#snippet trailing()}
         <ActionButton action={Cast} />
 
@@ -541,25 +541,6 @@
           <AlbumMap {album} />
         {/if}
 
-        {#if album.assetCount > 0}
-          <IconButton
-            shape="round"
-            variant="ghost"
-            color="secondary"
-            aria-label={$t('slideshow')}
-            onclick={handleStartSlideshow}
-            icon={mdiPresentationPlay}
-          />
-          <IconButton
-            shape="round"
-            variant="ghost"
-            color="secondary"
-            aria-label={$t('download')}
-            onclick={() => handleDownloadAlbum(album)}
-            icon={mdiDownload}
-          />
-        {/if}
-
         {#if isOwned || containsEditors}
           <ButtonContextMenu
             icon={mdiDotsVertical}
@@ -573,6 +554,10 @@
                 text={$t('view_asset_owners')}
                 onClick={() => timelineManager.toggleShowAssetOwners()}
               />
+            {/if}
+            {#if album.assetCount > 0}
+              <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={handleStartSlideshow} />
+              <MenuOption icon={mdiDownload} text={$t('download')} onClick={() => handleDownloadAlbum(album)} />
             {/if}
             {#if isOwned && album.assetCount > 0}
               <MenuOption
