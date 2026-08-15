@@ -1,6 +1,6 @@
 import { AssetOrder, AssetOrderBy } from '@immich/sdk';
 import { SvelteSet } from 'svelte/reactivity';
-import { ASSET_NAME_HEIGHT } from '$lib/constants';
+import { AssetInfoBarHeight } from '$lib/constants';
 import type { CommonLayoutOptions, CommonPosition } from '$lib/utils/layout-utils';
 import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import { getOrderingDate, plainDateTimeCompare } from '$lib/utils/timeline-util';
@@ -185,14 +185,14 @@ export class TimelineDay {
         itemRowIndices[i] = currentRow;
       }
       const rowCount = (itemRowIndices[assets.length - 1] ?? 0) + 1;
-      this.height = geometry.containerHeight + rowCount * ASSET_NAME_HEIGHT;
+      this.height = geometry.containerHeight + rowCount * AssetInfoBarHeight;
 
       for (let i = 0; i < this.viewerAssets.length; i++) {
         const basePosition = geometry.getPosition(i);
         const rowIndex = itemRowIndices[i] ?? 0;
         this.viewerAssets[i].position = {
           ...basePosition,
-          top: basePosition.top + rowIndex * ASSET_NAME_HEIGHT,
+          top: basePosition.top + rowIndex * AssetInfoBarHeight,
         };
       }
     } else {
@@ -218,7 +218,7 @@ export class TimelineDay {
     const expandedTop = visibleWindow.top - headerHeight - INTERSECTION_EXPAND_TOP - dayOffset;
     const expandedBottom = visibleWindow.bottom + headerHeight + INTERSECTION_EXPAND_BOTTOM - dayOffset;
 
-    const assetNameHeight = manager.showAssetName ? ASSET_NAME_HEIGHT : 0;
+    const assetNameHeight = manager.showAssetName ? AssetInfoBarHeight : 0;
     const first = lowerBound(this.viewerAssets, expandedTop, (p) => p.top + p.height + assetNameHeight);
     const last = lowerBound(this.viewerAssets, expandedBottom, (p) => p.top) - 1;
 

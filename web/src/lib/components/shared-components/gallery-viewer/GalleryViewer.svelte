@@ -4,7 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import type { AssetCursor } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
-  import { AssetAction, ASSET_NAME_HEIGHT } from '$lib/constants';
+  import { AssetAction, AssetInfoBarHeight } from '$lib/constants';
   import Portal from '$lib/elements/Portal.svelte';
   import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -101,7 +101,7 @@
   const rowCount = $derived(assets.length === 0 ? 0 : (itemRowIndices[assets.length - 1] ?? 0) + 1);
 
   // Overall container height may need to account for the asset name height if they are shown.
-  const containerHeight = $derived(geometry.containerHeight + (showAssetName ? rowCount * ASSET_NAME_HEIGHT : 0));
+  const containerHeight = $derived(geometry.containerHeight + (showAssetName ? rowCount * AssetInfoBarHeight : 0));
 
   const getTop = (index: number) => {
     const baseTop = geometry.getTop(index);
@@ -109,7 +109,7 @@
       return baseTop;
     }
     const rowIndex = itemRowIndices[index] ?? 0;
-    return baseTop + rowIndex * ASSET_NAME_HEIGHT;
+    return baseTop + rowIndex * AssetInfoBarHeight;
   };
 
   const getStyle = (index: number) => {
@@ -119,7 +119,7 @@
   const isInOrNearViewport = (index: number) => {
     const window = slidingWindow;
     const top = getTop(index);
-    const itemHeight = geometry.getHeight(index) + (showAssetName ? ASSET_NAME_HEIGHT : 0);
+    const itemHeight = geometry.getHeight(index) + (showAssetName ? AssetInfoBarHeight : 0);
     return top + pageHeaderOffset < window.bottom && top + itemHeight > window.top;
   };
 

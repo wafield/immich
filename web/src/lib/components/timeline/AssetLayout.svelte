@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ASSET_NAME_HEIGHT } from '$lib/constants';
+  import { AssetInfoBarHeight } from '$lib/constants';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
   import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
@@ -64,7 +64,7 @@
       {#if showAssetName}
         <div
           class="absolute top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs font-semibold whitespace-pre-wrap dark:bg-slate-800"
-          style:height="{ASSET_NAME_HEIGHT}px"
+          style:height="{AssetInfoBarHeight}px"
         >
           {asset.originalFileName ?? ''}
         </div>
