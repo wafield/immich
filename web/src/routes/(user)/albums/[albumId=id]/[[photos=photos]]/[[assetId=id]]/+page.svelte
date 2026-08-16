@@ -18,6 +18,7 @@
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
+  import MoveToLibraryAction from '$lib/components/timeline/actions/MoveToLibraryAction.svelte';
   import RemoveFromAlbum from '$lib/components/timeline/actions/RemoveFromAlbumAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import SetVisibilityAction from '$lib/components/timeline/actions/SetVisibilityAction.svelte';
@@ -25,7 +26,8 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import { AssetInfoDisplay, AlbumPageViewMode } from '$lib/constants';
+  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { AlbumPageViewMode } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetMultiSelectManager, AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -472,10 +474,24 @@
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       <ActionButton action={Actions.AddToAlbum} />
       {#if assetMultiSelectManager.isAllUserOwned}
+        <MoveToLibraryAction
+          onAssetChange={(assets, selectedLibraryId) => {
+            timelineManager.update(
+              assets.map((a) => a.id),
+              (asset) => {
+                asset.libraryId = selectedLibraryId;
+              },
+            );
+            timelineManager.upsertAssets(assets.map(toTimelineAsset));
+          }}
+        />
         <FavoriteAction
           removeFavorite={assetMultiSelectManager.isAllFavorite}
           onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
         ></FavoriteAction>
+      {/if}
+      {#if isOwned || assetMultiSelectManager.isAllUserOwned}
+        <RemoveFromAlbum bind:album onRemove={handleRemoveAssets} />
       {/if}
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up" offset={{ x: 175, y: 0 }}>
         <DownloadAction menuItem filename="{album.albumName}.zip" />
@@ -500,10 +516,6 @@
 
         {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />
-        {/if}
-
-        {#if isOwned || assetMultiSelectManager.isAllUserOwned}
-          <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
         {/if}
         {#if assetMultiSelectManager.isAllUserOwned}
           <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
