@@ -111,26 +111,24 @@
         {/snippet}
       </Tooltip>
     {/if}
-    <ActionButton action={Cast} />
-    <ActionButton action={Actions.Share} />
-    <ActionButton action={Actions.Offline} />
-    <ActionButton action={Actions.ZoomIn} />
-    <ActionButton action={Actions.ZoomOut} />
-    <ActionButton action={Actions.PlayMotionPhoto} />
-    <ActionButton action={Actions.StopMotionPhoto} />
-    <ActionButton action={Actions.Copy} />
-    <ActionButton action={Actions.SharedLinkDownload} />
-    <ActionButton action={Actions.Info} />
+
     <ActionButton action={Actions.Select} />
     <ActionButton action={Actions.Unselect} />
+    <ActionButton action={Actions.Offline} />
+    <!-- <ActionButton action={Actions.ZoomIn} />
+    <ActionButton action={Actions.ZoomOut} /> -->
+    <ActionButton action={Actions.PlayMotionPhoto} />
+    <ActionButton action={Actions.StopMotionPhoto} />
+
+    <ActionButton action={Actions.Info} />
+
     <ActionButton action={Actions.Favorite} />
     <ActionButton action={Actions.Unfavorite} />
+    <ActionButton action={Actions.AddToAlbum} />
 
     {#if isOwner}
       <RatingAction {asset} {onAction} />
     {/if}
-
-    <ActionButton action={Actions.Edit} />
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
@@ -138,6 +136,9 @@
 
     {#if !sharedLink}
       <ButtonContextMenu direction="left" align="top-right" color="secondary" title={$t('more')} icon={mdiDotsVertical}>
+        <ActionMenuItem action={Actions.Share} />
+        <ActionMenuItem action={Actions.Copy} />
+        <ActionMenuItem action={Actions.Edit} />
         <ActionMenuItem action={Actions.PlaySlideshow} />
 
         <ActionMenuItem action={Actions.Download} />
@@ -147,7 +148,6 @@
           <RestoreAction {asset} {onAction} />
         {/if}
 
-        <ActionMenuItem action={Actions.AddToAlbum} />
         {#if album && (isOwner || isAlbumOwner)}
           <RemoveFromAlbumAction {album} onRemove={onRemoveFromAlbum} assetIds={[asset.id]} menuItem />
         {/if}
@@ -194,6 +194,9 @@
           <ActionMenuItem action={Actions.RegenerateThumbnailJob} />
           <ActionMenuItem action={Actions.TranscodeVideoJob} />
         {/if}
+
+        <hr />
+        <ActionMenuItem action={Cast} />
       </ButtonContextMenu>
     {/if}
   </div>
