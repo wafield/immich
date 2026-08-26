@@ -1,33 +1,37 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
+  import SearchFilterModal from '$lib/modals/SearchFilterModal.svelte';
   import { Route } from '$lib/route';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import { IconButton } from '@immich/ui';
-  import { mdiClose, mdiMagnify } from '@mdi/js';
-  import { onDestroy, tick } from 'svelte';
+  import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
+  import { Button, IconButton, modalManager } from '@immich/ui';
+  import { mdiClose, mdiMagnify, mdiTune } from '@mdi/js';
+  import { onDestroy, onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
-  import SearchFilters from './SearchFilters.svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
-  import { getSearchTypePlaceholder } from './search-bar-utils';
+  import SearchHistoryBox from './SearchHistoryBox.svelte';
 
   type Props = {
+    value?: string;
     grayTheme: boolean;
+    searchQuery?: MetadataSearchDto | SmartSearchDto;
   };
 
-  let { grayTheme }: Props = $props();
+  let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
 
-  let showClearIcon = $derived(searchManager.filter.query.length > 0);
-  let placeholder = $derived(
-    searchStore.isSearchEnabled ? getSearchTypePlaceholder(searchManager.filter.queryType) : $t('search_your_photos'),
-  );
+  let showClearIcon = $derived(value.length > 0);
 
   let input = $state<HTMLInputElement>();
-  let searchFilters = $state<ReturnType<typeof SearchFilters>>();
+  let searchHistoryBox = $state<ReturnType<typeof SearchHistoryBox>>();
   let showSuggestions = $state(false);
+  let isSearchSuggestions = $state(false);
   let selectedId: string | undefined = $state();
+  let close: (() => Promise<void>) | undefined;
+  let showSearchTypeDropdown = $state(false);
+  let currentSearchType = $state('smart');
 
   const listboxId = generateId();
   const searchTypeId = generateId();
@@ -36,10 +40,10 @@
     searchStore.isSearchEnabled = false;
   });
 
-  const handleSearch = async () => {
+  const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
     closeDropdown();
     searchStore.isSearchEnabled = false;
-    await searchManager.submit();
+    await goto(Route.search(payload));
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -65,35 +69,90 @@
 
   const onFocusIn = () => {
     searchStore.isSearchEnabled = true;
+    getSearchType();
   };
 
   const onFocusOut = () => {
     searchStore.isSearchEnabled = false;
   };
 
+  const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
+    const searchType = getSearchType();
+    switch (searchType) {
+      case 'smart': {
+        return { query: term };
+      }
+      case 'metadata': {
+        return { originalFileName: term };
+      }
+      case 'description': {
+        return { description: term };
+      }
+      case 'fullPath': {
+        const normalizedTerm = term.trim();
+        return normalizedTerm ? { originalPath: normalizedTerm } : {};
+      }
+      case 'ocr': {
+        return { ocr: term };
+      }
+      default: {
+        return { query: term };
+      }
+    }
+  };
+
   const onHistoryTermClick = async (searchTerm: string) => {
-    searchManager.filter.query = searchTerm;
-    await handleSearch();
+    value = searchTerm;
+    await handleSearch(buildSearchPayload(searchTerm));
+  };
+
+  const onFilterClick = async () => {
+    value = '';
+
+    if (close) {
+      await close();
+      close = undefined;
+      searchStore.isSearchEnabled = false;
+      return;
+    }
+
+    const result = modalManager.open(SearchFilterModal, { searchQuery });
+    close = () => result.close();
+    closeDropdown();
+
+    const searchResult = await result.onClose;
+    close = undefined;
+    searchStore.isSearchEnabled = false;
+
+    // Refresh search type after modal closes
+    getSearchType();
+
+    if (!searchResult) {
+      return;
+    }
+
+    await handleSearch(searchResult);
   };
 
   const onSubmit = () => {
-    handlePromiseError(handleSearch());
-    saveSearchTerm(searchManager.filter.query);
+    handlePromiseError(handleSearch(buildSearchPayload(value)));
+    saveSearchTerm(value);
   };
 
   const onClear = () => {
-    searchManager.filter.query = '';
+    value = '';
     input?.focus();
   };
 
   const onEscape = () => {
     closeDropdown();
+    closeSearchTypeDropdown();
   };
 
   const onArrow = async (direction: 1 | -1) => {
     openDropdown();
     await tick();
-    searchFilters?.moveSelection(direction);
+    searchHistoryBox?.moveSelection(direction);
   };
 
   const onEnter = (event: KeyboardEvent) => {
@@ -102,12 +161,12 @@
     }
 
     event.preventDefault();
-    searchFilters?.selectActiveOption();
+    searchHistoryBox?.selectActiveOption();
   };
 
   const onInput = () => {
     openDropdown();
-    searchFilters?.clearSelection();
+    searchHistoryBox?.clearSelection();
   };
 
   const openDropdown = () => {
@@ -116,16 +175,89 @@
 
   const closeDropdown = () => {
     showSuggestions = false;
-    searchFilters?.clearSelection();
+    searchHistoryBox?.clearSelection();
+  };
+
+  const toggleSearchTypeDropdown = () => {
+    showSearchTypeDropdown = !showSearchTypeDropdown;
+  };
+
+  const closeSearchTypeDropdown = () => {
+    showSearchTypeDropdown = false;
+  };
+
+  const selectSearchType = (type: string) => {
+    localStorage.setItem('searchQueryType', type);
+    currentSearchType = type;
+    showSearchTypeDropdown = false;
+    input?.focus();
   };
 
   const onsubmit = (event: Event) => {
     event.preventDefault();
     onSubmit();
   };
+
+  function getSearchType() {
+    const searchType = localStorage.getItem('searchQueryType');
+    switch (searchType) {
+      case 'smart':
+      case 'metadata':
+      case 'description':
+      case 'fullPath':
+      case 'ocr': {
+        currentSearchType = searchType;
+        return searchType;
+      }
+      default: {
+        currentSearchType = 'smart';
+        return 'smart';
+      }
+    }
+  }
+
+  function getSearchTypeText(): string {
+    switch (currentSearchType) {
+      case 'smart': {
+        return $t('context');
+      }
+      case 'metadata': {
+        return $t('filename');
+      }
+      case 'description': {
+        return $t('description');
+      }
+      case 'fullPath': {
+        return $t('full_path_or_folder');
+      }
+      case 'ocr': {
+        return $t('ocr');
+      }
+      default: {
+        return $t('context');
+      }
+    }
+  }
+
+  onMount(() => {
+    getSearchType();
+  });
+
+  const searchTypes = [
+    { value: 'smart', label: () => $t('context') },
+    { value: 'metadata', label: () => $t('filename') },
+    { value: 'description', label: () => $t('description') },
+    { value: 'fullPath', label: () => $t('full_path_or_folder') },
+    { value: 'ocr', label: () => $t('ocr') },
+  ] as const;
 </script>
 
-<svelte:document use:shortcuts={[{ shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() }]} />
+<svelte:document
+  use:shortcuts={[
+    { shortcut: { ctrl: true, key: 'k' }, onShortcut: () => input?.select() },
+    { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
+  ]}
+/>
 
 <div class="relative z-auto w-full" use:focusOutside={{ onFocusOut }} tabindex="-1">
   <form
@@ -133,7 +265,7 @@
     autocomplete="off"
     class="text-sm select-text"
     action={Route.search()}
-    onreset={() => (searchManager.filter.query = '')}
+    onreset={() => (value = '')}
     {onsubmit}
     onfocusin={onFocusIn}
     role="search"
@@ -146,24 +278,25 @@
         id="main-search-bar"
         class="w-full border-2 py-3 ps-14 text-immich-fg/75 transition-all max-md:py-2 dark:text-immich-dark-fg
         {showClearIcon ? 'pe-22.5' : 'pe-14'}
-        {grayTheme || showSuggestions ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
-        {showSuggestions ? 'rounded-t-3xl shadow-[0_8px_20px_rgba(0,0,0,0.12)]' : 'rounded-3xl bg-gray-200'}
-        {searchStore.isSearchEnabled ? 'border-light-200 bg-white dark:border-dark-600' : 'border-transparent'}"
-        {placeholder}
+        dark:bg-immich-dark-lightgray
+        {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
+        {searchStore.isSearchEnabled ? 'border-gray-200 bg-white dark:border-gray-700' : 'border-transparent'}"
+        placeholder={$t('search_your_photos')}
         required
         pattern="^(?!m:$).*$"
-        bind:value={searchManager.filter.query}
+        bind:value
         bind:this={input}
         onfocus={openDropdown}
         oninput={onInput}
         role="combobox"
         aria-controls={listboxId}
         aria-activedescendant={selectedId ?? ''}
-        aria-expanded={showSuggestions}
+        aria-expanded={showSuggestions && isSearchSuggestions}
         aria-autocomplete="list"
         aria-describedby={searchTypeId}
         use:shortcuts={[
           { shortcut: { key: 'Escape' }, onShortcut: onEscape },
+          { shortcut: { ctrl: true, shift: true, key: 'k' }, onShortcut: onFilterClick },
           { shortcut: { key: 'ArrowUp' }, onShortcut: () => onArrow(-1) },
           { shortcut: { key: 'ArrowDown' }, onShortcut: () => onArrow(1) },
           { shortcut: { key: 'Enter' }, onShortcut: onEnter, preventDefault: false },
@@ -171,16 +304,59 @@
         ]}
       />
 
-      <SearchFilters
-        bind:this={searchFilters}
+      <!-- SEARCH HISTORY BOX -->
+      <SearchHistoryBox
+        bind:this={searchHistoryBox}
+        bind:isSearchSuggestions
         id={listboxId}
+        searchQuery={value}
         isOpen={showSuggestions}
         onClearAllSearchTerms={clearAllSearchTerms}
         onClearSearchTerm={(searchTerm) => clearSearchTerm(searchTerm)}
         onSelectSearchTerm={(searchTerm) => handlePromiseError(onHistoryTermClick(searchTerm))}
         onActiveSelectionChange={(id) => (selectedId = id)}
-        onSearch={() => handleSearch()}
       />
+    </div>
+
+    <div
+      id={searchTypeId}
+      class="absolute inset-y-0 inset-e-16 flex items-center"
+      class:max-md:hidden={value}
+      class:inset-e-28={value.length > 0}
+    >
+      <div class="relative" use:focusOutside={{ onFocusOut: closeSearchTypeDropdown }}>
+        <Button
+          shape="round"
+          variant={searchStore.isSearchEnabled ? 'filled' : 'outline'}
+          color={searchStore.isSearchEnabled ? 'primary' : 'secondary'}
+          class="px-3 py-1 text-xs {searchStore.isSearchEnabled
+            ? 'border border-transparent'
+            : 'border-secondary/5 border font-light text-muted hover:text-dark'}"
+          onclick={toggleSearchTypeDropdown}
+          aria-expanded={showSearchTypeDropdown}
+          aria-haspopup="listbox"
+        >
+          {getSearchTypeText()}
+        </Button>
+
+        {#if showSearchTypeDropdown}
+          <div
+            class="absolute top-full right-0 z-9999 mt-1 min-w-32 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-immich-dark-gray"
+          >
+            {#each searchTypes as searchType (searchType.value)}
+              <button
+                type="button"
+                tabindex="0"
+                class="w-full px-3 py-2 text-left text-xs transition-colors hover:bg-gray-100 dark:hover:bg-gray-700
+                         {currentSearchType === searchType.value ? 'bg-gray-100 dark:bg-gray-700' : ''}"
+                onclick={() => selectSearchType(searchType.value)}
+              >
+                {searchType.label()}
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
     </div>
 
     {#if showClearIcon}
@@ -209,4 +385,16 @@
       />
     </div>
   </form>
+
+  <div class="absolute inset-y-0 {showClearIcon ? 'inset-e-14' : 'inset-e-2'} flex items-center ps-6 transition-all">
+    <IconButton
+      aria-label={$t('show_search_options')}
+      shape="round"
+      icon={mdiTune}
+      onclick={onFilterClick}
+      size="medium"
+      color="secondary"
+      variant="ghost"
+    />
+  </div>
 </div>

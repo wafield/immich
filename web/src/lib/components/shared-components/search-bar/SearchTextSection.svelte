@@ -1,41 +1,70 @@
 <script lang="ts">
-  import { getSearchTypeTitle } from './search-bar-utils';
-  import SearchButton from './SearchButton.svelte';
+  import RadioButton from '$lib/elements/RadioButton.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
-  import { Text } from '@immich/ui';
+  import { Field, Input, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  let queryType = $derived(searchManager.filter.queryType);
+  interface Props {
+    query: string | undefined;
+    queryType?: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
+  }
 
-  const setType = (type: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr') => {
-    searchManager.filter.queryType = type;
-  };
+  let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
 </script>
 
 <section>
   <fieldset>
-    <Text class="mb-5">{$t('search_type_description')}</Text>
-    <div class="flex flex-wrap gap-2">
+    <Text class="mb-2" fontWeight="medium">{$t('search_type')}</Text>
+    <div class="my-2 flex flex-wrap gap-x-5 gap-y-2">
       {#if featureFlagsManager.value.smartSearch}
-        <SearchButton checked active={queryType === 'smart'} onclick={() => setType('smart')}>
-          {$t('context')}
-        </SearchButton>
+        <RadioButton name="query-type" id="context-radio" label={$t('context')} bind:group={queryType} value="smart" />
       {/if}
-      <SearchButton checked active={queryType === 'metadata'} onclick={() => setType('metadata')}>
-        {getSearchTypeTitle('metadata')}
-      </SearchButton>
-      <SearchButton checked active={queryType === 'description'} onclick={() => setType('description')}>
-        {getSearchTypeTitle('description')}
-      </SearchButton>
-      <SearchButton checked active={queryType === 'fullPath'} onclick={() => setType('fullPath')}>
-        {getSearchTypeTitle('fullPath')}
-      </SearchButton>
+      <RadioButton
+        name="query-type"
+        id="file-name-radio"
+        label={$t('file_name_or_extension')}
+        bind:group={queryType}
+        value="metadata"
+      />
+      <RadioButton
+        name="query-type"
+        id="description-radio"
+        label={$t('description')}
+        bind:group={queryType}
+        value="description"
+      />
+      <RadioButton
+        name="query-type"
+        id="full-path-radio"
+        label={$t('full_path_or_folder')}
+        bind:group={queryType}
+        value="fullPath"
+      />
       {#if featureFlagsManager.value.ocr}
-        <SearchButton checked active={queryType === 'ocr'} onclick={() => setType('ocr')}>
-          {getSearchTypeTitle('ocr')}
-        </SearchButton>
+        <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
       {/if}
     </div>
   </fieldset>
+
+  {#if queryType === 'smart'}
+    <Field label={$t('search_by_context')}>
+      <Input type="text" placeholder={$t('sunrise_on_the_beach')} bind:value={query} />
+    </Field>
+  {:else if queryType === 'metadata'}
+    <Field label={$t('search_by_filename')}>
+      <Input type="text" placeholder={$t('search_by_filename_example')} bind:value={query} />
+    </Field>
+  {:else if queryType === 'description'}
+    <Field label={$t('search_by_description')}>
+      <Input type="text" placeholder={$t('search_by_description_example')} bind:value={query} />
+    </Field>
+  {:else if queryType === 'fullPath'}
+    <Field label={$t('search_by_full_path')}>
+      <Input type="text" placeholder={$t('search_by_full_path_example')} bind:value={query} />
+    </Field>
+  {:else if queryType === 'ocr'}
+    <Field label={$t('search_by_ocr')}>
+      <Input type="text" placeholder={$t('search_by_ocr_example')} bind:value={query} />
+    </Field>
+  {/if}
 </section>

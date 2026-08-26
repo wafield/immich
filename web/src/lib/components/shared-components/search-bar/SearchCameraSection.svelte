@@ -3,7 +3,7 @@
     asSelectedOption,
     asSuggestionOptions,
   } from '$lib/components/shared-components/FilterableSelectionList.svelte';
-  import { searchManager, SearchDateFilter } from '$lib/managers/search-manager.svelte';
+  import type { SearchCameraFilter, SearchDateFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { asLocalTimeISO } from '$lib/utils/date-time';
   import { SearchSuggestionType, getSearchSuggestions, type SuggestionResponseDto } from '@immich/sdk';

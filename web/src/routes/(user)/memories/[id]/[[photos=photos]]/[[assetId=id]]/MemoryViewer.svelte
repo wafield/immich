@@ -279,19 +279,18 @@
 
     <FavoriteAction removeFavorite={assetMultiSelectManager.isAllFavorite} />
 
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
-        <DownloadAction menuItem />
-        <ChangeDate menuItem />
-        <ChangeDescription menuItem />
-        <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={handleHideAssets} />
-        {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-          <TagAction menuItem />
-        {/if}
-        <DeleteAssets menuItem onAssetDelete={handleHideAssets} />
-      </ButtonContextMenu>
-    </AssetSelectControlBar>
-  </div>
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+      <DownloadAction menuItem />
+      <ChangeDate menuItem />
+      <ChangeDescription menuItem />
+      <ChangeLocation menuItem />
+      <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={handleHideAssets} />
+      {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
+        <TagAction menuItem />
+      {/if}
+      <DeleteAssets menuItem onAssetDelete={handleHideAssets} />
+    </ButtonContextMenu>
+  </AssetSelectControlBar>
 {/if}
 
 <section
