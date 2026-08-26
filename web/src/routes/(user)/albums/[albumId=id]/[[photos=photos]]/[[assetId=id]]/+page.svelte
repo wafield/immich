@@ -348,7 +348,7 @@
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
-<UserPageLayout scrollbar={false} use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
+<UserPageLayout scrollbar={false}>
   <Timeline
     enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
     {album}

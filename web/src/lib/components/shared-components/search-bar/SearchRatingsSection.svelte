@@ -1,18 +1,22 @@
 <script lang="ts">
-  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { Text } from '@immich/ui';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { t } from 'svelte-i18n';
-  import SearchButton from './SearchButton.svelte';
+  import Combobox from '../Combobox.svelte';
 
-  let rating = $derived(searchManager.filter.rating);
+  interface Props {
+    rating?: number | null;
+  }
+
+  let { rating = $bindable() }: Props = $props();
 
   const options = [
-    { value: 5, label: '★★★★★' },
-    { value: 4, label: '★★★★' },
-    { value: 3, label: '★★★' },
-    { value: 2, label: '★★' },
-    { value: 1, label: '★' },
+    { value: 'null', label: $t('rating_count', { values: { count: 0 } }) },
+    { value: '1', label: $t('rating_count', { values: { count: 1 } }) },
+    { value: '2', label: $t('rating_count', { values: { count: 2 } }) },
+    { value: '3', label: $t('rating_count', { values: { count: 3 } }) },
+    { value: '4', label: $t('rating_count', { values: { count: 4 } }) },
+    { value: '5', label: $t('rating_count', { values: { count: 5 } }) },
   ];
 </script>
 

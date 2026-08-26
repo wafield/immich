@@ -231,18 +231,10 @@
         <SearchDateSection bind:filters={filter.date} libraryId={filter.libraryId} />
 
         <!-- LOCATION -->
-        <SearchLocationSection
-          bind:filters={filter.location}
-          libraryId={filter.libraryId}
-          dateFilter={filter.date}
-        />
+        <SearchLocationSection bind:filters={filter.location} libraryId={filter.libraryId} dateFilter={filter.date} />
 
         <!-- CAMERA MODEL -->
-        <SearchCameraSection
-          bind:filters={filter.camera}
-          libraryId={filter.libraryId}
-          dateFilter={filter.date}
-        />
+        <SearchCameraSection bind:filters={filter.camera} libraryId={filter.libraryId} dateFilter={filter.date} />
 
         <!-- MEDIA TYPE -->
         <SearchMediaSection bind:filteredMedia={filter.mediaType} />
