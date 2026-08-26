@@ -60,8 +60,10 @@ export const dateFormats = {
 
 export enum QueryParameter {
   ACTION = 'action',
+  ASSET_ID = 'assetId',
   ID = 'id',
   IS_OPEN = 'isOpen',
+  IS_SAVED = 'isSaved',
   OPEN_SETTING = 'openSetting',
   PREVIOUS_ROUTE = 'previousRoute',
   QUERY = 'query',
@@ -83,6 +85,7 @@ export enum OpenQueryParam {
   STORAGE_TEMPLATE = 'storage-template',
   NOTIFICATIONS = 'notifications',
   PURCHASE_SETTINGS = 'user-purchase-settings',
+  SHARING = 'sharing',
 }
 
 export const maximumLengthSearchPeople = 100;
@@ -272,6 +275,7 @@ export enum SettingInputFieldType {
   NUMBER = 'number',
   PASSWORD = 'password',
   COLOR = 'color',
+  NAME = 'name',
 }
 
 export const AlbumPageViewMode = {

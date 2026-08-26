@@ -2,24 +2,32 @@
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/Combobox.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Checkbox, Label, Text } from '@immich/ui';
+  import { Button, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { SvelteSet } from 'svelte/reactivity';
-  import TagPill from '../TagPill.svelte';
+  import { mdiClose } from '@mdi/js';
+  import { getSearchTagsTitle } from './search-bar-utils';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
 
   interface Props {
-    selectedTags: SvelteSet<string> | null;
+    title: string | undefined;
+    parentPromise: Promise<TagResponseDto[]> | undefined;
   }
 
-  let { selectedTags = $bindable() }: Props = $props();
+  // eslint-disable-next-line no-useless-assignment
+  let { title = $bindable(), parentPromise }: Props = $props();
 
+  let selectedTags = $derived(searchManager.filter.tagIds);
   let allTags: TagResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
   let selectedOption = $state(undefined);
 
-  onMount(async () => {
-    allTags = await getAllTags();
+  onMount(() => {
+    if (parentPromise) {
+      void parentPromise.then((res) => (allTags = res));
+    } else {
+      void getAllTags().then((res) => (allTags = res));
+    }
   });
 
   const handleSelect = (option?: ComboBoxOption) => {
@@ -29,6 +37,7 @@
 
     selectedTags.add(option.value);
     selectedOption = undefined;
+    title = getSearchTagsTitle(allTags, selectedTags);
   };
 
   const handleRemove = (tag: string) => {
@@ -37,6 +46,7 @@
     }
 
     selectedTags.delete(tag);
+    title = getSearchTagsTitle(allTags, selectedTags);
   };
 </script>
 
@@ -67,13 +77,23 @@
       </div>
     </form>
 
-    <section class="flex flex-wrap gap-1 pt-2">
-      {#each selectedTags ?? [] as tagId (tagId)}
-        {@const tag = tagMap[tagId]}
-        {#if tag}
-          <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
-        {/if}
-      {/each}
-    </section>
+    {#if selectedTags?.size}
+      <section class="flex flex-wrap gap-2 pt-5">
+        {#each selectedTags as tagId (tagId)}
+          {@const tag = tagMap[tagId]}
+          {#if tag}
+            <Button
+              size="small"
+              shape="round"
+              color="primary"
+              variant="outline"
+              onclick={() => handleRemove(tagId)}
+              trailingIcon={mdiClose}
+              >{tag.value}
+            </Button>
+          {/if}
+        {/each}
+      </section>
+    {/if}
   </div>
 {/if}

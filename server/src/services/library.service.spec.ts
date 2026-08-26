@@ -1,9 +1,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import path from 'node:path';
-import { defaults, SystemConfig } from 'src/config';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
-import { CreateLibraryDto, mapLibrary, UpdateLibraryDto } from 'src/dtos/library.dto';
+import { defaults, SystemConfig } from 'src/dtos/config.dto';
+import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
@@ -647,11 +647,7 @@ describe(LibraryService.name, () => {
         }),
       );
 
-      expect(mocks.websocket.clientSend).toHaveBeenCalledWith(
-        'on_notification',
-        library.ownerId,
-        expect.anything(),
-      );
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_notification', library.ownerId, expect.anything());
     });
   });
 
@@ -974,7 +970,9 @@ describe(LibraryService.name, () => {
       mocks.library.update.mockResolvedValue(library);
       mocks.library.get.mockResolvedValue(library);
 
-      await expect(sut.update('library-id', { uploadPath: 'relative/upload/path' })).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.update('library-id', { uploadPath: 'relative/upload/path' })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
 
       expect(mocks.library.update).not.toHaveBeenCalled();
     });

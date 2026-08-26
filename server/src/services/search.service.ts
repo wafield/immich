@@ -45,12 +45,14 @@ export class SearchService extends BaseService {
     const cities = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
     const cityAssets = await this.assetRepository.getByIdsWithAllRelationsButStacks(
       cities.items.map(({ data }) => data),
+      auth.user.id,
     );
     const cityItems = cityAssets.map((asset) => ({ value: asset.exifInfo!.city!, data: mapAsset(asset, { auth }) }));
 
     const recents = await this.assetRepository.getRecentlyCreatedAssetIds(auth.user.id, options.maxFields);
     const recentAssets = await this.assetRepository.getByIdsWithAllRelationsButStacks(
       recents.items.map((item) => item.data),
+      auth.user.id,
     );
     const recentItems = recentAssets.map((asset) => ({
       value: asset.createdAt.toISOString(),
@@ -93,6 +95,7 @@ export class SearchService extends BaseService {
         checksum,
         visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
         userIds,
+        viewingUserId: auth.user.id,
         orderDirection: dto.order ?? AssetOrder.Desc,
       },
     );
@@ -110,6 +113,7 @@ export class SearchService extends BaseService {
       ...dto,
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
+      viewingUserId: auth.user.id,
     });
   }
 
@@ -123,6 +127,7 @@ export class SearchService extends BaseService {
       ...dto,
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
+      viewingUserId: auth.user.id,
     });
     return items.map((item) => mapAsset(item, { auth }));
   }
@@ -137,6 +142,7 @@ export class SearchService extends BaseService {
       ...dto,
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
+      viewingUserId: auth.user.id,
     });
     return items.map((item) => mapAsset(item, { auth }));
   }
@@ -181,6 +187,7 @@ export class SearchService extends BaseService {
       {
         ...dto,
         userIds: await userIds,
+        viewingUserId: auth.user.id,
         embedding,
         visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       },

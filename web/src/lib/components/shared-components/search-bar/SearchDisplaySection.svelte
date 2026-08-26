@@ -4,11 +4,7 @@
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  type Props = {
-    filters: SearchDisplayFilters;
-  };
-
-  let { filters = $bindable() }: Props = $props();
+  let filters = $derived(searchManager.filter.display);
 </script>
 
 <div id="display-options-selection">

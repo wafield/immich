@@ -1,5 +1,7 @@
 <script lang="ts">
   import { goto, invalidate, onNavigate } from '$app/navigation';
+  import { navigating } from '$app/state';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
@@ -315,6 +317,9 @@
   const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
     album = newAlbum;
 
+    // invalidating during navigation causes an infinite page load
+    await navigating.complete;
+
     await invalidate('album:data');
   };
 
@@ -343,7 +348,7 @@
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
-<UserPageLayout scrollbar={false}>
+<UserPageLayout scrollbar={false} use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
   <Timeline
     enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
     {album}
@@ -494,7 +499,7 @@
         <RemoveFromAlbum bind:album onRemove={handleRemoveAssets} />
       {/if}
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up" offset={{ x: 175, y: 0 }}>
-        <DownloadAction menuItem filename="{album.albumName}.zip" />
+        <DownloadAction menuItem filename={album.albumName} />
         {#if assetMultiSelectManager.isAllUserOwned}
           <ChangeDate menuItem />
           <ChangeDescription menuItem />

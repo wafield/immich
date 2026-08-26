@@ -3,7 +3,7 @@
     asSelectedOption,
     asSuggestionOptions,
   } from '$lib/components/shared-components/FilterableSelectionList.svelte';
-  import type { SearchCameraFilter, SearchDateFilter } from '$lib/types';
+  import { searchManager, SearchDateFilter } from '$lib/managers/search-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { asLocalTimeISO } from '$lib/utils/date-time';
   import { SearchSuggestionType, getSearchSuggestions, type SuggestionResponseDto } from '@immich/sdk';
@@ -101,8 +101,8 @@
   });
 </script>
 
-<Text fontWeight="medium">{$t('camera')}</Text>
-<div class="mt-1 grid grid-auto-fit-40 gap-5">
+<Text fontWeight="medium" class="pb-5">{$t('camera')}</Text>
+<div class="grid grid-auto-fit-40 gap-2">
   <div class="w-full">
     <FilterableSelectionList
       label={$t('make')}
