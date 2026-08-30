@@ -14,6 +14,14 @@ import {
 import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation';
 import z from 'zod';
 
+const ADDED_V3_2 = new HistoryBuilder().added('v3.2.0').getExtensions();
+
+// fields deprecated in favor of the structured filter tree
+const DEPRECATED_FLAT_FIELD = {
+  ...new HistoryBuilder().added('v1').stable('v2').deprecated('v3.2.0').getExtensions(),
+  deprecated: true,
+};
+
 const BaseSearchSchema = z.object({
   libraryId: z.uuidv4().nullish().describe('Library ID to filter by'),
   type: AssetTypeSchema.optional(),
@@ -54,15 +62,17 @@ const BaseSearchSchema = z.object({
         .stable('v2')
         .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.')
         .updated('v3', 'Using -1 as a rating is no longer valid.')
+        .deprecated('v3.2.0')
         .getExtensions(),
+      deprecated: true,
     }),
-  ocr: z.string().optional().describe('Filter by OCR text content'),
+  ocr: z.string().optional().describe('Filter by OCR text content').meta(DEPRECATED_FLAT_FIELD),
 });
 
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
   isTrashed: z.boolean().nullish().describe('Filter by trashed status'),
   withExif: z.boolean().optional().describe('Include EXIF data in response'),
-  size: z.int().min(1).max(1000).optional().describe('Number of results to return'),
+  size: z.int().min(1).max(1000).default(250).describe('Number of results to return'),
 });
 
 const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
@@ -72,32 +82,8 @@ const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
 
 const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
   minFileSize: z.coerce.number().int().min(0).optional().describe('Minimum file size in bytes'),
-  size: z.coerce.number().int().min(1).max(1000).optional().describe('Number of results to return'),
+  size: z.coerce.number().int().min(1).max(1000).default(250).describe('Number of results to return'),
 }).meta({ id: 'LargeAssetSearchDto' });
-
-const MetadataSearchSchema = RandomSearchSchema.extend({
-  id: z.uuidv4().optional().describe('Filter by asset ID'),
-  description: z.string().trim().optional().describe('Filter by description text'),
-  checksum: z.string().optional().describe('Filter by file checksum'),
-  originalFileName: z.string().trim().optional().describe('Filter by original file name'),
-  originalPath: z.string().optional().describe('Filter by original file path'),
-  previewPath: z.string().optional().describe('Filter by preview file path'),
-  thumbnailPath: z.string().optional().describe('Filter by thumbnail file path'),
-  encodedVideoPath: z.string().optional().describe('Filter by encoded video file path'),
-  order: AssetOrderSchema.default(AssetOrder.Desc).optional().describe('Sort order'),
-  page: z.int().min(1).optional().describe('Page number'),
-}).meta({ id: 'MetadataSearchDto' });
-
-const StatisticsSearchSchema = BaseSearchSchema.extend({
-  description: z.string().trim().optional().describe('Filter by description text'),
-}).meta({ id: 'StatisticsSearchDto' });
-
-const SmartSearchSchema = BaseSearchWithResultsSchema.extend({
-  query: z.string().trim().optional().describe('Natural language search query'),
-  queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
-  language: z.string().optional().describe('Search language code'),
-  page: z.int().min(1).optional().describe('Page number'),
-}).meta({ id: 'SmartSearchDto' });
 
 const SearchPlacesSchema = z
   .object({
@@ -280,47 +266,56 @@ export const SearchOrderSchema = z
   })
   .meta({ id: 'SearchOrder' });
 
+const searchFilterBranchShape = {
+  id: IdFilterSchema,
+  libraryId: IdFilterNullableSchema,
+  type: EnumFilterAssetTypeSchema,
+  visibility: EnumFilterAssetVisibilitySchema,
+  isFavorite: BoolFilterSchema,
+  isMotion: BoolFilterSchema,
+  isOffline: BoolFilterSchema,
+  isEncoded: BoolFilterSchema,
+  hasAlbums: BoolFilterSchema,
+  hasPeople: BoolFilterSchema,
+  hasTags: BoolFilterSchema,
+  city: StringFilterNullableSchema,
+  state: StringFilterNullableSchema,
+  country: StringFilterNullableSchema,
+  make: StringFilterNullableSchema,
+  model: StringFilterNullableSchema,
+  lensModel: StringFilterNullableSchema,
+  description: StringPatternFilterSchema,
+  originalFileName: StringPatternFilterSchema,
+  originalPath: StringPatternFilterSchema,
+  ocr: StringSimilarityFilterSchema,
+  rating: NumberFilterNullableSchema,
+  fileSizeInBytes: NumberFilterSchema,
+  takenAt: DateFilterSchema,
+  createdAt: DateFilterSchema,
+  updatedAt: DateFilterSchema,
+  trashedAt: DateFilterNullableSchema,
+  personIds: IdsFilterSchema,
+  tagIds: IdsFilterSchema,
+  albumIds: IdsFilterSchema,
+  checksum: StringFilterSchema,
+  encodedVideoPath: StringFilterSchema,
+};
+
 const SearchFilterBranchSchema = z
-  .object({
-    id: IdFilterSchema,
-    libraryId: IdFilterNullableSchema,
-    type: EnumFilterAssetTypeSchema,
-    visibility: EnumFilterAssetVisibilitySchema,
-    isFavorite: BoolFilterSchema,
-    isMotion: BoolFilterSchema,
-    isOffline: BoolFilterSchema,
-    isEncoded: BoolFilterSchema,
-    hasAlbums: BoolFilterSchema,
-    hasPeople: BoolFilterSchema,
-    hasTags: BoolFilterSchema,
-    city: StringFilterNullableSchema,
-    state: StringFilterNullableSchema,
-    country: StringFilterNullableSchema,
-    make: StringFilterNullableSchema,
-    model: StringFilterNullableSchema,
-    lensModel: StringFilterNullableSchema,
-    description: StringPatternFilterSchema,
-    originalFileName: StringPatternFilterSchema,
-    originalPath: StringPatternFilterSchema,
-    ocr: StringSimilarityFilterSchema,
-    rating: NumberFilterNullableSchema,
-    fileSizeInBytes: NumberFilterSchema,
-    takenAt: DateFilterSchema,
-    createdAt: DateFilterSchema,
-    updatedAt: DateFilterSchema,
-    trashedAt: DateFilterNullableSchema,
-    personIds: IdsFilterSchema,
-    tagIds: IdsFilterSchema,
-    albumIds: IdsFilterSchema,
-    checksum: StringFilterSchema,
-    encodedVideoPath: StringFilterSchema,
-  })
+  .strictObject(searchFilterBranchShape)
   .partial()
+  .refine((branch) => Object.values(branch).some((value) => value !== undefined), {
+    message: 'At least one filter condition is required',
+  })
   .meta({ id: 'SearchFilterBranch' });
 
-export const SearchFilterSchema = SearchFilterBranchSchema.extend({
-  or: z.array(SearchFilterBranchSchema).min(1).optional(),
-}).meta({ id: 'SearchFilter' });
+export const SearchFilterSchema = z
+  .strictObject(searchFilterBranchShape)
+  .partial()
+  .extend({
+    or: z.array(SearchFilterBranchSchema).min(1).optional(),
+  })
+  .meta({ id: 'SearchFilter' });
 
 export type IdFilter = z.infer<typeof IdFilterSchema>;
 export type IdFilterNullable = z.infer<typeof IdFilterNullableSchema>;
@@ -335,6 +330,95 @@ export type DateFilterNullable = z.infer<typeof DateFilterNullableSchema>;
 export type SearchOrder = z.infer<typeof SearchOrderSchema>;
 export type SearchFilter = z.infer<typeof SearchFilterSchema>;
 export type SearchFilterBranch = z.infer<typeof SearchFilterBranchSchema>;
+
+const NEW_SHAPE_FIELDS = ['filter', 'orderBy', 'cursor'] as const;
+
+export const isNewShapeRequest = (dto: Partial<Record<(typeof NEW_SHAPE_FIELDS)[number], unknown>>): boolean =>
+  NEW_SHAPE_FIELDS.some((field) => dto[field] !== undefined);
+
+/** Whether every asset the branch can match is provably inside an (access-checked) album */
+export const isAlbumConfined = (branch: SearchFilterBranch): boolean =>
+  branch.albumIds?.any !== undefined || branch.albumIds?.all !== undefined;
+
+/** Whether every result of the whole filter is album-confined */
+export const isFullyAlbumConfined = (filter: SearchFilter): boolean =>
+  isAlbumConfined(filter) || (!!filter.or?.length && filter.or.every((branch) => isAlbumConfined(branch)));
+
+/**
+ * The structured shape and the deprecated flat search fields are mutually exclusive
+ * TODO(v4): remove together with the deprecated flat fields.
+ */
+const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) => {
+  const deprecatedFields = Object.keys(schema.shape).filter(
+    (field) => (schema.shape[field] as z.ZodType).meta()?.deprecated,
+  );
+
+  return schema.superRefine((dto, ctx) => {
+    const values = dto as Record<string, unknown>;
+    const newShapeFields = NEW_SHAPE_FIELDS.filter((field) => values[field] !== undefined);
+    if (newShapeFields.length === 0) {
+      return;
+    }
+
+    for (const field of deprecatedFields) {
+      if (values[field] === undefined) {
+        continue;
+      }
+
+      ctx.addIssue({
+        code: 'custom',
+        path: [field],
+        message: `Deprecated field ${field} cannot be combined with ${newShapeFields.join('/')}`,
+      });
+    }
+  });
+};
+
+const filterField = SearchFilterSchema.optional().meta(ADDED_V3_2);
+const cursorField = z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_2);
+
+const RandomSearchBaseSchema = BaseSearchWithResultsSchema.extend({
+  withStacked: z.boolean().optional().describe('Include stacked assets'),
+  withPeople: z.boolean().optional().describe('Include people data in response'),
+  filter: filterField,
+});
+
+const RandomSearchSchema = withShapeExclusivity(RandomSearchBaseSchema).meta({ id: 'RandomSearchDto' });
+
+const MetadataSearchSchema = withShapeExclusivity(
+  RandomSearchBaseSchema.extend({
+    id: z.uuidv4().optional().describe('Filter by asset ID').meta(DEPRECATED_FLAT_FIELD),
+    description: z.string().trim().optional().describe('Filter by description text').meta(DEPRECATED_FLAT_FIELD),
+    checksum: z.string().optional().describe('Filter by file checksum').meta(DEPRECATED_FLAT_FIELD),
+    originalFileName: z.string().trim().optional().describe('Filter by original file name').meta(DEPRECATED_FLAT_FIELD),
+    originalPath: z.string().optional().describe('Filter by original file path').meta(DEPRECATED_FLAT_FIELD),
+    previewPath: z.string().optional().describe('Filter by preview file path').meta(DEPRECATED_FLAT_FIELD),
+    thumbnailPath: z.string().optional().describe('Filter by thumbnail file path').meta(DEPRECATED_FLAT_FIELD),
+    encodedVideoPath: z.string().optional().describe('Filter by encoded video file path').meta(DEPRECATED_FLAT_FIELD),
+    order: AssetOrderSchema.optional().describe('Sort order').meta(DEPRECATED_FLAT_FIELD),
+    page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
+    orderBy: SearchOrderSchema.optional().meta(ADDED_V3_2),
+    cursor: cursorField,
+  }),
+).meta({ id: 'MetadataSearchDto' });
+
+const StatisticsSearchSchema = withShapeExclusivity(
+  BaseSearchSchema.extend({
+    description: z.string().trim().optional().describe('Filter by description text').meta(DEPRECATED_FLAT_FIELD),
+    filter: filterField,
+  }),
+).meta({ id: 'StatisticsSearchDto' });
+
+const SmartSearchSchema = withShapeExclusivity(
+  BaseSearchWithResultsSchema.extend({
+    size: z.int().min(1).max(1000).default(100).describe('Number of results to return'),
+    query: z.string().trim().optional().describe('Natural language search query'),
+    queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
+    language: z.string().optional().describe('Search language code'),
+    page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
+    filter: filterField,
+  }),
+).meta({ id: 'SmartSearchDto' });
 
 export class RandomSearchDto extends createZodDto(RandomSearchSchema) {}
 export class LargeAssetSearchDto extends createZodDto(LargeAssetSearchSchema) {}
@@ -390,7 +474,8 @@ const SearchAssetResponseSchema = z
     count: z.int().min(0).describe('Number of assets in this page'),
     items: z.array(AssetResponseSchema),
     facets: z.array(SearchFacetResponseSchema),
-    nextPage: z.string().nullable().describe('Next page token'),
+    nextPage: z.string().nullable().describe('Next page token').meta(DEPRECATED_FLAT_FIELD),
+    nextCursor: z.string().nullable().describe('Cursor for the next page of results').meta(ADDED_V3_2),
   })
   .meta({ id: 'SearchAssetResponseDto' });
 
