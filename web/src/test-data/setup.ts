@@ -29,3 +29,11 @@ vi.mock('$env/dynamic/public', () => {
     },
   };
 });
+
+vi.mock('$env/static/public', () => {
+  return {
+    PUBLIC_IMMICH_BUY_HOST: 'https://buy.immich.app',
+    PUBLIC_IMMICH_PAY_HOST: 'https://pay.futo.org',
+    PUBLIC_GOOGLE_MAPS_API_KEY: '',
+  };
+});

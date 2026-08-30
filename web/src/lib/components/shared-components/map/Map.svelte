@@ -2,13 +2,17 @@
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text?url';
   import { addProtocol, setRTLTextPlugin } from 'maplibre-gl';
   import { Protocol } from 'pmtiles';
+  import { googleProtocol } from 'maplibre-google-maps';
 
   let protocol = new Protocol();
   void addProtocol('pmtiles', protocol.tile);
+  void addProtocol('google', googleProtocol);
   void setRTLTextPlugin(mapboxRtlUrl, true);
 </script>
 
 <script lang="ts">
+  import { PUBLIC_GOOGLE_MAPS_API_KEY } from '$env/static/public';
+  import { createGoogleStyle } from 'maplibre-google-maps';
   import { afterNavigate } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -111,8 +115,14 @@
   let abortController: AbortController;
 
   const mapTheme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.Light);
-  const styleUrl = $derived(
+  const serverStyleUrl = $derived(
     mapTheme === Theme.Dark ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
+  );
+
+  // If Google Map API Key is available, attempt to use Google maps. Otherwise, fall back to
+  // tiles.immich.cloud.
+  const styleUrl = $derived(
+    PUBLIC_GOOGLE_MAPS_API_KEY ? createGoogleStyle('google', 'roadmap', PUBLIC_GOOGLE_MAPS_API_KEY) : serverStyleUrl,
   );
 
   export function addClipMapMarker(lng: number, lat: number) {

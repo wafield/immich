@@ -6,6 +6,8 @@ dotenv.config({ quiet: true });
 
 process.env.PUBLIC_IMMICH_BUY_HOST = process.env.PUBLIC_IMMICH_BUY_HOST || 'https://buy.immich.app';
 process.env.PUBLIC_IMMICH_PAY_HOST = process.env.PUBLIC_IMMICH_PAY_HOST || 'https://pay.futo.org';
+process.env.PUBLIC_GOOGLE_MAPS_API_KEY =
+  process.env.PUBLIC_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
