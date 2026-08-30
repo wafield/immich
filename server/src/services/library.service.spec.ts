@@ -3,7 +3,7 @@ import { Stats } from 'node:fs';
 import path from 'node:path';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { defaults, SystemConfig } from 'src/dtos/config.dto';
-import { mapLibrary } from 'src/dtos/library.dto';
+import { CreateLibraryDto, mapLibrary, UpdateLibraryDto } from 'src/dtos/library.dto';
 import { AssetType, CronJob, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
@@ -271,6 +271,27 @@ describe(LibraryService.name, () => {
         take: JOBS_LIBRARY_PAGINATION_SIZE,
       });
     });
+
+    it('should merge sentinel exclusion patterns into walk', async () => {
+      const library = factory.library({ importPaths: ['/foo'], exclusionPatterns: ['**/Raw/**'] });
+
+      mocks.storage.stat.mockResolvedValue({
+        isDirectory: () => true,
+      } as Stats);
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+      mocks.storage.findSentinelPatterns.mockResolvedValue(['/foo/sub/**']);
+      mocks.library.get.mockResolvedValue(library);
+
+      await sut.handleQueueSyncFiles({ id: library.id });
+
+      expect(mocks.storage.findSentinelPatterns).toHaveBeenCalledWith(['/foo'], '.nomedia', ['**/Raw/**']);
+      expect(mocks.storage.walk).toHaveBeenCalledWith({
+        pathsToCrawl: ['/foo'],
+        exclusionPatterns: ['**/Raw/**', '/foo/sub/**'],
+        includeHidden: false,
+        take: JOBS_LIBRARY_PAGINATION_SIZE,
+      });
+    });
   });
 
   describe('handleQueueSyncAssets', () => {
@@ -336,6 +357,42 @@ describe(LibraryService.name, () => {
         library.importPaths,
         library.exclusionPatterns,
       );
+    });
+
+    it('should merge sentinel exclusion patterns into offline check and sync queue', async () => {
+      const library = factory.library({ importPaths: ['/foo'], exclusionPatterns: ['**/Raw/**'] });
+      const asset = AssetFactory.create({ libraryId: library.id, isExternal: true });
+
+      mocks.storage.stat.mockResolvedValue({
+        isDirectory: () => true,
+      } as Stats);
+      mocks.storage.checkFileExists.mockResolvedValue(true);
+      mocks.storage.findSentinelPatterns.mockResolvedValue(['/foo/sub/**']);
+      mocks.library.get.mockResolvedValue(library);
+      mocks.library.streamAssetIds.mockReturnValue(makeStream([asset]));
+      mocks.asset.getLibraryAssetCount.mockResolvedValue(1);
+      mocks.asset.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: 0n });
+
+      const response = await sut.handleQueueSyncAssets({ id: library.id });
+
+      expect(response).toBe(JobStatus.Success);
+      expect(mocks.storage.findSentinelPatterns).toHaveBeenCalledWith(['/foo'], '.nomedia', ['**/Raw/**']);
+      expect(mocks.asset.detectOfflineExternalAssets).toHaveBeenCalledWith(
+        library.id,
+        library.importPaths,
+        ['**/Raw/**', '/foo/sub/**'],
+      );
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.LibrarySyncAssets,
+        data: {
+          libraryId: library.id,
+          importPaths: library.importPaths,
+          exclusionPatterns: ['**/Raw/**', '/foo/sub/**'],
+          assetIds: [asset.id],
+          progressCounter: 1,
+          totalAssets: 1,
+        },
+      });
     });
 
     it("should fail if library can't be found", async () => {

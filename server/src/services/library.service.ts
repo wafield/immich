@@ -704,10 +704,18 @@ export class LibraryService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    // Include all directories with ".nomedia" sentinel file as additional exclusion patterns.
+    const sentinelPatterns = await this.storageRepository.findSentinelPatterns(
+      validImportPaths,
+      '.nomedia',
+      library.exclusionPatterns,
+    );
+    const exclusionPatterns = [...library.exclusionPatterns, ...sentinelPatterns];
+
     const pathsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
-      exclusionPatterns: library.exclusionPatterns,
+      exclusionPatterns,
       take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
@@ -778,10 +786,27 @@ export class LibraryService extends BaseService {
       `Checking ${assetCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
+    const validImportPaths: string[] = [];
+
+    for (const importPath of library.importPaths) {
+      const validation = await this.validateImportPath(importPath);
+      if (validation.isValid) {
+        validImportPaths.push(path.normalize(importPath));
+      }
+    }
+
+    // Include all directories with ".nomedia" sentinel file as additional exclusion patterns.
+    const sentinelPatterns = await this.storageRepository.findSentinelPatterns(
+      validImportPaths,
+      '.nomedia',
+      library.exclusionPatterns,
+    );
+    const exclusionPatterns = [...library.exclusionPatterns, ...sentinelPatterns];
+
     const offlineResult = await this.assetRepository.detectOfflineExternalAssets(
       library.id,
       library.importPaths,
-      library.exclusionPatterns,
+      exclusionPatterns,
     );
 
     const affectedAssetCount = Number(offlineResult.numUpdatedRows);
@@ -806,7 +831,7 @@ export class LibraryService extends BaseService {
         data: {
           libraryId: library.id,
           importPaths: library.importPaths,
-          exclusionPatterns: library.exclusionPatterns,
+          exclusionPatterns,
           assetIds: assets.map(({ id }) => id),
           progressCounter: count,
           totalAssets: assetCount,

@@ -281,6 +281,49 @@ export class StorageRepository {
 
   watchDir = watch; // Native fs.watch without chokidar overhead
 
+  /**
+   * Utility function to discover all ".nomedia" sentinels in the given paths and turn them into
+   * additional exclusion file patterns.
+   * @param pathsToCrawl
+   * @param sentinelFile
+   * @param exclusionPatterns
+   * @returns A list of additional exclusion patterns.
+   */
+  async findSentinelPatterns(
+    pathsToCrawl: string[],
+    sentinelFile = '.nomedia',
+    exclusionPatterns: string[] = [],
+  ): Promise<string[]> {
+    if (pathsToCrawl.length === 0) {
+      return [];
+    }
+
+    const globbedPaths = pathsToCrawl.map((path) => this.asSentinelGlob(path, sentinelFile));
+
+    const matches = await glob(globbedPaths, {
+      absolute: true,
+      caseSensitiveMatch: true,
+      onlyFiles: true,
+      dot: true,
+      ignore: exclusionPatterns,
+    });
+
+    const patterns = matches.map((match) => {
+      const dir = path.dirname(match);
+      const escapedDir = escapePath(dir).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
+      return `${escapedDir}/**`;
+    });
+
+    this.logger.debug(`Found the following sentinel patterns: ${patterns}`);
+
+    return Array.from(new Set(patterns));
+  }
+
+  private asSentinelGlob(pathToCrawl: string, sentinelFile: string): string {
+    const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
+    return `${escapedPath}/**/${sentinelFile}`;
+  }
+
   private asGlob(pathToCrawl: string): string {
     const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;

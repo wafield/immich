@@ -518,6 +518,41 @@ describe(LibraryService.name, () => {
     });
   });
 
+  describe('.nomedia sentinel files', () => {
+    it('should ignore assets in a directory containing .nomedia upon initial scan', async () => {
+      const { ctx } = setup();
+
+      const assetA = await createFile(join(importRoot, 'directoryA/assetA.png'));
+      await createFile(join(importRoot, 'directoryB/.nomedia'));
+      await createFile(join(importRoot, 'directoryB/assetB.png'));
+      await createFile(join(importRoot, 'directoryB/sub/assetC.png'));
+      const library = await ctx.createLibrary({ importPaths: [importRoot] });
+
+      await ctx.scan(library.id);
+
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([assetA]);
+    });
+
+    it('should offline existing assets when .nomedia is added and restore when removed', async () => {
+      const { ctx } = setup();
+
+      const assetA = await createFile(join(importRoot, 'directoryA/assetA.png'));
+      const assetB = await createFile(join(importRoot, 'directoryB/assetB.png'));
+      const library = await ctx.createLibrary({ importPaths: [importRoot] });
+
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([assetA, assetB].sort());
+
+      const nomediaPath = await createFile(join(importRoot, 'directoryB/.nomedia'));
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([assetA]);
+
+      await rm(nomediaPath);
+      await ctx.scan(library.id);
+      await expect(ctx.getAssetPaths(library.id)).resolves.toEqual([assetA, assetB].sort());
+    });
+  });
+
   describe('handleQueueSyncAssets', () => {
     it('should set an asset offline if its file is not in any import path', async () => {
       const { sut, ctx } = setup();

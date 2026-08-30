@@ -160,6 +160,7 @@ const libraryFactory = (library: Partial<Library> = {}) => ({
   importPaths: [],
   exclusionPatterns: [],
   uploadPath: null,
+  uiColor: null,
   ...library,
 });
 
