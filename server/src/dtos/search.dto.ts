@@ -75,11 +75,6 @@ const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
   size: z.int().min(1).max(1000).default(250).describe('Number of results to return'),
 });
 
-const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
-  isStacked: z.boolean().nullish().describe('Filter by stacked status'),
-  withPeople: z.boolean().optional().describe('Include people data in response'),
-}).meta({ id: 'RandomSearchDto' });
-
 const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
   minFileSize: z.coerce.number().int().min(0).optional().describe('Minimum file size in bytes'),
   size: z.coerce.number().int().min(1).max(1000).default(250).describe('Number of results to return'),
