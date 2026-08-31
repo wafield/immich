@@ -24,7 +24,7 @@ export interface ServerBuildVersions {
 const exec = promisify(execCallback);
 const maybeFirstLine = async (command: string): Promise<string> => {
   try {
-    const { stdout } = await exec(command);
+    const { stdout } = await exec(command, { timeout: 3000 });
     return stdout.trim().split('\n', 1)[0] || '';
   } catch {
     return '';
@@ -120,7 +120,7 @@ export class ServerInfoRepository {
 
       const checkNode = async () => {
         this.logger.debug('getBuildVersions: Node.js version check started');
-        const v = await this.retrieveVersionFallback('node --version', undefined, nodeVersion);
+        const v = nodeVersion || process.version;
         this.logger.debug(`getBuildVersions: Node.js version check completed -> "${v}"`);
         return v;
       };
@@ -148,10 +148,29 @@ export class ServerInfoRepository {
       };
 
       const checkExiftool = async () => {
-        this.logger.debug('getBuildVersions: ExifTool version check started (calling exiftool.version())...');
-        const v = await exiftool.version();
-        this.logger.debug(`getBuildVersions: ExifTool version check completed -> "${v}"`);
-        return v;
+        this.logger.debug('getBuildVersions: ExifTool version check started');
+        const lockfileVersion = getLockfileVersion('exiftool', lockfile);
+        if (lockfileVersion) {
+          this.logger.debug(`getBuildVersions: ExifTool version found in lockfile -> "${lockfileVersion}"`);
+          return lockfileVersion;
+        }
+
+        this.logger.debug('getBuildVersions: calling exiftool.version() with 3s timeout...');
+        try {
+          const v = await Promise.race([
+            exiftool.version(),
+            new Promise<string>((_, reject) =>
+              setTimeout(() => reject(new Error('exiftool.version() timed out after 3000ms')), 3000),
+            ),
+          ]);
+          this.logger.debug(`getBuildVersions: ExifTool version check completed -> "${v}"`);
+          return v;
+        } catch (err: any) {
+          this.logger.warn(`getBuildVersions: exiftool.version() failed or timed out: ${err?.message || err}`);
+          const fallback = await this.retrieveVersionFallback('exiftool -ver');
+          this.logger.debug(`getBuildVersions: ExifTool fallback version -> "${fallback}"`);
+          return fallback;
+        }
       };
 
       this.logger.debug('getBuildVersions: running version checks concurrently...');
