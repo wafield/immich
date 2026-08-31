@@ -40,32 +40,18 @@ export class ServerService extends BaseService {
   }
 
   async getAboutInfo(): Promise<ServerAboutResponseDto> {
-    this.logger.debug('getAboutInfo: started');
-
     const version = `v${serverVersion.toString()}`;
-    this.logger.debug(`getAboutInfo: server version is ${version}`);
-
-    this.logger.debug('getAboutInfo: reading build metadata from config repository...');
     const { buildMetadata } = this.configRepository.getEnv();
-    this.logger.debug(`getAboutInfo: build metadata loaded: ${JSON.stringify(buildMetadata)}`);
-
-    this.logger.debug('getAboutInfo: fetching build versions from serverInfoRepository started');
     const buildVersions = await this.serverInfoRepository.getBuildVersions();
-    this.logger.debug(`getAboutInfo: fetching build versions completed: ${JSON.stringify(buildVersions)}`);
-
-    this.logger.debug('getAboutInfo: querying license from systemMetadataRepository started');
     const licensed = await this.systemMetadataRepository.get(SystemMetadataKey.License);
-    this.logger.debug(`getAboutInfo: license query completed (licensed: ${!!licensed})`);
 
-    const result = {
+    return {
       version,
       versionUrl: `https://github.com/immich-app/immich/releases/tag/${version}`,
       licensed: !!licensed,
       ...buildMetadata,
       ...buildVersions,
     };
-    this.logger.debug('getAboutInfo: completed');
-    return result;
   }
 
   getApkLinks(): ServerApkLinksDto {

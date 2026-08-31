@@ -46,6 +46,16 @@ const getLockfileVersion = (name: string, lockfile?: BuildLockfile) => {
   return item?.version;
 };
 
+const getVendoredExifToolVersion = (): string | undefined => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const pkg = require('exiftool-vendored/package.json');
+    return pkg.optionalDependencies?.['exiftool-vendored.pl'] || pkg.optionalDependencies?.['exiftool-vendored.exe'];
+  } catch {
+    return undefined;
+  }
+};
+
 @Injectable()
 export class ServerInfoRepository {
   constructor(
@@ -88,103 +98,60 @@ export class ServerInfoRepository {
     commandTransform?: (output: string) => string,
     version?: string,
   ): Promise<string> {
-    this.logger.debug(`retrieveVersionFallback: started for "${command}" (passed version: ${version || 'none'})`);
     if (!version) {
-      this.logger.debug(`retrieveVersionFallback: executing command "${command}"...`);
       const output = await maybeFirstLine(command);
-      this.logger.debug(`retrieveVersionFallback: command "${command}" raw output: "${output}"`);
       version = commandTransform ? commandTransform(output) : output;
-      this.logger.debug(`retrieveVersionFallback: command "${command}" transformed version: "${version}"`);
     }
-    this.logger.debug(`retrieveVersionFallback: completed for "${command}" with result "${version}"`);
     return version;
   }
 
   async getBuildVersions(): Promise<ServerBuildVersions> {
-    this.logger.debug('getBuildVersions: started');
     if (!this.buildVersions) {
       const { nodeVersion, resourcePaths } = this.configRepository.getEnv();
 
-      this.logger.debug(`getBuildVersions: reading lockfile at ${resourcePaths.lockFile}...`);
       const lockfile: BuildLockfile | undefined = await readFile(resourcePaths.lockFile)
-        .then((buffer) => {
-          this.logger.debug(`getBuildVersions: lockfile successfully read from ${resourcePaths.lockFile}`);
-          return JSON.parse(buffer.toString());
-        })
-        .catch((err) => {
-          this.logger.warn(`Failed to read ${resourcePaths.lockFile}: ${err?.message || err}`);
-          return undefined;
-        });
-
-      this.logger.debug(`getBuildVersions: lockfile parsed (has content: ${!!lockfile})`);
-
-      const checkNode = async () => {
-        this.logger.debug('getBuildVersions: Node.js version check started');
-        const v = nodeVersion || process.version;
-        this.logger.debug(`getBuildVersions: Node.js version check completed -> "${v}"`);
-        return v;
-      };
-
-      const checkFfmpeg = async () => {
-        this.logger.debug('getBuildVersions: FFmpeg version check started');
-        const v = await this.retrieveVersionFallback(
-          'ffmpeg -version',
-          (output) => output.replaceAll('ffmpeg version ', ''),
-          getLockfileVersion('ffmpeg', lockfile),
-        );
-        this.logger.debug(`getBuildVersions: FFmpeg version check completed -> "${v}"`);
-        return v;
-      };
-
-      const checkMagick = async () => {
-        this.logger.debug('getBuildVersions: ImageMagick version check started');
-        const v = await this.retrieveVersionFallback(
-          'magick --version',
-          (output) => output.replaceAll('Version: ImageMagick ', ''),
-          getLockfileVersion('imagemagick', lockfile),
-        );
-        this.logger.debug(`getBuildVersions: ImageMagick version check completed -> "${v}"`);
-        return v;
-      };
+        .then((buffer) => JSON.parse(buffer.toString()))
+        .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
 
       const checkExiftool = async () => {
-        this.logger.debug('getBuildVersions: ExifTool version check started');
         const lockfileVersion = getLockfileVersion('exiftool', lockfile);
         if (lockfileVersion) {
-          this.logger.debug(`getBuildVersions: ExifTool version found in lockfile -> "${lockfileVersion}"`);
           return lockfileVersion;
         }
 
-        this.logger.debug('getBuildVersions: calling exiftool.version() with 3s timeout...');
+        const vendoredVersion = getVendoredExifToolVersion();
+        if (vendoredVersion) {
+          return vendoredVersion;
+        }
+
         try {
-          const v = await Promise.race([
+          return await Promise.race([
             exiftool.version(),
             new Promise<string>((_, reject) =>
               setTimeout(() => reject(new Error('exiftool.version() timed out after 3000ms')), 3000),
             ),
           ]);
-          this.logger.debug(`getBuildVersions: ExifTool version check completed -> "${v}"`);
-          return v;
-        } catch (err: any) {
-          this.logger.warn(`getBuildVersions: exiftool.version() failed or timed out: ${err?.message || err}`);
-          const fallback = await this.retrieveVersionFallback('exiftool -ver');
-          this.logger.debug(`getBuildVersions: ExifTool fallback version -> "${fallback}"`);
-          return fallback;
+        } catch {
+          return await this.retrieveVersionFallback('exiftool -ver');
         }
       };
 
-      this.logger.debug('getBuildVersions: running version checks concurrently...');
       const [nodejsVersion, ffmpegVersion, magickVersion, exiftoolVersion] = await Promise.all([
-        checkNode(),
-        checkFfmpeg(),
-        checkMagick(),
+        nodeVersion || process.version,
+        this.retrieveVersionFallback(
+          'ffmpeg -version',
+          (output) => output.replaceAll('ffmpeg version ', ''),
+          getLockfileVersion('ffmpeg', lockfile),
+        ),
+        this.retrieveVersionFallback(
+          'magick --version',
+          (output) => output.replaceAll('Version: ImageMagick ', ''),
+          getLockfileVersion('imagemagick', lockfile),
+        ),
         checkExiftool(),
       ]);
-      this.logger.debug('getBuildVersions: concurrent version checks completed');
 
-      this.logger.debug('getBuildVersions: resolving libvips version...');
       const libvipsVersion = getLockfileVersion('libvips', lockfile) || sharp.versions.vips;
-      this.logger.debug(`getBuildVersions: libvips version resolved -> "${libvipsVersion}"`);
 
       this.buildVersions = {
         nodejs: nodejsVersion,
@@ -193,12 +160,8 @@ export class ServerInfoRepository {
         libvips: libvipsVersion,
         imagemagick: magickVersion,
       };
-      this.logger.debug(`getBuildVersions: finished resolving all build versions: ${JSON.stringify(this.buildVersions)}`);
-    } else {
-      this.logger.debug(`getBuildVersions: returning cached build versions: ${JSON.stringify(this.buildVersions)}`);
     }
 
-    this.logger.debug('getBuildVersions: completed');
     return this.buildVersions;
   }
 }
