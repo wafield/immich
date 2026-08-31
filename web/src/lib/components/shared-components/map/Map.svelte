@@ -20,7 +20,7 @@
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
-  import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker } from '@mdi/js';
+  import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker, mdiThemeLightDark } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
@@ -112,16 +112,10 @@
   let marker: Marker | null = null;
   let abortController: AbortController;
 
-  const mapTheme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.Light);
+  let isDarkStyle = $state(($mapSettings.allowDarkMode ? themeManager.value : Theme.Light) === Theme.Dark);
   const styleUrl = $derived(
-    mapTheme === Theme.Dark ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
+    isDarkStyle ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
   );
-
-  // If Google Map API Key is available, attempt to use Google maps. Otherwise, fall back to
-  // tiles.immich.cloud.
-  // const styleUrl = $derived(
-  //   PUBLIC_GOOGLE_MAPS_API_KEY ? createGoogleStyle('google', 'roadmap', PUBLIC_GOOGLE_MAPS_API_KEY) : serverStyleUrl,
-  // );
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (!map) {
@@ -401,6 +395,14 @@
     {#snippet children({ map }: { map: Map })}
       {#if showSimpleControls}
         <NavigationControl position="top-left" showCompass={false} />
+
+        <Control position="top-left">
+          <ControlGroup>
+            <ControlButton onclick={() => (isDarkStyle = !isDarkStyle)}>
+              <Icon title="Toggle style" icon={mdiThemeLightDark} size="100%" class="text-black/80" />
+            </ControlButton>
+          </ControlGroup>
+        </Control>
 
         {#if !simplified}
           <GeolocateControl position="top-left" />

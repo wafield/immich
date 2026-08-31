@@ -750,12 +750,7 @@
               {@const { lat, lon } = marker}
               <div class="flex flex-col items-center gap-1">
                 <Text fontWeight="bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</Text>
-                <Link
-                  href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
-                  class="text-primary"
-                >
-                  {$t('open_in_openstreetmap')}
-                </Link>
+                <Link href="https://google.com/maps/@{lat},{lon},15z" class="text-primary">Open in Google Maps</Link>
               </div>
             {/snippet}
           </Map>
