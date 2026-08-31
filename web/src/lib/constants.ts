@@ -279,9 +279,24 @@ export enum SettingInputFieldType {
 }
 
 export const AlbumPageViewMode = {
+  /**
+   * "Select Album Cover" mode. Allows asset selection; when selected any, this mode ends.
+   */
   SELECT_THUMBNAIL: 'select-thumbnail',
+
+  /**
+   * "Add more photos to this album" mode. Shows all timeline assets, not just this album.
+   */
   SELECT_ASSETS: 'select-assets',
+
+  /**
+   * Default mode; view all assets in this album.
+   */
   VIEW: 'view',
+
+  /**
+   * Not used anywhere.
+   */
   OPTIONS: 'options',
 };
 

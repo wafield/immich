@@ -2,7 +2,8 @@
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { navigating } from '$app/state';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
+  import { timeToLoadTheMap } from '$lib/constants';
+  import { LoadingSpinner } from '@immich/ui';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
@@ -28,6 +29,7 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import { delay } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AlbumPageViewMode } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
@@ -52,7 +54,15 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
-  import { AlbumUserRole, AssetVisibility, getAlbumInfo, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+  import {
+    AlbumUserRole,
+    AssetVisibility,
+    getAlbumInfo,
+    updateAlbumInfo,
+    getAlbumMapMarkers,
+    type AlbumResponseDto,
+    type MapMarkerResponseDto,
+  } from '@immich/sdk';
   import {
     ActionButton,
     CommandPaletteDefaultProvider,
@@ -73,10 +83,11 @@
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
+    mdiMapOutline,
     mdiPlus,
     mdiPresentationPlay,
   } from '@mdi/js';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
@@ -93,8 +104,19 @@
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
+  let showAlbumMap = $state(false);
+  let cancelable: AbortController;
+  let mapMarkers: MapMarkerResponseDto[] = $state([]);
 
   const timelineMultiSelectManager = new AssetMultiSelectManager();
+
+  onMount(async () => {
+    mapMarkers = await loadMapMarkers();
+  });
+
+  onDestroy(() => {
+    cancelable?.abort();
+  });
 
   const handleFavorite = async () => {
     try {
@@ -226,12 +248,15 @@
 
   const options = $derived.by(() => {
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
+      // Show all user-visible assets to allow the user to add non-album assets to this album.
       return {
         visibility: AssetVisibility.Timeline,
         withPartners: true,
         timelineAlbumId: albumId,
       };
     }
+
+    // For all other modes, display assets in the current album only.
     return { albumId, order: album.order };
   });
 
@@ -334,6 +359,19 @@
     $if: () => !assetViewerManager.isViewing,
     shortcuts: { key: 'Escape' },
   });
+
+  // Load all markers (asset IDs and coordinates) to be shown on map.
+  const loadMapMarkers = async () => {
+    cancelable?.abort();
+    cancelable = new AbortController();
+
+    try {
+      return await getAlbumMapMarkers({ ...authManager.params, id: album.id }, { signal: cancelable.signal });
+    } catch (error) {
+      handleError(error, $t('errors.something_went_wrong'));
+      return [];
+    }
+  };
 </script>
 
 <OnEvents
@@ -349,103 +387,122 @@
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
 <UserPageLayout scrollbar={false}>
-  <Timeline
-    enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
-    {album}
-    {albumUsers}
-    bind:timelineManager
-    {options}
-    assetInteraction={currentAssetIntersection}
-    {isShared}
-    {isSelectionMode}
-    {singleSelect}
-    {showArchiveIcon}
-    {onSelect}
-    onEscape={handleEscape}
-    withStacked={true}
-  >
-    {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
-      {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
-        <!-- ALBUM TITLE -->
-        <section class="pt-8">
-          <AlbumTitle
-            id={album.id}
-            albumName={album.albumName}
-            {isOwned}
-            onUpdate={(albumName) => (album = { ...album, albumName })}
-          />
-
-          {#if album.assetCount > 0}
-            <AlbumSummary {album} />
-          {/if}
-
-          <!-- ALBUM SHARING -->
-          {#if album.albumUsers.length > 1 || (album.hasSharedLink && isOwned)}
-            <div class="my-3 flex gap-x-1">
-              <button
-                class="flex gap-x-1"
-                type="button"
-                onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
-              >
-                <!-- owner & users with write access (collaborators) -->
-                {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
-                  <UserAvatar {user} size="md" />
-                {/each}
-
-                <!-- display ellipsis if there are readonly users too -->
-                {#if albumHasViewers}
-                  <IconButton
-                    shape="round"
-                    aria-label={$t('view_all_users')}
-                    color="secondary"
-                    size="medium"
-                    icon={mdiDotsHorizontal}
-                  />
-                {/if}
-
-                {#if album.hasSharedLink && isOwned}
-                  <IconButton
-                    aria-label={$t('shared_link_manage_links')}
-                    color="secondary"
-                    size="medium"
-                    shape="round"
-                    icon={mdiLink}
-                  />
-                {/if}
-              </button>
-
-              {#if isOwned}
-                <ActionButton action={Share} />
-              {/if}
+  <div class="flex size-full flex-row gap-2">
+    {#if showAlbumMap && viewMode === AlbumPageViewMode.VIEW}
+      <div class="h-full w-1/3 min-h-0">
+        {#await import('$lib/components/shared-components/map/Map.svelte')}
+          {#await delay(timeToLoadTheMap) then}
+            <!-- show the loading spinner only if loading the map takes too much time -->
+            <div class="flex size-full items-center justify-center">
+              <LoadingSpinner />
             </div>
-          {/if}
-          <AlbumDescription
-            id={album.id}
-            {isOwned}
-            bind:description={() => album.description, (description) => (album = { ...album, description })}
-          />
-        </section>
-      {/if}
-
-      {#if album.assetCount === 0}
-        <section id="empty-album" class="mt-50 flex place-content-center place-items-center">
-          <div class="w-75">
-            <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('add_photos')}</p>
-            <button
-              type="button"
-              onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-              class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
-            >
-              <span class="text-primary">
-                <Icon icon={mdiPlus} size="24" />
-              </span>
-              <span class="text-lg">{$t('select_photos')}</span>
-            </button>
-          </div>
-        </section>
-      {/if}
+          {/await}
+        {:then { default: Map }}
+          <Map {mapMarkers} showSettings={false} />
+        {/await}
+      </div>
     {/if}
-  </Timeline>
+
+    <div class={[showAlbumMap ? 'w-2/3 pe-2' : 'w-full', 'h-full min-h-0']}>
+      <Timeline
+        enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
+        {album}
+        {albumUsers}
+        bind:timelineManager
+        {options}
+        assetInteraction={currentAssetIntersection}
+        {isShared}
+        {isSelectionMode}
+        {singleSelect}
+        {showArchiveIcon}
+        {onSelect}
+        onEscape={handleEscape}
+        withStacked={true}
+      >
+        {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
+          {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
+            <!-- ALBUM TITLE -->
+            <section class="pt-8">
+              <AlbumTitle
+                id={album.id}
+                albumName={album.albumName}
+                {isOwned}
+                onUpdate={(albumName) => (album = { ...album, albumName })}
+              />
+
+              {#if album.assetCount > 0}
+                <AlbumSummary {album} />
+              {/if}
+
+              <!-- ALBUM SHARING -->
+              {#if album.albumUsers.length > 1 || (album.hasSharedLink && isOwned)}
+                <div class="my-3 flex gap-x-1">
+                  <button
+                    class="flex gap-x-1"
+                    type="button"
+                    onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
+                  >
+                    <!-- owner & users with write access (collaborators) -->
+                    {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
+                      <UserAvatar {user} size="md" />
+                    {/each}
+
+                    <!-- display ellipsis if there are readonly users too -->
+                    {#if albumHasViewers}
+                      <IconButton
+                        shape="round"
+                        aria-label={$t('view_all_users')}
+                        color="secondary"
+                        size="medium"
+                        icon={mdiDotsHorizontal}
+                      />
+                    {/if}
+
+                    {#if album.hasSharedLink && isOwned}
+                      <IconButton
+                        aria-label={$t('shared_link_manage_links')}
+                        color="secondary"
+                        size="medium"
+                        shape="round"
+                        icon={mdiLink}
+                      />
+                    {/if}
+                  </button>
+
+                  {#if isOwned}
+                    <ActionButton action={Share} />
+                  {/if}
+                </div>
+              {/if}
+              <AlbumDescription
+                id={album.id}
+                {isOwned}
+                bind:description={() => album.description, (description) => (album = { ...album, description })}
+              />
+            </section>
+          {/if}
+
+          {#if album.assetCount === 0}
+            <section id="empty-album" class="mt-50 flex place-content-center place-items-center">
+              <div class="w-75">
+                <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('add_photos')}</p>
+                <button
+                  type="button"
+                  onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
+                  class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
+                >
+                  <span class="text-primary">
+                    <Icon icon={mdiPlus} size="24" />
+                  </span>
+                  <span class="text-lg">{$t('select_photos')}</span>
+                </button>
+              </div>
+            </section>
+          {/if}
+        {/if}
+      </Timeline>
+    </div>
+  </div>
 
   {#if showActivityStatus}
     <div class="absolute inset-e-0 bottom-0 z-2 me-12 mb-6">
@@ -555,7 +612,14 @@
         <ActionButton action={Share} />
 
         {#if featureFlagsManager.value.map}
-          <AlbumMap {album} />
+          <IconButton
+            variant="ghost"
+            shape="round"
+            color="secondary"
+            icon={mdiMapOutline}
+            onclick={() => (showAlbumMap = !showAlbumMap)}
+            aria-label={$t('map')}
+          />
         {/if}
 
         {#if isOwned || containsEditors}
