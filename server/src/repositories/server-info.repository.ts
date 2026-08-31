@@ -88,38 +88,84 @@ export class ServerInfoRepository {
     commandTransform?: (output: string) => string,
     version?: string,
   ): Promise<string> {
+    this.logger.debug(`retrieveVersionFallback: started for "${command}" (passed version: ${version || 'none'})`);
     if (!version) {
+      this.logger.debug(`retrieveVersionFallback: executing command "${command}"...`);
       const output = await maybeFirstLine(command);
+      this.logger.debug(`retrieveVersionFallback: command "${command}" raw output: "${output}"`);
       version = commandTransform ? commandTransform(output) : output;
+      this.logger.debug(`retrieveVersionFallback: command "${command}" transformed version: "${version}"`);
     }
+    this.logger.debug(`retrieveVersionFallback: completed for "${command}" with result "${version}"`);
     return version;
   }
 
   async getBuildVersions(): Promise<ServerBuildVersions> {
+    this.logger.debug('getBuildVersions: started');
     if (!this.buildVersions) {
       const { nodeVersion, resourcePaths } = this.configRepository.getEnv();
 
+      this.logger.debug(`getBuildVersions: reading lockfile at ${resourcePaths.lockFile}...`);
       const lockfile: BuildLockfile | undefined = await readFile(resourcePaths.lockFile)
-        .then((buffer) => JSON.parse(buffer.toString()))
+        .then((buffer) => {
+          this.logger.debug(`getBuildVersions: lockfile successfully read from ${resourcePaths.lockFile}`);
+          return JSON.parse(buffer.toString());
+        })
+        .catch((err) => {
+          this.logger.warn(`Failed to read ${resourcePaths.lockFile}: ${err?.message || err}`);
+          return undefined;
+        });
 
-        .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
+      this.logger.debug(`getBuildVersions: lockfile parsed (has content: ${!!lockfile})`);
 
-      const [nodejsVersion, ffmpegVersion, magickVersion, exiftoolVersion] = await Promise.all([
-        this.retrieveVersionFallback('node --version', undefined, nodeVersion),
-        this.retrieveVersionFallback(
+      const checkNode = async () => {
+        this.logger.debug('getBuildVersions: Node.js version check started');
+        const v = await this.retrieveVersionFallback('node --version', undefined, nodeVersion);
+        this.logger.debug(`getBuildVersions: Node.js version check completed -> "${v}"`);
+        return v;
+      };
+
+      const checkFfmpeg = async () => {
+        this.logger.debug('getBuildVersions: FFmpeg version check started');
+        const v = await this.retrieveVersionFallback(
           'ffmpeg -version',
           (output) => output.replaceAll('ffmpeg version ', ''),
           getLockfileVersion('ffmpeg', lockfile),
-        ),
-        this.retrieveVersionFallback(
+        );
+        this.logger.debug(`getBuildVersions: FFmpeg version check completed -> "${v}"`);
+        return v;
+      };
+
+      const checkMagick = async () => {
+        this.logger.debug('getBuildVersions: ImageMagick version check started');
+        const v = await this.retrieveVersionFallback(
           'magick --version',
           (output) => output.replaceAll('Version: ImageMagick ', ''),
           getLockfileVersion('imagemagick', lockfile),
-        ),
-        exiftool.version(),
-      ]);
+        );
+        this.logger.debug(`getBuildVersions: ImageMagick version check completed -> "${v}"`);
+        return v;
+      };
 
+      const checkExiftool = async () => {
+        this.logger.debug('getBuildVersions: ExifTool version check started (calling exiftool.version())...');
+        const v = await exiftool.version();
+        this.logger.debug(`getBuildVersions: ExifTool version check completed -> "${v}"`);
+        return v;
+      };
+
+      this.logger.debug('getBuildVersions: running version checks concurrently...');
+      const [nodejsVersion, ffmpegVersion, magickVersion, exiftoolVersion] = await Promise.all([
+        checkNode(),
+        checkFfmpeg(),
+        checkMagick(),
+        checkExiftool(),
+      ]);
+      this.logger.debug('getBuildVersions: concurrent version checks completed');
+
+      this.logger.debug('getBuildVersions: resolving libvips version...');
       const libvipsVersion = getLockfileVersion('libvips', lockfile) || sharp.versions.vips;
+      this.logger.debug(`getBuildVersions: libvips version resolved -> "${libvipsVersion}"`);
 
       this.buildVersions = {
         nodejs: nodejsVersion,
@@ -128,8 +174,12 @@ export class ServerInfoRepository {
         libvips: libvipsVersion,
         imagemagick: magickVersion,
       };
+      this.logger.debug(`getBuildVersions: finished resolving all build versions: ${JSON.stringify(this.buildVersions)}`);
+    } else {
+      this.logger.debug(`getBuildVersions: returning cached build versions: ${JSON.stringify(this.buildVersions)}`);
     }
 
+    this.logger.debug('getBuildVersions: completed');
     return this.buildVersions;
   }
 }
