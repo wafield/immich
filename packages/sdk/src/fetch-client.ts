@@ -3317,6 +3317,8 @@ export type TimeBucketAssetResponseDto = {
     country?: (string | null)[];
     /** Array of UTC timestamps when each asset was originally uploaded to Immich */
     createdAt: string[];
+    /** Array of UTC timestamps when each asset was moved to trash */
+    deletedAt?: (string | null)[];
     /** Array of original date taken timestamps in UTC extracted from EXIF data */
     dateTimeOriginal?: (string | null)[];
     /** Array of asset descriptions extracted from EXIF data */
@@ -3339,6 +3341,8 @@ export type TimeBucketAssetResponseDto = {
     isImage: boolean[];
     /** Array indicating whether each asset is in the trash */
     isTrashed: boolean[];
+    /** Array indicating whether each asset is not part of any album */
+    isNotInAnyAlbum: boolean[];
     /** Array of latitude coordinates extracted from EXIF GPS data */
     latitude?: (number | null)[];
     /** Array of live photo video asset IDs (null for non-live photos) */
@@ -3355,8 +3359,8 @@ export type TimeBucketAssetResponseDto = {
     projectionType: (string | null)[];
     /** Array of aspect ratios (width/height) for each asset */
     ratio: number[];
-    /** Array of stack information as [stackId, assetCount] tuples (null for non-stacked assets) */
-    stack?: (string[] | null)[];
+    /** Array of stack information as [stackId, assetCount, stackType] tuples (null for non-stacked assets) */
+    stack?: ((string | null)[] | null)[];
     /** Array of BlurHash strings for generating asset previews (base64 encoded) */
     thumbhash: (string | null)[];
     /** Array of time zones extracted from EXIF data */

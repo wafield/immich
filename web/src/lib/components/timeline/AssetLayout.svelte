@@ -5,6 +5,7 @@
   import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import type { CommonPosition } from '$lib/utils/layout-utils';
+  import { highlightAlbumAssets } from '$lib/stores/preferences.store';
   import { fromISODateTime, fromISODateTimeUTC, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
   import { Icon } from '@immich/ui';
   import { mdiCamera, mdiCalendar } from '@mdi/js';
@@ -71,7 +72,7 @@
 </script>
 
 <!-- Image grid -->
-<div data-image-grid class="relative overflow-clip" style:height={height + 'px'} style:width={width + 'px'}>
+<div data-image-grid class="relative" style:height={height + 'px'} style:width={width + 'px'}>
   {#each viewerAssets as viewerAsset (viewerAsset.id)}
     {@const position = viewerAsset.position!}
     {@const asset = viewerAsset.asset!}
@@ -79,11 +80,11 @@
     <!-- note: don't remove data-asset-id - its used by web e2e tests -->
     <div
       data-asset-id={asset.id}
-      class="absolute"
+      class="absolute {$highlightAlbumAssets && !asset.isNotInAnyAlbum && 'ring-2 ring-lime-300 dark:ring-lime-700'}"
       style:top={position.top + 'px'}
       style:inset-inline-start={position.left + 'px'}
       style:width={position.width + 'px'}
-      style:height={position.height + 'px'}
+      style:height={position.height + (assetInfoDisplay === AssetInfoDisplay.NONE ? 0 : AssetInfoBarHeight) + 'px'}
       out:scale|global={{ start: 0.1, duration: scaleDuration }}
       animate:flip={{ duration: transitionDuration }}
     >
@@ -91,7 +92,7 @@
       {@render customThumbnailLayout?.(asset)}
       {#if assetInfoDisplay === AssetInfoDisplay.FILE_NAME}
         <div
-          class="absolute top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs dark:bg-slate-800"
+          class="top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs dark:bg-slate-800"
           style:height="{AssetInfoBarHeight}px"
         >
           {asset.originalFileName ?? ''}
@@ -99,7 +100,7 @@
       {:else if assetInfoDisplay === AssetInfoDisplay.FILE_NAME_CAMERA_DATE_TIME}
         {@const formattedTime = formatDateTime(asset)}
         <div
-          class="absolute top-full flex w-full flex-col justify-center overflow-clip bg-slate-100 p-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+          class="top-full flex w-full flex-col justify-center overflow-clip bg-slate-100 p-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200"
           style:height="{AssetInfoBarHeight}px"
         >
           <div class="truncate text-center">
@@ -122,7 +123,7 @@
         </div>
       {:else if assetInfoDisplay === AssetInfoDisplay.DESCRIPTION}
         <div
-          class="absolute top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs dark:bg-slate-800"
+          class="top-full w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs dark:bg-slate-800"
           style:height="{AssetInfoBarHeight}px"
         >
           {asset.description ?? ''}

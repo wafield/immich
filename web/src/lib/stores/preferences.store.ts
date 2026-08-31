@@ -143,6 +143,8 @@ export const selectedLibraries = persisted<string[]>('selected-libraries', [], {
 
 export const showLibraryIndicator = persisted<boolean>('show-library-indicator', false, {});
 
+export const highlightAlbumAssets = persisted<boolean>('highlight-album-assets', false, {});
+
 export enum FolderAssetsSortBy {
   CaptureTime = 'capture-time',
   AddedTime = 'added-time',

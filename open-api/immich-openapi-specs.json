@@ -30923,6 +30923,13 @@
             },
             "type": "array"
           },
+          "isNotInAnyAlbum": {
+            "description": "Array indicating whether each asset is not part of any album",
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
           "isTrashed": {
             "description": "Array indicating whether each asset is in the trash",
             "items": {
@@ -31053,6 +31060,7 @@
           "isEdited",
           "isFavorite",
           "isImage",
+          "isNotInAnyAlbum",
           "isTrashed",
           "libraryId",
           "livePhotoVideoId",

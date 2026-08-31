@@ -1005,6 +1005,15 @@ export class AssetRepository {
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
             eb
+              .not(
+                eb.exists(
+                  eb
+                    .selectFrom('album_asset')
+                    .whereRef('album_asset.assetId', '=', 'asset.id'),
+                ),
+              )
+              .as('isNotInAnyAlbum'),
+            eb
               .exists(
                 eb
                   .selectFrom('asset_file')
@@ -1161,6 +1170,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['isImage']), sql.lit('{}')).as('isImage'),
             // TODO: isTrashed is redundant as it will always be all true or false depending on the options
             eb.fn.coalesce(eb.fn('array_agg', ['isTrashed']), sql.lit('{}')).as('isTrashed'),
+            eb.fn.coalesce(eb.fn('array_agg', ['isNotInAnyAlbum']), sql.lit('{}')).as('isNotInAnyAlbum'),
             eb.fn.coalesce(eb.fn('array_agg', ['livePhotoVideoId']), sql.lit('{}')).as('livePhotoVideoId'),
             eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAt']), sql.lit('{}')).as('fileCreatedAt'),
             eb.fn.coalesce(eb.fn('array_agg', ['localOffsetHours']), sql.lit('{}')).as('localOffsetHours'),

@@ -78,6 +78,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     libraryId: [],
     isImage: [],
     isTrashed: [],
+    isNotInAnyAlbum: [],
     livePhotoVideoId: [],
     fileCreatedAt: [],
     localOffsetHours: [],
@@ -93,7 +94,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
   };
   for (const asset of timelineAsset) {
     const fileCreatedAt = fromTimelinePlainDateTime(asset.fileCreatedAt).toISO();
-    bucketAssets.model?.push(asset.model);
+    bucketAssets.model?.push(asset.model ?? null);
     bucketAssets.city?.push(asset.city);
     bucketAssets.country?.push(asset.country);
     bucketAssets.dateTimeOriginal?.push(
@@ -109,6 +110,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.libraryId.push(asset.libraryId);
     bucketAssets.isImage.push(asset.isImage);
     bucketAssets.isTrashed.push(asset.isTrashed);
+    bucketAssets.isNotInAnyAlbum.push(asset.isNotInAnyAlbum ?? true);
     bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
     bucketAssets.fileCreatedAt.push(fileCreatedAt);
     bucketAssets.deletedAt?.push(asset.deletedAt ? fromTimelinePlainDateTime(asset.deletedAt).toISO() : null);

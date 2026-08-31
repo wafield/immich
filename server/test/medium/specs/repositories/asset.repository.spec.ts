@@ -290,6 +290,42 @@ describe(AssetRepository.name, () => {
         }),
       );
     });
+
+    it('should return isNotInAnyAlbum status for each asset', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const [{ asset: assetInAlbum }, { asset: assetNotInAlbum }] = await Promise.all([
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T00:30:00.000Z'),
+          localDateTime: new Date('2026-03-09T00:30:00.000Z'),
+          originalFileName: 'in_album.jpg',
+        }),
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T00:45:00.000Z'),
+          localDateTime: new Date('2026-03-09T00:45:00.000Z'),
+          originalFileName: 'not_in_album.jpg',
+        }),
+      ]);
+
+      await ctx.newAlbum({ ownerId: user.id }, [assetInAlbum.id]);
+
+      const bucket = await sut.getTimeBucket(
+        '2026-03-01',
+        { order: AssetOrder.Asc, userIds: [user.id], visibility: AssetVisibility.Timeline },
+        auth,
+      );
+
+      expect(JSON.parse(bucket.assets)).toEqual(
+        expect.objectContaining({
+          id: [assetInAlbum.id, assetNotInAlbum.id],
+          isNotInAnyAlbum: [false, true],
+        }),
+      );
+    });
   });
 
   describe('upsertExif', () => {

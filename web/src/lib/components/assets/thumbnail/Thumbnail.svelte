@@ -211,7 +211,7 @@
 </script>
 
 <div
-  class={['group flex overflow-hidden focus-visible:outline-none', backgroundColorClass, { 'rounded-xl': selected }]}
+  class={['group flex focus-visible:outline-none', backgroundColorClass, { 'rounded-xl': selected }]}
   style:width="{width}px"
   style:height="{height}px"
   onmouseenter={onMouseEnter}

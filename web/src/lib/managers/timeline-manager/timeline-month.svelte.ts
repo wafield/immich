@@ -190,6 +190,7 @@ export class TimelineMonth {
         isFavorite: bucketAssets.isFavorite[i],
         isImage: bucketAssets.isImage[i],
         isTrashed: bucketAssets.isTrashed[i],
+        isNotInAnyAlbum: bucketAssets.isNotInAnyAlbum?.[i] ?? false,
         isEdited: bucketAssets.isEdited[i],
         hasSidecar: bucketAssets.hasSidecar[i],
         libraryId: bucketAssets.libraryId[i],
@@ -204,14 +205,15 @@ export class TimelineMonth {
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
         ratio: bucketAssets.ratio[i],
-        stack: bucketAssets.stack?.at(i)
-          ? {
-              id: bucketAssets.stack[i]![0],
-              primaryAssetId: bucketAssets.id[i],
-              assetCount: Number.parseInt(bucketAssets.stack[i]![1]),
-              stackType: bucketAssets.stack[i]![2] ?? null,
-            }
-          : null,
+        stack:
+          bucketAssets.stack?.at(i) && bucketAssets.stack[i]?.[0] && bucketAssets.stack[i]?.[1]
+            ? {
+                id: bucketAssets.stack[i]![0]!,
+                primaryAssetId: bucketAssets.id[i],
+                assetCount: Number.parseInt(bucketAssets.stack[i]![1]!),
+                stackType: bucketAssets.stack[i]![2] ?? null,
+              }
+            : null,
         thumbhash: bucketAssets.thumbhash[i],
         people: null, // People are not included in the bucket assets
         originalFileName: bucketAssets.originalFileName[i],

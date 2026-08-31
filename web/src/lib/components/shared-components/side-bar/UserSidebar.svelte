@@ -11,6 +11,7 @@
     hideScreenshots,
     selectedLibraries,
     showLibraryIndicator,
+    highlightAlbumAssets,
     rowSize,
     RowSize,
     assetInfoDisplay,
@@ -238,6 +239,16 @@
           onCheckedChange={() => ($showLibraryIndicator = !$showLibraryIndicator)}
         />
         <Label label="Show Library Indicator" for="library-indicator-checkbox" size="tiny" />
+      </div>
+
+      <div class="flex items-start gap-2">
+        <Checkbox
+          size="tiny"
+          id="highlight-album-assets-checkbox"
+          checked={$highlightAlbumAssets}
+          onCheckedChange={() => ($highlightAlbumAssets = !$highlightAlbumAssets)}
+        />
+        <Label label="Highlight Album Assets" for="highlight-album-assets-checkbox" size="tiny" />
       </div>
     </div>
 
