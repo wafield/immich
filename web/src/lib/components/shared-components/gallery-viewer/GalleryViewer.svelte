@@ -15,6 +15,7 @@
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
+  import { ROW_SIZE_LAYOUT_OPTIONS, RowSize, rowSize } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, getNextAsset, getPreviousAsset, navigateToAsset } from '$lib/utils/asset-utils';
@@ -67,11 +68,13 @@
 
   const navigationAssets = $derived(viewerAssets ?? assets);
 
+  const layoutOptions = $derived(ROW_SIZE_LAYOUT_OPTIONS[$rowSize] ?? ROW_SIZE_LAYOUT_OPTIONS[RowSize.M]);
+
   const geometry = $derived(
     getJustifiedLayoutFromAssets(assets, {
-      spacing: 2,
+      spacing: layoutOptions.gap,
       heightTolerance: 0.5,
-      rowHeight: Math.floor(viewport.width) < 850 ? 100 : 235,
+      rowHeight: layoutOptions.rowHeight,
       rowWidth: Math.floor(viewport.width),
     }),
   );
