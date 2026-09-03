@@ -72,20 +72,33 @@
     getSearchType();
   };
 
-  const onFocusOut = (event: FocusEvent) => {
-    if (isPopoverContent(event)) {
-      return;
-    }
-
+  const onFocusOut = () => {
     searchStore.isSearchEnabled = false;
   };
 
-  const onDropdownFocusOut = (event: FocusEvent) => {
-    if (isPopoverContent(event)) {
-      return;
+  const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
+    const searchType = getSearchType();
+    switch (searchType) {
+      case 'smart': {
+        return { query: term };
+      }
+      case 'metadata': {
+        return { originalFileName: term };
+      }
+      case 'description': {
+        return { description: term };
+      }
+      case 'fullPath': {
+        const normalizedTerm = term.trim();
+        return normalizedTerm ? { originalPath: normalizedTerm } : {};
+      }
+      case 'ocr': {
+        return { ocr: term };
+      }
+      default: {
+        return { query: term };
+      }
     }
-
-    closeDropdown();
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {
@@ -257,7 +270,7 @@
     onfocusin={onFocusIn}
     role="search"
   >
-    <div use:focusOutside={{ onFocusOut: onDropdownFocusOut }} tabindex="-1">
+    <div use:focusOutside={{ onFocusOut: closeDropdown }} tabindex="-1">
       <label for="main-search-bar" class="sr-only">{$t('search_your_photos')}</label>
       <input
         type="text"
