@@ -36,6 +36,8 @@
       return;
     }
 
+    // Move focus back to the container so it doesn't fallback to the body and closes the search bar
+    container?.focus();
     selectedTags.delete(tag);
   };
 </script>

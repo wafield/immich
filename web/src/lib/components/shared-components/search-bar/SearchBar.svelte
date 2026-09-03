@@ -72,7 +72,11 @@
     getSearchType();
   };
 
-  const onFocusOut = () => {
+  const onFocusOut = (event: FocusEvent) => {
+    if (isPopoverContent(event)) {
+      return;
+    }
+
     searchStore.isSearchEnabled = false;
   };
 
@@ -270,7 +274,7 @@
     onfocusin={onFocusIn}
     role="search"
   >
-    <div use:focusOutside={{ onFocusOut: closeDropdown }} tabindex="-1">
+    <div use:focusOutside={{ onFocusOut: onDropdownFocusOut }} tabindex="-1">
       <label for="main-search-bar" class="sr-only">{$t('search_your_photos')}</label>
       <input
         type="text"

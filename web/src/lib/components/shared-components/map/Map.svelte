@@ -410,7 +410,7 @@
             <Control position="top-left">
               <ControlGroup>
                 <ControlButton onclick={() => (viewportGridActive ? onViewportClose?.() : handleViewportSelect())}>
-                  <Icon title={$t('show_photos_in_area')} icon={mdiImageMultiple} size="100%" class="text-black/80" />
+                  <Icon title={$t('show_photos_in_area')} icon={mdiImageMultiple} size="70%" class="text-black/80" />
                 </ControlButton>
               </ControlGroup>
             </Control>
@@ -424,7 +424,7 @@
         <Control>
           <ControlGroup>
             <ControlButton onclick={handleSettingsClick}>
-              <Icon icon={mdiCog} size="100%" class="text-black/80" />
+              <Icon icon={mdiCog} size="70%" class="text-black/80" />
             </ControlButton>
           </ControlGroup>
         </Control>
