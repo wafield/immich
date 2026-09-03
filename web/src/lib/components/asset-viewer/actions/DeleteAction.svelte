@@ -3,7 +3,7 @@
   import { AssetAction } from '$lib/constants';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
+  import AssetPredeletionConfirmModal from '$lib/modals/AssetPredeletionConfirmModal.svelte';
   import { deleteAssets as deleteAssetsUtil, type OnUndoDelete } from '$lib/utils/actions';
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -26,14 +26,22 @@
 
   const trashOrDelete = async (forceRequest?: boolean) => {
     const timelineAsset = toTimelineAsset(asset);
+
+    // If the asset has any edits (has sidecar, has description) then pop up a confirmation dialog.
+    if (timelineAsset.description || timelineAsset.hasSidecar || timelineAsset.isEdited) {
+      const confirmed = await modalManager.show(AssetPredeletionConfirmModal, {});
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    // Whether to permanently delete the asset from storage.
     const force = forceDefault || forceRequest;
 
     if (force) {
-      if ($showDeleteModal) {
-        const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: 1 });
-        if (!confirmed) {
-          return;
-        }
+      const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: 1 });
+      if (!confirmed) {
+        return;
       }
 
       try {

@@ -12,11 +12,11 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
+  import AssetPredeletionConfirmModal from '$lib/modals/AssetPredeletionConfirmModal.svelte';
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets, updateStackedAssetInTimeline } from '$lib/utils/actions';
@@ -37,7 +37,14 @@
     const force = forceRequested || !featureFlagsManager.value.trash;
     const selectedAssets = assetInteraction.assets;
 
-    if ($showDeleteModal && force) {
+    if (selectedAssets.some((asset) => asset.description || asset.hasSidecar || asset.isEdited)) {
+      const confirmed = await modalManager.show(AssetPredeletionConfirmModal, {});
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    if (force) {
       const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: selectedAssets.length });
       if (!confirmed) {
         return;

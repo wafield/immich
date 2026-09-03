@@ -3,7 +3,7 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
+  import AssetPredeletionConfirmModal from '$lib/modals/AssetPredeletionConfirmModal.svelte';
   import { type OnDelete, type OnUndoDelete, deleteAssets } from '$lib/utils/actions';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline, mdiTimerSand } from '@mdi/js';
@@ -25,7 +25,14 @@
   const onAction = async () => {
     const assets = assetMultiSelectManager.ownedAssets;
 
-    if (force && $showDeleteModal) {
+    if (assets.some((asset) => asset.description || asset.hasSidecar || asset.isEdited)) {
+      const confirmed = await modalManager.show(AssetPredeletionConfirmModal, {});
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    if (force) {
       const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: assets.length });
       if (!confirmed) {
         return;

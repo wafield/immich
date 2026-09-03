@@ -1,7 +1,7 @@
 <script lang="ts">
   import FormatMessage from '$lib/elements/FormatMessage.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
-  import { Checkbox, ConfirmModal, Label } from '@immich/ui';
+  import { ConfirmModal } from '@immich/ui';
   import { mdiDeleteForeverOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
@@ -38,10 +38,5 @@
       </FormatMessage>
     </p>
     <p><b>{$t('cannot_undo_this_action')}</b></p>
-
-    <div class="flex items-center justify-center gap-2 pt-4">
-      <Checkbox id="confirm-deletion-input" bind:checked color="secondary" />
-      <Label label={$t('do_not_show_again')} for="confirm-deletion-input" />
-    </div>
   {/snippet}
 </ConfirmModal>

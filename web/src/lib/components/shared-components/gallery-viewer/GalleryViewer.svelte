@@ -11,10 +11,10 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset, Viewport } from '$lib/managers/timeline-manager/types';
   import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
+  import AssetPredeletionConfirmModal from '$lib/modals/AssetPredeletionConfirmModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
   import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
-  import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, getNextAsset, getPreviousAsset, navigateToAsset } from '$lib/utils/asset-utils';
@@ -274,7 +274,14 @@
     const forceOrNoTrash = force || !featureFlagsManager.value.trash;
     const selectedAssets = assetInteraction.assets;
 
-    if ($showDeleteModal && forceOrNoTrash) {
+    if (selectedAssets.some((asset) => asset.description || asset.hasSidecar || asset.isEdited)) {
+      const confirmed = await modalManager.show(AssetPredeletionConfirmModal, {});
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    if (forceOrNoTrash) {
       const confirmed = await modalManager.show(AssetDeleteConfirmModal, { size: selectedAssets.length });
       if (!confirmed) {
         return;
