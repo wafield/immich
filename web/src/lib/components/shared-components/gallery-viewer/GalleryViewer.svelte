@@ -345,6 +345,8 @@
           shortcuts.push(
             { shortcut: { key: 'Delete' }, onShortcut: onDelete },
             { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+            { shortcut: { key: 'Backspace', meta: true }, onShortcut: onDelete },
+            { shortcut: { key: 'Backspace', meta: true, alt: true }, onShortcut: () => trashOrDelete(true) },
             { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
           );
         }

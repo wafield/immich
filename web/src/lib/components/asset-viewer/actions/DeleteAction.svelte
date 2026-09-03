@@ -62,6 +62,8 @@
   use:shortcuts={[
     { shortcut: { key: 'Delete' }, onShortcut: () => trashOrDelete() },
     { shortcut: { key: 'Delete', shift: true }, onShortcut: () => trashOrDelete(true) },
+    { shortcut: { key: 'Backspace', meta: true }, onShortcut: () => trashOrDelete() },
+    { shortcut: { key: 'Backspace', meta: true, alt: true }, onShortcut: () => trashOrDelete(true) },
   ]}
 />
 
