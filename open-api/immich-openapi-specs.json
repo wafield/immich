@@ -32388,6 +32388,7 @@
           },
           "frameRate": {
             "description": "Frame rate",
+            "format": "double",
             "nullable": true,
             "type": "number"
           },
@@ -32416,12 +32417,16 @@
           },
           "profile": {
             "description": "Profile",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
             "nullable": true,
-            "type": "number"
+            "type": "integer"
           },
           "rotation": {
             "description": "Video rotation angle",
-            "type": "number"
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "timeBase": {
             "description": "Time base den",
@@ -32690,7 +32695,8 @@
         "description": "Plugin trigger type",
         "enum": [
           "AssetCreate",
-          "AssetMetadataExtraction"
+          "AssetMetadataExtraction",
+          "AssetTagged"
         ],
         "type": "string"
       },
