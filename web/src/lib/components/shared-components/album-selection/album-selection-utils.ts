@@ -1,6 +1,7 @@
 import type { AlbumResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { AlbumSortBy, SortOrder } from '$lib/stores/preferences.store';
 import { sortAlbums } from '$lib/utils/album-utils';
 import { normalizeSearchString } from '$lib/utils/string-utils';
 
@@ -30,20 +31,17 @@ export class AlbumModalRowConverter {
   private readonly sortBy: string;
   private readonly orderBy: string;
 
-  constructor(sortBy: string, orderBy: string) {
+  constructor(sortBy: string = AlbumSortBy.DateModified, orderBy: string = SortOrder.Desc) {
     this.sortBy = sortBy;
     this.orderBy = orderBy;
   }
 
   toModalRows(
     search: string,
-    recentAlbums: AlbumResponseDto[],
     albums: AlbumResponseDto[],
     selectedRowIndex: number,
     multiSelectedAlbumIds: string[],
   ): AlbumModalRow[] {
-    // only show recent albums if no search was entered
-    const recentAlbumsToShow = search.length === 0 ? recentAlbums : [];
     const rows: AlbumModalRow[] = [{ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 }];
 
     const normalizedSearch = normalizeSearchString(search);
@@ -60,29 +58,16 @@ export class AlbumModalRowConverter {
     );
 
     if (filteredAlbums.length > 0) {
-      if (recentAlbumsToShow.length > 0) {
-        rows.push({ type: AlbumModalRowType.SECTION, text: $t('recent').toUpperCase() });
-        const selectedOffsetDueToNewAlbumRow = 1;
-        for (const [i, album] of recentAlbums.entries()) {
-          rows.push({
-            type: AlbumModalRowType.ALBUM_ITEM,
-            selected: selectedRowIndex === i + selectedOffsetDueToNewAlbumRow,
-            multiSelected: multiSelectedAlbumIds.includes(album.id),
-            album,
-          });
-        }
-      }
-
       rows.push({
         type: AlbumModalRowType.SECTION,
-        text: (search.length === 0 ? $t('all_albums') : $t('albums')).toUpperCase(),
+        text: (search.length === 0 ? $t('recent') : $t('albums')).toUpperCase(),
       });
 
-      const selectedOffsetDueToNewAndRecents = 1 + recentAlbumsToShow.length;
+      const selectedOffsetDueToNewAlbumRow = 1;
       for (const [i, album] of filteredAlbums.entries()) {
         rows.push({
           type: AlbumModalRowType.ALBUM_ITEM,
-          selected: selectedRowIndex === i + selectedOffsetDueToNewAndRecents,
+          selected: selectedRowIndex === i + selectedOffsetDueToNewAlbumRow,
           multiSelected: multiSelectedAlbumIds.includes(album.id),
           album,
         });

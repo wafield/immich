@@ -4,7 +4,6 @@ import {
   AlbumModalRowConverter,
   AlbumModalRowType,
 } from '$lib/components/shared-components/album-selection/album-selection-utils';
-import { AlbumSortBy, SortOrder } from '$lib/stores/preferences.store';
 import { albumFactory } from '@test-data/factories/album-factory';
 
 // Some helper functions to make tests below more readable
@@ -29,17 +28,16 @@ const createAlbumRow = (album: AlbumResponseDto, selected: boolean) => ({
 
 describe('Album Modal', () => {
   it('no albums configured yet shows message and new', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
-    const modalRows = converter.toModalRows('', [], [], -1, []);
+    const converter = new AlbumModalRowConverter();
+    const modalRows = converter.toModalRows('', [], -1, []);
 
     expect(modalRows).toStrictEqual([createNewAlbumRow(false), createMessageRow('no_albums_yet')]);
   });
 
   it('no matching albums shows message and new', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
+    const converter = new AlbumModalRowConverter();
     const modalRows = converter.toModalRows(
       'matches_nothing',
-      [],
       [albumFactory.build({ albumName: 'Holidays' })],
       -1,
       [],
@@ -49,26 +47,25 @@ describe('Album Modal', () => {
   });
 
   it('displays single albums', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
+    const converter = new AlbumModalRowConverter();
     const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });
-    const modalRows = converter.toModalRows('', [], [holidayAlbum], -1, []);
+    const modalRows = converter.toModalRows('', [holidayAlbum], -1, []);
 
     expect(modalRows).toStrictEqual([
       createNewAlbumRow(false),
-      createSectionRow('ALL_ALBUMS'),
+      createSectionRow('RECENT'),
       createAlbumRow(holidayAlbum, false),
     ]);
   });
 
-  it('displays multiple albums and recents', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
-    const birthdayAlbum = albumFactory.build({ albumName: 'Birthday' });
-    const christmasAlbum = albumFactory.build({ albumName: 'Christmas' });
+  it('displays multiple albums sorted by updatedAt', () => {
+    const converter = new AlbumModalRowConverter();
+    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', updatedAt: '2023-01-01T00:00:00.000Z' });
+    const constructionAlbum = albumFactory.build({ albumName: 'Construction', updatedAt: '2023-04-01T00:00:00.000Z' });
+    const birthdayAlbum = albumFactory.build({ albumName: 'Birthday', updatedAt: '2023-02-01T00:00:00.000Z' });
+    const christmasAlbum = albumFactory.build({ albumName: 'Christmas', updatedAt: '2023-03-01T00:00:00.000Z' });
     const modalRows = converter.toModalRows(
       '',
-      [holidayAlbum, constructionAlbum],
       [holidayAlbum, constructionAlbum, birthdayAlbum, christmasAlbum],
       -1,
       [],
@@ -77,25 +74,21 @@ describe('Album Modal', () => {
     expect(modalRows).toStrictEqual([
       createNewAlbumRow(false),
       createSectionRow('RECENT'),
-      createAlbumRow(holidayAlbum, false),
       createAlbumRow(constructionAlbum, false),
-      createSectionRow('ALL_ALBUMS'),
-      createAlbumRow(holidayAlbum, false),
-      createAlbumRow(constructionAlbum, false),
-      createAlbumRow(birthdayAlbum, false),
       createAlbumRow(christmasAlbum, false),
+      createAlbumRow(birthdayAlbum, false),
+      createAlbumRow(holidayAlbum, false),
     ]);
   });
 
-  it('search changes messaging and removes recent and non-matching albums', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
+  it('search changes messaging and removes non-matching albums', () => {
+    const converter = new AlbumModalRowConverter();
     const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });
     const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
     const birthdayAlbum = albumFactory.build({ albumName: 'Birthday' });
     const christmasAlbum = albumFactory.build({ albumName: 'Christmas' });
     const modalRows = converter.toModalRows(
       'Cons',
-      [holidayAlbum, constructionAlbum],
       [holidayAlbum, constructionAlbum, birthdayAlbum, christmasAlbum],
       -1,
       [],
@@ -109,10 +102,10 @@ describe('Album Modal', () => {
   });
 
   it('search matches on description as well as name', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
+    const converter = new AlbumModalRowConverter();
     const holidayAlbum = albumFactory.build({ albumName: 'Vacances 2019', description: 'Crete' });
     const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
-    const modalRows = converter.toModalRows('Crete', [], [holidayAlbum, constructionAlbum], -1, []);
+    const modalRows = converter.toModalRows('Crete', [holidayAlbum, constructionAlbum], -1, []);
 
     expect(modalRows).toStrictEqual([
       createNewAlbumRow(false),
@@ -122,48 +115,42 @@ describe('Album Modal', () => {
   });
 
   it('selection can select new album row', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
-    const modalRows = converter.toModalRows('', [holidayAlbum], [holidayAlbum, constructionAlbum], 0, []);
+    const converter = new AlbumModalRowConverter();
+    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
+    const constructionAlbum = albumFactory.build({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
+    const modalRows = converter.toModalRows('', [holidayAlbum, constructionAlbum], 0, []);
 
     expect(modalRows).toStrictEqual([
       createNewAlbumRow(true),
       createSectionRow('RECENT'),
-      createAlbumRow(holidayAlbum, false),
-      createSectionRow('ALL_ALBUMS'),
       createAlbumRow(holidayAlbum, false),
       createAlbumRow(constructionAlbum, false),
     ]);
   });
 
   it('selection can select recent row', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
-    const modalRows = converter.toModalRows('', [holidayAlbum], [holidayAlbum, constructionAlbum], 1, []);
+    const converter = new AlbumModalRowConverter();
+    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
+    const constructionAlbum = albumFactory.build({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
+    const modalRows = converter.toModalRows('', [holidayAlbum, constructionAlbum], 1, []);
 
     expect(modalRows).toStrictEqual([
       createNewAlbumRow(false),
       createSectionRow('RECENT'),
       createAlbumRow(holidayAlbum, true),
-      createSectionRow('ALL_ALBUMS'),
-      createAlbumRow(holidayAlbum, false),
       createAlbumRow(constructionAlbum, false),
     ]);
   });
 
   it('selection can select last row', () => {
-    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
-    const modalRows = converter.toModalRows('', [holidayAlbum], [holidayAlbum, constructionAlbum], 3, []);
+    const converter = new AlbumModalRowConverter();
+    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
+    const constructionAlbum = albumFactory.build({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
+    const modalRows = converter.toModalRows('', [holidayAlbum, constructionAlbum], 2, []);
 
     expect(modalRows).toStrictEqual([
       createNewAlbumRow(false),
       createSectionRow('RECENT'),
-      createAlbumRow(holidayAlbum, false),
-      createSectionRow('ALL_ALBUMS'),
       createAlbumRow(holidayAlbum, false),
       createAlbumRow(constructionAlbum, true),
     ]);

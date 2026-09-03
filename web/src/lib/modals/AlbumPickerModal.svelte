@@ -6,7 +6,6 @@
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiImageAlbum, mdiKeyboardReturn } from '@mdi/js';
@@ -16,7 +15,6 @@
   import NewAlbumListItem from '../components/shared-components/album-selection/NewAlbumListItem.svelte';
 
   let albums: AlbumResponseDto[] = $state([]);
-  let recentAlbums: AlbumResponseDto[] = $state([]);
   let loading = $state(true);
   let search = $state('');
   let selectedRowIndex: number = $state(-1);
@@ -30,16 +28,15 @@
 
   onMount(async () => {
     albums = await getAllAlbums({});
-    recentAlbums = [...albums].sort((a, b) => (new Date(a.updatedAt) > new Date(b.updatedAt) ? -1 : 1)).slice(0, 3);
     loading = false;
   });
 
   const multiSelectedAlbumIds: string[] = $state([]);
   const multiSelectActive = $derived(multiSelectedAlbumIds.length > 0);
 
-  const rowConverter = new AlbumModalRowConverter($albumViewSettings.sortBy, $albumViewSettings.sortOrder);
+  const rowConverter = new AlbumModalRowConverter();
   const albumModalRows = $derived(
-    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds),
+    rowConverter.toModalRows(search, albums, selectedRowIndex, multiSelectedAlbumIds),
   );
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
