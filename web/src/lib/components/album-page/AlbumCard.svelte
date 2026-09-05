@@ -2,7 +2,7 @@
   import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
-  import { getShortDateRange } from '$lib/utils/date-time';
+  import { getRelativeTime, getShortDateRange } from '$lib/utils/date-time';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
@@ -34,7 +34,7 @@
 </script>
 
 <div
-  class="group relative rounded-2xl border border-transparent p-5 hover:border-gray-200 hover:bg-gray-100 dark:hover:border-gray-800 dark:hover:bg-gray-900"
+  class="group relative rounded-md border border-transparent p-2 hover:border-gray-200 hover:bg-gray-100 dark:hover:border-gray-800 dark:hover:bg-gray-900"
   data-testid="album-card"
 >
   {#if onShowContextMenu}
@@ -97,5 +97,18 @@
         <p>{$t('shared')}</p>
       {/if}
     </span>
+
+    {#if album.lastModifiedAssetTimestamp}
+      <p class="flex text-sm dark:text-immich-dark-fg" data-testid="album-last-updated">
+        {$t('last_updated')}
+        {getRelativeTime(album.lastModifiedAssetTimestamp)}
+      </p>
+    {/if}
+
+    {#if album.description}
+      <p class="flex text-sm dark:text-immich-dark-fg">
+        {album.description}
+      </p>
+    {/if}
   </div>
 </div>

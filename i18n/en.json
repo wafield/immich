@@ -1276,6 +1276,7 @@
   "last": "Last",
   "last_months": "{count, plural, one {Last month} other {Last # months}}",
   "last_seen": "Last seen",
+  "last_updated": "Last updated",
   "latest_version": "Latest Version",
   "latitude": "Latitude",
   "leave": "Leave",

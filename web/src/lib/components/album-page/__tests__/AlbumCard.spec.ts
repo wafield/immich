@@ -3,6 +3,7 @@ import { render, waitFor, type RenderResult } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
+import { locale } from '$lib/stores/preferences.store';
 import { renderWithTooltips } from '$tests/helpers';
 import { albumFactory } from '@test-data/factories/album-factory';
 import AlbumCard from '../AlbumCard.svelte';
@@ -13,6 +14,7 @@ describe('AlbumCard component', () => {
   let sut: RenderResult<typeof AlbumCard>;
 
   beforeAll(async () => {
+    locale.set('en');
     await init({ fallbackLocale: 'en-US' });
     register('en-US', () => import('$i18n/en.json'));
     await waitLocale('en-US');
@@ -83,6 +85,27 @@ describe('AlbumCard component', () => {
 
     const contextButtonParent = sut.queryByTestId('context-button-parent');
     expect(contextButtonParent).not.toBeInTheDocument();
+  });
+
+  it('shows last updated line when lastModifiedAssetTimestamp is present', () => {
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+    const album = albumFactory.build({
+      lastModifiedAssetTimestamp: twoDaysAgo,
+    });
+    sut = render(AlbumCard, { album });
+
+    const lastUpdatedElement = sut.getByTestId('album-last-updated');
+    expect(lastUpdatedElement).toBeInTheDocument();
+    expect(lastUpdatedElement).toHaveTextContent('Last updated 2 days ago');
+  });
+
+  it('does not show last updated line when lastModifiedAssetTimestamp is undefined', () => {
+    const album = albumFactory.build({
+      lastModifiedAssetTimestamp: undefined,
+    });
+    sut = render(AlbumCard, { album });
+
+    expect(sut.queryByTestId('album-last-updated')).not.toBeInTheDocument();
   });
 
   describe('with rendered component - no thumbnail', () => {

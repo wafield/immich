@@ -1,6 +1,7 @@
+import { DateTime } from 'luxon';
 import { writable } from 'svelte/store';
 import { locale } from '$lib/stores/preferences.store';
-import { getAlbumDateRange, getShortDateRange } from './date-time';
+import { getAlbumDateRange, getRelativeTime, getShortDateRange } from './date-time';
 
 vitest.mock('$lib/stores/preferences.store', () => ({
   locale: writable('en'),
@@ -96,5 +97,60 @@ describe('getAlbumDateRange', () => {
   it('should correctly return range if start and end date are in separate months and years, ignoring local time zone', () => {
     vi.stubEnv('TZ', 'UTC-6');
     expect(getAlbumDateRange('2021-12-01T00:00:00Z', '2022-01-01T00:00:00Z')).toEqual('Dec 1, 2021 – Jan 1, 2022');
+  });
+});
+
+describe('getRelativeTime', () => {
+  const base = DateTime.fromISO('2023-06-15T12:00:00.000Z');
+
+  beforeEach(() => {
+    locale.set('en');
+  });
+
+  it('returns empty string for invalid date', () => {
+    expect(getRelativeTime('invalid-date', undefined, { base })).toEqual('');
+  });
+
+  it('formats seconds ago (now)', () => {
+    expect(getRelativeTime('2023-06-15T12:00:00.000Z', undefined, { base })).toEqual('now');
+  });
+
+  it('formats minutes ago', () => {
+    expect(getRelativeTime('2023-06-15T11:55:00.000Z', undefined, { base })).toEqual('5 minutes ago');
+  });
+
+  it('formats hours ago', () => {
+    expect(getRelativeTime('2023-06-15T10:00:00.000Z', undefined, { base })).toEqual('2 hours ago');
+  });
+
+  it('formats yesterday', () => {
+    expect(getRelativeTime('2023-06-14T12:00:00.000Z', undefined, { base })).toEqual('yesterday');
+  });
+
+  it('formats days ago', () => {
+    expect(getRelativeTime('2023-06-12T12:00:00.000Z', undefined, { base })).toEqual('3 days ago');
+  });
+
+  it('formats weeks ago', () => {
+    expect(getRelativeTime('2023-06-01T12:00:00.000Z', undefined, { base })).toEqual('2 weeks ago');
+  });
+
+  it('formats last month and months ago', () => {
+    expect(getRelativeTime('2023-05-15T12:00:00.000Z', undefined, { base })).toEqual('last month');
+    expect(getRelativeTime('2023-03-15T12:00:00.000Z', undefined, { base })).toEqual('3 months ago');
+  });
+
+  it('formats last year and years ago', () => {
+    expect(getRelativeTime('2022-06-15T12:00:00.000Z', undefined, { base })).toEqual('last year');
+    expect(getRelativeTime('2020-06-15T12:00:00.000Z', undefined, { base })).toEqual('3 years ago');
+  });
+
+  it('respects the active locale store', () => {
+    locale.set('fr');
+    expect(getRelativeTime('2023-06-12T12:00:00.000Z', undefined, { base })).toEqual('il y a 3 jours');
+  });
+
+  it('respects explicitly passed targetLocale', () => {
+    expect(getRelativeTime('2023-06-12T12:00:00.000Z', 'de', { base })).toEqual('vor 3 Tagen');
   });
 });

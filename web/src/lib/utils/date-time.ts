@@ -43,3 +43,36 @@ export const getAlbumDateRange = (start: string, end: string) => getDateRange(st
  */
 export const asLocalTimeISO = (date: DateTime<true>) =>
   (date.setZone('utc', { keepLocalTime: true }) as DateTime<true>).toISO();
+
+const relativeTimeUnits: Intl.RelativeTimeFormatUnit[] = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second'];
+
+/**
+ * Get relative date time string using standard Intl.RelativeTimeFormat.
+ * Supports ISO string, JS Date, or Luxon DateTime.
+ */
+export const getRelativeTime = (
+  timestamp: string | Date | DateTime,
+  targetLocale?: string,
+  options?: { base?: DateTime; numeric?: 'always' | 'auto' },
+): string => {
+  const userLocale = targetLocale ?? get(locale);
+  const date =
+    typeof timestamp === 'string'
+      ? DateTime.fromISO(timestamp)
+      : timestamp instanceof Date
+        ? DateTime.fromJSDate(timestamp)
+        : timestamp;
+
+  if (!date.isValid) {
+    return '';
+  }
+
+  const base = options?.base ?? DateTime.now();
+  const numeric = options?.numeric ?? 'auto';
+
+  const diff = date.diff(base).shiftTo(...relativeTimeUnits);
+  const unit = relativeTimeUnits.find((u) => diff.get(u) !== 0) || 'second';
+
+  const formatter = new Intl.RelativeTimeFormat(userLocale, { numeric });
+  return formatter.format(Math.trunc(diff.as(unit)), unit);
+};
