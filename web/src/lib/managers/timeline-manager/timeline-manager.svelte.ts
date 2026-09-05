@@ -631,13 +631,14 @@ export class TimelineManager extends VirtualScrollManager {
     return retrieveRangeUtil(this, start, end);
   }
 
-  isExcluded(asset: TimelineAsset) {
-    return (
+  isExcluded(asset: TimelineAsset): boolean {
+    return Boolean(
       isMismatched(this.#options.visibility, asset.visibility) ||
-      isMismatched(this.#options.isFavorite, asset.isFavorite) ||
-      isMismatched(this.#options.isTrashed, asset.isTrashed) ||
-      (this.#options.tagId && asset.tags && !asset.tags.includes(this.#options.tagId)) ||
-      (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id))
+        isMismatched(this.#options.isFavorite, asset.isFavorite) ||
+        isMismatched(this.#options.isTrashed, asset.isTrashed) ||
+        (this.#options.tagId && asset.tags && !asset.tags.includes(this.#options.tagId)) ||
+        (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id)) ||
+        (this.#options.notInAnyAlbum && !asset.isNotInAnyAlbum),
     );
   }
 

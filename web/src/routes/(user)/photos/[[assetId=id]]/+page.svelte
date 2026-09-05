@@ -26,7 +26,7 @@
   import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
-  import { hideScreenshots, selectedLibraries } from '$lib/stores/preferences.store';
+  import { hideScreenshots, notInAnyAlbum, selectedLibraries } from '$lib/stores/preferences.store';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getAssetMediaUrl, memoryLaneTitle } from '$lib/utils';
   import {
@@ -43,7 +43,7 @@
   import { mdiDotsVertical } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
-  
+
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let options = $derived({
     visibility: AssetVisibility.Timeline,
@@ -51,6 +51,7 @@
     withPartners: true,
     isScreenshot: $hideScreenshots ? false : undefined,
     libraryIds: $selectedLibraries,
+    notInAnyAlbum: $notInAnyAlbum ? true : undefined,
   });
 
   let selectedAssets = $derived(assetMultiSelectManager.assets);

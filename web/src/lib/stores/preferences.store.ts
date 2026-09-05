@@ -145,6 +145,8 @@ export const showLibraryIndicator = persisted<boolean>('show-library-indicator',
 
 export const highlightAlbumAssets = persisted<boolean>('highlight-album-assets', false, {});
 
+export const notInAnyAlbum = persisted<boolean>('not-in-any-album', false, {});
+
 export enum FolderAssetsSortBy {
   CaptureTime = 'capture-time',
   AddedTime = 'added-time',

@@ -937,4 +937,24 @@ describe('TimelineManager', () => {
       expect(ids).not.toContain(assetC.id);
     });
   });
+
+  describe('isExcluded', () => {
+    it('handles notInAnyAlbum filter correctly', async () => {
+      const timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+
+      const inAlbumAsset = timelineAssetFactory.build({ isNotInAnyAlbum: false });
+      const notInAlbumAsset = timelineAssetFactory.build({ isNotInAnyAlbum: true });
+
+      // When notInAnyAlbum option is not set
+      await timelineManager.updateOptions({});
+      expect(timelineManager.isExcluded(inAlbumAsset)).toBe(false);
+      expect(timelineManager.isExcluded(notInAlbumAsset)).toBe(false);
+
+      // When notInAnyAlbum option is true
+      await timelineManager.updateOptions({ notInAnyAlbum: true });
+      expect(timelineManager.isExcluded(inAlbumAsset)).toBe(true);
+      expect(timelineManager.isExcluded(notInAlbumAsset)).toBe(false);
+    });
+  });
 });

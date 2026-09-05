@@ -12,6 +12,7 @@
     selectedLibraries,
     showLibraryIndicator,
     highlightAlbumAssets,
+    notInAnyAlbum,
     rowSize,
     RowSize,
     assetInfoDisplay,
@@ -249,6 +250,16 @@
           onCheckedChange={() => ($highlightAlbumAssets = !$highlightAlbumAssets)}
         />
         <Label label="Highlight Album Assets" for="highlight-album-assets-checkbox" size="tiny" />
+      </div>
+
+      <div class="flex items-start gap-2">
+        <Checkbox
+          size="tiny"
+          id="not-in-any-album-checkbox"
+          checked={$notInAnyAlbum}
+          onCheckedChange={() => ($notInAnyAlbum = !$notInAnyAlbum)}
+        />
+        <Label label="Not in any albums" for="not-in-any-album-checkbox" size="tiny" />
       </div>
     </div>
 
