@@ -12,6 +12,9 @@ export enum AssetInfoDisplay {
   /** Show file name, camera, and date time */
   FILE_NAME_CAMERA_DATE_TIME = 'file-name-camera-date-time',
 
+  /** Show file name and full date time (date, time, and timezone) */
+  FILE_NAME_FULL_TIME = 'file-name-full-time',
+
   /** Show description only */
   DESCRIPTION = 'description',
 }

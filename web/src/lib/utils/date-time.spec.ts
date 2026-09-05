@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { writable } from 'svelte/store';
 import { locale } from '$lib/stores/preferences.store';
-import { getAlbumDateRange, getRelativeTime, getShortDateRange } from './date-time';
+import { getAlbumDateRange, getRelativeTime, getShortDateRange, formatUtcOffset } from './date-time';
 
 vitest.mock('$lib/stores/preferences.store', () => ({
   locale: writable('en'),
@@ -152,5 +152,37 @@ describe('getRelativeTime', () => {
 
   it('respects explicitly passed targetLocale', () => {
     expect(getRelativeTime('2023-06-12T12:00:00.000Z', 'de', { base })).toEqual('vor 3 Tagen');
+  });
+});
+
+describe('formatUtcOffset', () => {
+  it('formats zero offset as UTC', () => {
+    const dt = DateTime.fromISO('2026-01-20T15:14:19', { zone: 'UTC' });
+    expect(formatUtcOffset(dt)).toBe('UTC');
+  });
+
+  it('formats whole positive offsets', () => {
+    const dt = DateTime.fromISO('2026-01-20T15:14:19', { zone: 'Asia/Tokyo' });
+    expect(formatUtcOffset(dt)).toBe('UTC+9');
+  });
+
+  it('formats whole negative offsets', () => {
+    const dt = DateTime.fromISO('2026-01-20T15:14:19', { zone: 'America/New_York' });
+    expect(formatUtcOffset(dt)).toBe('UTC-5');
+  });
+
+  it('formats fractional positive offsets', () => {
+    const dt = DateTime.fromISO('2026-01-20T15:14:19', { zone: 'Asia/Kolkata' });
+    expect(formatUtcOffset(dt)).toBe('UTC+5:30');
+  });
+
+  it('formats fractional negative offsets', () => {
+    const dt = DateTime.fromISO('2026-01-20T15:14:19', { zone: 'America/St_Johns' });
+    expect(formatUtcOffset(dt)).toBe('UTC-3:30');
+  });
+
+  it('formats 45-minute offsets', () => {
+    const dt = DateTime.fromISO('2026-01-20T15:14:19', { zone: 'Asia/Kathmandu' });
+    expect(formatUtcOffset(dt)).toBe('UTC+5:45');
   });
 });

@@ -7,6 +7,7 @@
   import type { CommonPosition } from '$lib/utils/layout-utils';
   import { highlightAlbumAssets } from '$lib/stores/preferences.store';
   import { fromISODateTime, fromISODateTimeUTC, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
+  import { formatUtcOffset } from '$lib/utils/date-time';
   import { Icon } from '@immich/ui';
   import { mdiCamera, mdiCalendar } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -46,7 +47,7 @@
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
 
-  const formatDateTime = (asset: TimelineAsset): string => {
+  const getAssetDateTime = (asset: TimelineAsset): { dt: DateTime; hasExplicitZone: boolean } | null => {
     try {
       const timeZone = asset.timeZone ?? undefined;
       let dt: DateTime | null = null;
@@ -62,12 +63,30 @@
             : fromTimelinePlainDateTime(asset.localDateTime);
       }
       if (dt && dt.isValid) {
-        return dt.toFormat('HH:mm:ss');
+        return { dt, hasExplicitZone: Boolean(timeZone) };
       }
     } catch {
+      return null;
+    }
+    return null;
+  };
+
+  const formatDateTime = (asset: TimelineAsset): string => {
+    const result = getAssetDateTime(asset);
+    return result ? result.dt.toFormat('HH:mm:ss') : '';
+  };
+
+  const formatFullDateTime = (asset: TimelineAsset): string => {
+    const result = getAssetDateTime(asset);
+    if (!result) {
       return '';
     }
-    return '';
+    const { dt, hasExplicitZone } = result;
+    const dateFormatted = dt.toFormat('yyyy-MM-dd HH:mm:ss');
+    if (!hasExplicitZone) {
+      return dateFormatted;
+    }
+    return `${dateFormatted} ${formatUtcOffset(dt)}`;
   };
 </script>
 
@@ -121,6 +140,22 @@
                 <span class="whitespace-nowrap">{formattedTime}</span>
               {/if}
             </div>
+          </div>
+        </div>
+      {:else if assetInfoDisplay === AssetInfoDisplay.FILE_NAME_FULL_TIME}
+        {@const fullTime = formatFullDateTime(asset)}
+        <div
+          class="top-full flex w-full flex-col justify-center overflow-clip bg-slate-100 p-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+          style:height="{AssetInfoBarHeight}px"
+        >
+          <div class="overflow-hidden text-center">
+            {asset.originalFileName ?? ''}
+          </div>
+          <div class="flex items-center justify-center gap-1 text-slate-600 dark:text-slate-400">
+            {#if fullTime}
+              <Icon icon={mdiCalendar} size="12" class="shrink-0" />
+              <span class="truncate whitespace-nowrap">{fullTime}</span>
+            {/if}
           </div>
         </div>
       {:else if assetInfoDisplay === AssetInfoDisplay.DESCRIPTION}

@@ -271,6 +271,7 @@
           { label: 'None', value: AssetInfoDisplay.NONE },
           { label: 'File name', value: AssetInfoDisplay.FILE_NAME },
           { label: 'File name, Camera and Time', value: AssetInfoDisplay.FILE_NAME_CAMERA_DATE_TIME },
+          { label: 'File name and Full Time', value: AssetInfoDisplay.FILE_NAME_FULL_TIME },
           { label: 'Description', value: AssetInfoDisplay.DESCRIPTION },
         ]}
         bind:value={$assetInfoDisplay}

@@ -76,3 +76,24 @@ export const getRelativeTime = (
   const formatter = new Intl.RelativeTimeFormat(userLocale, { numeric });
   return formatter.format(Math.trunc(diff.as(unit)), unit);
 };
+
+/**
+ * Formats a DateTime's UTC offset into 'UTC', 'UTC+H', 'UTC-H', or 'UTC±H:MM'.
+ * Examples:
+ * - offset 0 min -> 'UTC'
+ * - offset +540 min (+9h) -> 'UTC+9'
+ * - offset -300 min (-5h) -> 'UTC-5'
+ * - offset +330 min (+5.5h) -> 'UTC+5:30'
+ * - offset -210 min (-3.5h) -> 'UTC-3:30'
+ */
+export const formatUtcOffset = (dt: DateTime): string => {
+  const offsetMinutes = dt.offset;
+  if (offsetMinutes === 0) {
+    return 'UTC';
+  }
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const absMinutes = Math.abs(offsetMinutes);
+  const hours = Math.floor(absMinutes / 60);
+  const minutes = absMinutes % 60;
+  return minutes > 0 ? `UTC${sign}${hours}:${minutes.toString().padStart(2, '0')}` : `UTC${sign}${hours}`;
+};
