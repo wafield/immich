@@ -6,6 +6,8 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
+  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import {
     computeDifferingMetadataFields,
     countDifferingMetadataItems,
@@ -13,8 +15,15 @@
   } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { Button, Icon } from '@immich/ui';
-  import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { Button, HStack, Text, modalManager, IconButton, Icon } from '@immich/ui';
+  import {
+    mdiCheck,
+    mdiKeyboard,
+    mdiChevronDown,
+    mdiChevronUp,
+    mdiImageMultipleOutline,
+    mdiTrashCanOutline,
+  } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -23,12 +32,11 @@
     assets: AssetResponseDto[];
     suggestedKeepAssetIds: string[];
     showMore: boolean;
-    imageSize: 'S' | 'M' | 'L' | 'Full';
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable(), imageSize }: Props = $props();
+  let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable() }: Props = $props();
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
@@ -38,6 +46,29 @@
   const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
   const differingCount = $derived(countDifferingMetadataItems(differingMetadataFields));
   const hasMore = $derived(differingCount > InitialVisibleCount);
+
+  let usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
+  let imageSize = $state<'S' | 'M' | 'L' | 'Full'>('M');
+  interface Shortcuts {
+    general: ExplainedShortcut[];
+    actions: ExplainedShortcut[];
+  }
+  interface ExplainedShortcut {
+    key: string[];
+    action: string;
+    info?: string;
+  }
+
+  const duplicateShortcuts: Shortcuts = {
+    general: [],
+    actions: [
+      { key: ['a'], action: $t('select_all_duplicates') },
+      { key: ['s'], action: $t('view') },
+      { key: ['d'], action: $t('unselect_all_duplicates') },
+      { key: ['⇧', 'c'], action: $t('resolve_duplicates') },
+      { key: ['⇧', 's'], action: $t('stack_duplicates') },
+    ],
+  };
 
   onMount(() => {
     if (suggestedKeepAssetIds.length > 0) {
@@ -118,87 +149,116 @@
   ]}
 />
 
-<div class="px-0.2 mx-auto mb-4 w-full rounded-xl py-6">
-  <div class="flex w-full flex-wrap place-content-end justify-between gap-y-6 p-2">
-    <!-- MARK ALL BUTTONS -->
-    <div class="flex text-xs text-black">
-      <Button class="rounded-s-full" size="small" color="primary" leadingIcon={mdiCheck} onclick={onSelectAll}
-        >{$t('select_keep_all')}</Button
-      >
-      <Button
-        class="rounded-e-full"
-        size="small"
+<div class="flex w-full flex-wrap place-content-end justify-between p-2">
+  <!-- MARK ALL BUTTONS -->
+  <HStack gap={0}>
+    <Button
+      class="rounded-s-full"
+      size="small"
+      color={imageSize === 'S' ? 'primary' : 'secondary'}
+      onclick={() => (imageSize = 'S')}
+    >
+      S
+    </Button>
+    <Button
+      class="rounded-none"
+      size="small"
+      color={imageSize === 'M' ? 'primary' : 'secondary'}
+      onclick={() => (imageSize = 'M')}
+    >
+      M
+    </Button>
+    <Button
+      class="rounded-none"
+      size="small"
+      color={imageSize === 'L' ? 'primary' : 'secondary'}
+      onclick={() => (imageSize = 'L')}
+    >
+      L
+    </Button>
+    <Button
+      class="rounded-e-full"
+      size="small"
+      color={imageSize === 'Full' ? 'primary' : 'secondary'}
+      onclick={() => (imageSize = 'Full')}
+    >
+      Full
+    </Button>
+
+    {#if !usingMobileDevice}
+      <IconButton
+        shape="round"
+        variant="ghost"
         color="secondary"
-        leadingIcon={mdiTrashCanOutline}
-        onclick={onSelectNone}>{$t('select_trash_all')}</Button
-      >
-    </div>
+        icon={mdiKeyboard}
+        title={$t('show_keyboard_shortcuts')}
+        onclick={() => modalManager.show(ShortcutsModal, { shortcuts: duplicateShortcuts })}
+        aria-label={$t('show_keyboard_shortcuts')}
+      />
+    {/if}
+  </HStack>
 
-
-    <!-- CONFIRM BUTTONS -->
-    <div class="flex text-xs text-black">
-      {#if trashCount === 0}
-        <Button
-          size="small"
-          leadingIcon={mdiCheck}
-          color="success"
-          class="flex place-items-center gap-2 rounded-s-full"
-          onclick={handleResolve}
-        >
-          {$t('keep_all')}
-        </Button>
-      {:else}
-        <Button
-          size="small"
-          color="danger"
-          leadingIcon={mdiTrashCanOutline}
-          class="rounded-s-full"
-          onclick={handleResolve}
-        >
-          {trashCount === assets.length ? $t('trash_all') : $t('trash_count', { values: { count: trashCount } })}
-        </Button>
-      {/if}
+  <!-- CONFIRM BUTTONS -->
+  <div class="flex text-xs text-black">
+    {#if trashCount === 0}
       <Button
         size="small"
-        color="primary"
-        leadingIcon={mdiImageMultipleOutline}
-        class="rounded-e-full"
-        onclick={handleStack}
-        disabled={selectedAssetIds.size !== 1}
+        leadingIcon={mdiCheck}
+        color="success"
+        class="flex place-items-center gap-2 rounded-s-full"
+        onclick={handleResolve}
       >
-        {$t('stack')}
+        {$t('keep_all')}
       </Button>
-    </div>
-  </div>
-
-  <div class="overflow-x-auto p-2">
-    <div class="mx-auto flex w-fit min-w-full flex-nowrap place-items-start justify-center gap-1">
-      {#each assets as asset (asset.id)}
-        <DuplicateAsset
-          {asset}
-          {onSelectAsset}
-          isSelected={selectedAssetIds.has(asset.id)}
-          {onViewAsset}
-          {differingMetadataFields}
-          {showMore}
-          initialVisibleCount={InitialVisibleCount}
-          {imageSize}
-        />
-      {/each}
-    </div>
-  </div>
-
-  {#if hasMore}
-    <div class="flex justify-center pb-2">
-      <Button size="small" variant="ghost" color="secondary" onclick={() => (showMore = !showMore)}>
-        <Icon icon={showMore ? mdiChevronUp : mdiChevronDown} size="18" class="me-1" />
-        {showMore
-          ? $t('show_less')
-          : $t('show_more_fields', { values: { count: differingCount - InitialVisibleCount } })}
+    {:else}
+      <Button
+        size="small"
+        color="danger"
+        leadingIcon={mdiTrashCanOutline}
+        class="rounded-s-full"
+        onclick={handleResolve}
+      >
+        {trashCount === assets.length ? $t('trash_all') : $t('trash_count', { values: { count: trashCount } })}
       </Button>
-    </div>
-  {/if}
+    {/if}
+    <Button
+      size="small"
+      color="primary"
+      leadingIcon={mdiImageMultipleOutline}
+      class="rounded-e-full"
+      onclick={handleStack}
+      disabled={selectedAssetIds.size !== 1}
+    >
+      {$t('stack')}
+    </Button>
+  </div>
 </div>
+
+<div class="overflow-x-auto p-2">
+  <div class="mx-auto flex w-fit min-w-full flex-nowrap place-items-start justify-center gap-1">
+    {#each assets as asset (asset.id)}
+      <DuplicateAsset
+        {asset}
+        {onSelectAsset}
+        isSelected={selectedAssetIds.has(asset.id)}
+        {onViewAsset}
+        {differingMetadataFields}
+        {showMore}
+        initialVisibleCount={InitialVisibleCount}
+        {imageSize}
+      />
+    {/each}
+  </div>
+</div>
+
+{#if hasMore}
+  <div class="flex justify-center pb-2">
+    <Button size="small" variant="ghost" color="secondary" onclick={() => (showMore = !showMore)}>
+      <Icon icon={showMore ? mdiChevronUp : mdiChevronDown} size="18" class="me-1" />
+      {showMore ? $t('show_less') : $t('show_more_fields', { values: { count: differingCount - InitialVisibleCount } })}
+    </Button>
+  </div>
+{/if}
 
 {#if assetViewerManager.isViewing}
   {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}

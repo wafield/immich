@@ -82,7 +82,7 @@
       return '';
     }
     const { dt, hasExplicitZone } = result;
-    const dateFormatted = dt.toFormat('yyyy-MM-dd HH:mm:ss');
+    const dateFormatted = dt.toFormat('MM/dd HH:mm:ss');
     if (!hasExplicitZone) {
       return dateFormatted;
     }
@@ -151,9 +151,8 @@
           <div class="overflow-hidden text-center">
             {asset.originalFileName ?? ''}
           </div>
-          <div class="flex items-center justify-center gap-1 text-slate-600 dark:text-slate-400">
+          <div class="overflow-hidden text-center text-slate-600 dark:text-slate-400">
             {#if fullTime}
-              <Icon icon={mdiCalendar} size="12" class="shrink-0" />
               <span class="truncate whitespace-nowrap">{fullTime}</span>
             {/if}
           </div>
