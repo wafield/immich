@@ -13,6 +13,7 @@
     showLibraryIndicator,
     highlightAlbumAssets,
     notInAnyAlbum,
+    highlightMissingTimezone,
     rowSize,
     RowSize,
     assetInfoDisplay,
@@ -230,7 +231,7 @@
         </div>
       {/each}
 
-      <hr class="border-gray-200 dark:border-gray-700" />
+      <NavbarGroup title="Display Options" size="tiny" />
 
       <div class="flex items-start gap-2">
         <Checkbox
@@ -259,11 +260,21 @@
           checked={$notInAnyAlbum}
           onCheckedChange={() => ($notInAnyAlbum = !$notInAnyAlbum)}
         />
-        <Label label="Not in any albums" for="not-in-any-album-checkbox" size="tiny" />
+        <Label label="Not in Any Albums" for="not-in-any-album-checkbox" size="tiny" />
+      </div>
+
+      <div class="flex items-start gap-2">
+        <Checkbox
+          size="tiny"
+          id="highlight-missing-timezone-checkbox"
+          checked={$highlightMissingTimezone}
+          onCheckedChange={() => ($highlightMissingTimezone = !$highlightMissingTimezone)}
+        />
+        <Label label="Highlight Missing Timezone" for="highlight-missing-timezone-checkbox" size="tiny" />
       </div>
     </div>
 
-    <NavbarGroup title="Info Display" size="tiny" />
+    <NavbarGroup title="Asset Info Display" size="tiny" />
     <div class="flex ps-5 pb-4 pe-4">
       <Select
         class="w-full"

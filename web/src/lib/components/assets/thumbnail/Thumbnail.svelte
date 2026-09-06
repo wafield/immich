@@ -4,7 +4,12 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { librariesMap } from '$lib/stores/library.store';
-  import { locale, playVideoThumbnailOnHover, showLibraryIndicator } from '$lib/stores/preferences.store';
+  import {
+    highlightMissingTimezone,
+    locale,
+    playVideoThumbnailOnHover,
+    showLibraryIndicator,
+  } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
@@ -25,6 +30,7 @@
     mdiCardText,
     mdiRaw,
     mdiContentDuplicate,
+    mdiMapClock,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
@@ -349,6 +355,12 @@
           {#if !authManager.isSharedLink && asset.hasSidecar}
             <Icon icon={mdiCardText} size="24" class="text-white" />
           {/if}
+          {#if $highlightMissingTimezone && !asset.timeZone}
+            <Icon icon={mdiMapClock} size="24" class="text-danger" />
+          {/if}
+          {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
+            <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+          {/if}
         </div>
 
         {#if !!assetOwner}
@@ -356,12 +368,6 @@
             <p class="text-white-shadow max-w-full truncate p-1 text-xs font-medium text-white">
               {assetOwner.name}
             </p>
-          </div>
-        {/if}
-
-        {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
-          <div class={['absolute inset-s-2 z-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
-            <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 

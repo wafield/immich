@@ -1,6 +1,7 @@
 import { render } from '@testing-library/svelte';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
+import { highlightMissingTimezone } from '$lib/stores/preferences.store';
 import { getTabbable } from '$lib/utils/focus-util';
 import { assetFactory } from '@test-data/factories/asset-factory';
 
@@ -33,6 +34,10 @@ describe('Thumbnail component', () => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
   });
 
+  afterEach(() => {
+    highlightMissingTimezone.set(false);
+  });
+
   it('should only contain a single tabbable element (the container)', () => {
     const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
     const { baseElement } = render(Thumbnail, {
@@ -58,5 +63,42 @@ describe('Thumbnail component', () => {
 
     const thumbhash = sut.getByTestId('thumbhash');
     expect(thumbhash).not.toBeFalsy();
+  });
+
+  it('renders missing timezone icon when highlightMissingTimezone is true and timezone is missing', () => {
+    highlightMissingTimezone.set(true);
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', timeZone: null });
+    const { baseElement } = render(Thumbnail, {
+      asset,
+    });
+
+    const icon = baseElement.querySelector('[data-icon-missing-timezone]');
+    expect(icon).not.toBeNull();
+  });
+
+  it('does not render missing timezone icon when asset has timezone', () => {
+    highlightMissingTimezone.set(true);
+    const asset = assetFactory.build({
+      originalPath: 'image.jpg',
+      originalMimeType: 'image/jpeg',
+      timeZone: 'America/New_York',
+    });
+    const { baseElement } = render(Thumbnail, {
+      asset,
+    });
+
+    const icon = baseElement.querySelector('[data-icon-missing-timezone]');
+    expect(icon).toBeNull();
+  });
+
+  it('does not render missing timezone icon when highlightMissingTimezone is false', () => {
+    highlightMissingTimezone.set(false);
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', timeZone: null });
+    const { baseElement } = render(Thumbnail, {
+      asset,
+    });
+
+    const icon = baseElement.querySelector('[data-icon-missing-timezone]');
+    expect(icon).toBeNull();
   });
 });
