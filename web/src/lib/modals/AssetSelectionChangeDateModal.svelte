@@ -7,8 +7,9 @@
   import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '$lib/modals/timezone-utils';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
   import { updateAssets } from '@immich/sdk';
-  import { Field, FormModal, Label, Switch } from '@immich/ui';
+  import { Field, FormModal, Label, Switch, Table, TableBody, TableCell, TableRow } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -23,7 +24,7 @@
 
   let showRelative = $state(false);
   let selectedDuration = $state(0);
-  let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
+  let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss"));
   const timezones = $derived(getTimezones(selectedDate));
   // svelte-ignore state_referenced_locally
   let lastSelectedTimezone = $state(getPreferredTimeZone(initialDate, initialTimeZone, timezones));
@@ -52,13 +53,6 @@
       onClose(false);
     }
   };
-
-  // let before = $derived(DateTime.fromObject(assets[0].localDateTime).toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
-
-  // let after = $derived(
-  //   currentInterval ? calcNewDate(currentInterval.end, selectedDuration, selectedOption?.value) : undefined,
-  // );
-
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
@@ -70,8 +64,34 @@
   {onSubmit}
   submitText={$t('confirm')}
   disabled={!date.isValid}
-  size="small"
+  size="medium"
 >
+  {#if assets.length === 1}
+    <Label class="mb-1 block">Asset date time fields</Label>
+    <Table striped size="small" spacing="small" class="mb-4">
+      <TableBody>
+        <TableRow>
+          <TableCell class="font-medium">EXIF OriginalDateTime</TableCell>
+          <TableCell class="font-mono text-xs break-all"
+            >{assets[0].dateTimeOriginal
+              ? fromTimelinePlainDateTime(assets[0].dateTimeOriginal).toFormat('yyyy-MM-dd HH:mm:ss')
+              : 'null'}</TableCell
+          >
+        </TableRow>
+        <TableRow>
+          <TableCell class="font-medium">EXIF timezone</TableCell>
+          <TableCell class="font-mono text-xs break-all">{assets[0].timeZone ?? 'null'}</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell class="font-medium">Local date time</TableCell>
+          <TableCell class="font-mono text-xs break-all"
+            >{fromTimelinePlainDateTime(assets[0].localDateTime).toFormat('yyyy-MM-dd HH:mm:ss')}</TableCell
+          >
+        </TableRow>
+      </TableBody>
+    </Table>
+  {/if}
+
   <Field label={$t('edit_date_and_time_by_offset')}>
     <Switch data-testid="edit-by-offset-switch" bind:checked={showRelative} class="mb-2" />
   </Field>
@@ -83,38 +103,13 @@
     <DateInput class="mb-2 immich-form-input w-full" id="datetime" type="datetime-local" bind:value={selectedDate} />
   {/if}
   <div class="w-full">
+    <Label for="timezone-combobox" class="mb-1 block">{$t('timezone')}</Label>
     <Combobox
+      id="timezone-combobox"
       bind:selectedOption
-      label={$t('timezone')}
       options={timezones}
       placeholder={$t('search_timezone')}
       onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
     ></Combobox>
   </div>
-  <!-- <Card color="secondary" class={!showRelative || !currentInterval ? 'invisible' : ''}>
-      <CardBody class="p-2">
-        <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-center">
-          <div class="col-span-2 immich-form-label" data-testid="interval-preview">Preview</div>
-          <Text size="small" class="-mt-2 immich-form-label col-span-2"
-            >Showing changes for first selected asset only</Text
-          >
-          <label class="immich-form-label" for="from">Before</label>
-          <DateInput
-            class="dark:text-gray-300 text-gray-700 text-base"
-            id="from"
-            type="datetime-local"
-            readonly
-            bind:value={before}
-          />
-          <label class="immich-form-label" for="to">After</label>
-          <DateInput
-            class="dark:text-gray-300 text-gray-700 text-base"
-            id="to"
-            type="datetime-local"
-            readonly
-            bind:value={after}
-          />
-        </div>
-      </CardBody>
-    </Card> -->
 </FormModal>

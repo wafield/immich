@@ -50,6 +50,46 @@ describe('DateSelectionModal component', () => {
     expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
   });
 
+  test('renders raw time-related info table when exactly 1 asset is passed in', () => {
+    const asset = {
+      id: 'asset-1',
+      ownerId: 'user-1',
+      localDateTime: '2023-11-19T19:11:00.000Z',
+      exifInfo: {
+        dateTimeOriginal: '2023-11-19T18:11:00.000Z',
+        timeZone: 'Europe/Berlin',
+      },
+    } as any;
+
+    render(AssetSelectionChangeDateModal, {
+      initialDate,
+      initialTimeZone,
+      assets: [asset],
+      onClose,
+    });
+
+    expect(screen.getByText('Original date time')).toBeInTheDocument();
+    expect(screen.getByText('2023-11-19T18:11:00.000Z')).toBeInTheDocument();
+    expect(screen.getByText('EXIF timezone')).toBeInTheDocument();
+    expect(screen.getByText('Europe/Berlin')).toBeInTheDocument();
+    expect(screen.getByText('Local date time')).toBeInTheDocument();
+    expect(screen.getByText('2023-11-19T19:11:00.000Z')).toBeInTheDocument();
+  });
+
+  test('does not render raw info table when multiple assets are passed in', () => {
+    const asset1 = { id: 'asset-1', ownerId: 'user-1' } as any;
+    const asset2 = { id: 'asset-2', ownerId: 'user-1' } as any;
+
+    render(AssetSelectionChangeDateModal, {
+      initialDate,
+      initialTimeZone,
+      assets: [asset1, asset2],
+      onClose,
+    });
+
+    expect(screen.queryByText('Original date time')).not.toBeInTheDocument();
+  });
+
   test('calls onConfirm with correct date on confirm', async () => {
     render(AssetSelectionChangeDateModal, {
       props: { initialDate, initialTimeZone, assets: [], onClose },
