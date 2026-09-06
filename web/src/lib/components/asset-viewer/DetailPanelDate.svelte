@@ -1,6 +1,6 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
+  import AssetSelectionChangeDateModal from '$lib/modals/AssetSelectionChangeDateModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
@@ -29,8 +29,8 @@
       return;
     }
 
-    await modalManager.show(AssetChangeDateModal, {
-      asset: toTimelineAsset(asset),
+    await modalManager.show(AssetSelectionChangeDateModal, {
+      assets: [toTimelineAsset(asset)],
       initialDate: dateTime,
       initialTimeZone: timeZone,
     });

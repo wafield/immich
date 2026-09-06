@@ -10,6 +10,8 @@
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
+  // This class has been deprecated in favor of AssetSelectionChangeDateModal.
+
   interface Props {
     initialDate?: DateTime;
     initialTimeZone?: string;
