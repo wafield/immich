@@ -57,6 +57,7 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { Badge, Checkbox, Icon, IconButton, Label } from '@immich/ui';
   import { mdiCheck, mdiClose, mdiMagnify } from '@mdi/js';
   import { tick } from 'svelte';
@@ -111,8 +112,8 @@
   };
 
   let filteredOptions = $derived.by(() => {
-    const query = searchQuery.trim().toLowerCase();
-    return query === '' ? options : options.filter((option) => option.label.toLowerCase().includes(query));
+    const query = normalizeSearchString(searchQuery.trim());
+    return query === '' ? options : options.filter((option) => normalizeSearchString(option.label).includes(query));
   });
 
   const isOptionSelected = (option: FilterableSelectionListOptions): boolean => {
