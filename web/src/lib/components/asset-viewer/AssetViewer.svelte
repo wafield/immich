@@ -61,6 +61,14 @@
     previousAsset?: AssetResponseDto;
   };
 
+  export type ViewerKind =
+    | 'PhotoViewer'
+    | 'VideoViewer'
+    | 'LiveVideoViewer'
+    | 'ImagePanaramaViewer'
+    | 'CropArea'
+    | 'StackVideoViewer';
+
   interface Props {
     cursor: AssetCursor;
     showNavigation?: boolean;
@@ -536,6 +544,7 @@
         {onRemoveFromAlbum}
         {isPlayingOriginalVideo}
         {setPlayOriginalVideo}
+        {viewerKind}
       />
     </div>
   {/if}

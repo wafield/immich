@@ -56,6 +56,7 @@
   import ImageLayer from '$lib/components/ImageLayer.svelte';
   import Thumbhash from '$lib/components/Thumbhash.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { getAssetUrls } from '$lib/utils';
   import { AdaptiveImageLoader, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
   import { scaleToCover, scaleToFit, type Size } from '$lib/utils/container-utils';
@@ -95,7 +96,7 @@
   }: Props = $props();
 
   const afterThumbnail = (loader: AdaptiveImageLoader) => {
-    if (assetViewerManager.zoom > 1) {
+    if (assetViewerManager.zoom > 1 || $alwaysLoadOriginalFile) {
       loader.trigger('original');
     } else {
       loader.trigger('preview');
@@ -139,7 +140,10 @@
   $effect.pre(() => {
     const loader = adaptiveImageLoader;
     untrack(() => assetViewerManager.resetZoomState());
-    return () => loader.destroy();
+    return () => {
+      loader.destroy();
+      assetViewerManager.imageLoaderStatus = undefined;
+    };
   });
 
   const imageDimensions = $derived.by(() => {
@@ -201,7 +205,7 @@
   });
 
   $effect(() => {
-    if (assetViewerManager.zoom > 1 && status.quality.original !== 'success') {
+    if ((assetViewerManager.zoom > 1 || $alwaysLoadOriginalFile) && status.quality.original !== 'success') {
       untrack(() => void adaptiveImageLoader.trigger('original'));
     }
   });

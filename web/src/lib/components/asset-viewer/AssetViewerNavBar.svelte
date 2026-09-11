@@ -22,6 +22,7 @@
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
+  import type { ViewerKind } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
@@ -48,6 +49,7 @@
     onRemoveFromAlbum?: (assetIds: string[]) => void;
     isPlayingOriginalVideo: boolean;
     setPlayOriginalVideo: (value: boolean) => void;
+    viewerKind?: ViewerKind;
   }
 
   let {
@@ -62,11 +64,18 @@
     onRemoveFromAlbum,
     isPlayingOriginalVideo = false,
     setPlayOriginalVideo,
+    viewerKind,
   }: Props = $props();
 
   const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
   const isAlbumOwner = $derived(authManager.authenticated && album?.albumUsers[0].user.id === authManager.user.id);
   const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
+
+  const isPhotoViewer = $derived(viewerKind === 'PhotoViewer');
+  const isDisplayedAssetReady = $derived(assetViewerManager.imageLoaderStatus?.quality.original === 'success');
+
+  const showZoomPercentage = $derived(isPhotoViewer && isDisplayedAssetReady);
+  const zoomPercentage = $derived(Math.round(assetViewerManager.zoom * 100));
 
   const { Cast } = $derived(getGlobalActions($t));
 
@@ -92,10 +101,24 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
 <div
-  class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
+  class="relative flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
 >
   <div class="dark">
     <ActionButton action={Close} />
+  </div>
+
+  <div
+    class="pointer-events-none absolute inset-x-0 flex items-center justify-center"
+    data-testid="asset-viewer-navbar-center"
+  >
+    {#if showZoomPercentage}
+      <span
+        class="text-sm font-medium text-white/90 select-none tabular-nums"
+        data-testid="asset-viewer-navbar-zoom-level"
+      >
+        {zoomPercentage}%
+      </span>
+    {/if}
   </div>
 
   <div
