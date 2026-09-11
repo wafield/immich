@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -9,11 +9,11 @@ import {
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
-} from 'src/dtos/library.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { LibraryService } from 'src/services/library.service';
-import { UUIDParamDto } from 'src/validation';
+} from 'src/dtos/library.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { LibraryService } from 'src/services/library.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Libraries)
 @Controller('libraries')

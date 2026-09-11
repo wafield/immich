@@ -1,10 +1,12 @@
 <script lang="ts" module>
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text?url';
-  import { addProtocol, setRTLTextPlugin } from 'maplibre-gl';
+  import { addProtocol, setRTLTextPlugin, setWorkerUrl } from 'maplibre-gl';
+  import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
   import { Protocol } from 'pmtiles';
   import { googleProtocol } from './engine';
 
   let protocol = new Protocol();
+  setWorkerUrl(workerUrl);
   void addProtocol('pmtiles', protocol.tile);
   void addProtocol('google', googleProtocol);
   void setRTLTextPlugin(mapboxRtlUrl, true);

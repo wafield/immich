@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -13,20 +13,20 @@ import {
   AssetMetadataResponseDto,
   AssetMetadataRouteParams,
   AssetMetadataUpsertDto,
+  AssetMoveResponseDto,
   AssetStatsDto,
   AssetStatsResponseDto,
   MoveAssetLibraryDto,
-  AssetMoveResponseDto,
   UpdateAssetDto,
-} from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { ApiTag, Permission, RouteKey } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { AssetService } from 'src/services/asset.service';
-import { StorageTemplateService } from 'src/services/storage-template.service';
-import { UUIDParamDto } from 'src/validation';
+} from 'src/dtos/asset.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
+import { ApiTag, Permission, RouteKey } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { AssetService } from 'src/services/asset.service.js';
+import { StorageTemplateService } from 'src/services/storage-template.service.js';
+import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)
@@ -40,7 +40,8 @@ export class AssetController {
   @Authenticated({ permission: Permission.AssetUpdate })
   @Endpoint({
     summary: 'Move assets to another library',
-    description: 'Moves a batch of assets to a target library (external or default upload library) using storage template pathing.',
+    description:
+      'Moves a batch of assets to a target library (external or default upload library) using storage template pathing.',
     history: new HistoryBuilder().added('v3').beta('v3'),
   })
   moveLibrary(@Auth() auth: AuthDto, @Body() dto: MoveAssetLibraryDto): Promise<AssetMoveResponseDto[]> {
@@ -48,7 +49,6 @@ export class AssetController {
   }
 
   @Get('statistics')
-
   @Authenticated({ permission: Permission.AssetStatistics })
   @Endpoint({
     summary: 'Get asset statistics',

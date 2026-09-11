@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import _ from 'lodash';
+import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
-import { StorageCore } from 'src/cores/storage.core';
-import { AssetFile } from 'src/database';
-import { OnJob } from 'src/decorators';
-import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { AssetFile } from 'src/database.js';
+import { OnJob } from 'src/decorators.js';
+import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
 import {
   AssetBulkDeleteDto,
   AssetBulkUpdateDto,
@@ -21,10 +21,15 @@ import {
   MoveAssetLibraryDto,
   UpdateAssetDto,
   mapStats,
-} from 'src/dtos/asset.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetEditAction, AssetEditActionItem, AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
-import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
+} from 'src/dtos/asset.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import {
+  AssetEditAction,
+  type AssetEditActionItem,
+  AssetEditsCreateDto,
+  AssetEditsResponseDto,
+} from 'src/dtos/editing.dto.js';
+import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
 import {
   AssetFileType,
   AssetPathType,
@@ -35,11 +40,11 @@ import {
   JobStatus,
   Permission,
   QueueName,
-} from 'src/enum';
-import { BaseService } from 'src/services/base.service';
-import { StorageTemplateService } from 'src/services/storage-template.service';
-import { JobItem, JobOf, StorageAsset } from 'src/types';
-import { requireElevatedPermission } from 'src/utils/access';
+} from 'src/enum.js';
+import { BaseService } from 'src/services/base.service.js';
+import { StorageTemplateService } from 'src/services/storage-template.service.js';
+import type { JobItem, JobOf, StorageAsset } from 'src/types.js';
+import { requireElevatedPermission } from 'src/utils/access.js';
 import {
   getAssetFiles,
   getDimensions,
@@ -47,13 +52,13 @@ import {
   onAfterUnlink,
   onBeforeLink,
   onBeforeUnlink,
-} from 'src/utils/asset.util';
-import { getLivePhotoMotionFilename } from 'src/utils/file';
+} from 'src/utils/asset.util.js';
+import { getLivePhotoMotionFilename } from 'src/utils/file.js';
 
-import { updateLockedColumns } from 'src/utils/database';
-import { extractTimeZone } from 'src/utils/date';
-import { batched, findOrFail } from 'src/utils/misc';
-import { transformOcrBoundingBox } from 'src/utils/transform';
+import { updateLockedColumns } from 'src/utils/database.js';
+import { extractTimeZone } from 'src/utils/date.js';
+import { batched, findOrFail } from 'src/utils/misc.js';
+import { transformOcrBoundingBox } from 'src/utils/transform.js';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -152,8 +157,8 @@ export class AssetService extends BaseService {
     } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
-    const assetDto = _.omitBy({ isFavorite, visibility, duplicateId }, _.isUndefined);
-    const exifDto = _.omitBy(
+    const assetDto = omitBy({ isFavorite, visibility, duplicateId }, isUndefined);
+    const exifDto = omitBy(
       {
         latitude,
         longitude,
@@ -161,7 +166,7 @@ export class AssetService extends BaseService {
         description,
         dateTimeOriginal,
       },
-      _.isUndefined,
+      isUndefined,
     );
 
     if (Object.keys(exifDto).length > 0) {
@@ -499,7 +504,7 @@ export class AssetService extends BaseService {
     rating?: number | null;
   }) {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const writes = _.omitBy(
+    const writes = omitBy(
       {
         description,
         dateTimeOriginal,
@@ -508,7 +513,7 @@ export class AssetService extends BaseService {
         longitude,
         rating,
       },
-      _.isUndefined,
+      isUndefined,
     );
 
     if (Object.keys(writes).length > 0) {

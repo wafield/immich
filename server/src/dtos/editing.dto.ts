@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { isoDatetimeToDate } from 'src/validation';
+import { isoDatetimeToDate } from 'src/validation.js';
 import z from 'zod';
 
 export enum AssetEditAction {

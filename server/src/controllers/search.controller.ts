@@ -1,9 +1,9 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { PersonResponseDto } from 'src/dtos/person.dto';
+import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
+import { PersonResponseDto } from 'src/dtos/person.dto.js';
 import {
   LargeAssetSearchDto,
   MetadataSearchDto,
@@ -18,10 +18,10 @@ import {
   SmartSearchDto,
   StatisticsSearchDto,
   SuggestionResponseDto,
-} from 'src/dtos/search.dto';
-import { ApiTag, Permission } from 'src/enum';
-import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { SearchService } from 'src/services/search.service';
+} from 'src/dtos/search.dto.js';
+import { ApiTag, Permission } from 'src/enum.js';
+import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { SearchService } from 'src/services/search.service.js';
 
 @ApiTags(ApiTag.Search)
 @Controller('search')
@@ -145,7 +145,10 @@ export class SearchController {
       'Retrieve search suggestions based on partial input. This endpoint is used for typeahead search features.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getSearchSuggestions(@Auth() auth: AuthDto, @Query() dto: SearchSuggestionRequestDto): Promise<SuggestionResponseDto[]> {
+  getSearchSuggestions(
+    @Auth() auth: AuthDto,
+    @Query() dto: SearchSuggestionRequestDto,
+  ): Promise<SuggestionResponseDto[]> {
     return this.service.getSearchSuggestions(auth, dto);
   }
 }

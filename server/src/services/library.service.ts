@@ -4,10 +4,10 @@ import { R_OK, W_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
-import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent, OnJob } from 'src/decorators';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
+import { StorageCore } from 'src/cores/storage.core.js';
+import { OnEvent, OnJob } from 'src/decorators.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -17,8 +17,8 @@ import {
   ValidateLibraryDto,
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
-} from 'src/dtos/library.dto';
-import { mapNotification } from 'src/dtos/notification.dto';
+} from 'src/dtos/library.dto.js';
+import { mapNotification } from 'src/dtos/notification.dto.js';
 import {
   AssetStatus,
   AssetType,
@@ -31,15 +31,15 @@ import {
   NotificationLevel,
   NotificationType,
   QueueName,
-} from 'src/enum';
-import { ArgOf } from 'src/repositories/event.repository';
-import { AssetSyncResult } from 'src/repositories/library.repository';
-import { AssetTable } from 'src/schema/tables/asset.table';
-import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
-import { isAssetChecksumConstraint } from 'src/utils/database';
-import { mimeTypes } from 'src/utils/mime-types';
-import { batched, findOrFail, handlePromiseError } from 'src/utils/misc';
+} from 'src/enum.js';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import { AssetSyncResult } from 'src/repositories/library.repository.js';
+import { AssetTable } from 'src/schema/tables/asset.table.js';
+import { BaseService } from 'src/services/base.service.js';
+import type { JobOf } from 'src/types.js';
+import { isAssetChecksumConstraint } from 'src/utils/database.js';
+import { mimeTypes } from 'src/utils/mime-types.js';
+import { batched, findOrFail, handlePromiseError } from 'src/utils/misc.js';
 
 @Injectable()
 export class LibraryService extends BaseService {
