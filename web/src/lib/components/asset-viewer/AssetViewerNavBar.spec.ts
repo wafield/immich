@@ -260,4 +260,52 @@ describe('AssetViewerNavBar component', () => {
       animatedZoomSpy.mockRestore();
     });
   });
+
+  describe('loading progress meter', () => {
+    afterEach(() => {
+      assetViewerManager.resetZoomState();
+      assetViewerManager.imageLoaderStatus = undefined;
+    });
+
+    it('displays meter with download progress when image is loading', () => {
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image });
+      assetViewerManager.imageLoaderStatus = {
+        started: true,
+        hasError: false,
+        urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: undefined },
+        quality: { thumbnail: 'success', preview: 'unloaded', original: 'unloaded' },
+        progress: 42,
+      };
+
+      const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
+        asset,
+        viewerKind: 'PhotoViewer',
+        ...additionalProps,
+      });
+
+      const meter = getByTestId('asset-viewer-navbar-meter');
+      expect(meter).toBeInTheDocument();
+      expect(meter).toHaveAttribute('aria-valuenow', '42');
+      expect(meter).toHaveAttribute('aria-valuetext', '42%');
+    });
+
+    it('does not display meter when image is fully loaded', () => {
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image });
+      assetViewerManager.imageLoaderStatus = {
+        started: true,
+        hasError: false,
+        urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
+        quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+        progress: 100,
+      };
+
+      const { queryByTestId } = renderWithTooltips(AssetViewerNavBar, {
+        asset,
+        viewerKind: 'PhotoViewer',
+        ...additionalProps,
+      });
+
+      expect(queryByTestId('asset-viewer-navbar-meter')).not.toBeInTheDocument();
+    });
+  });
 });

@@ -12,7 +12,6 @@
   import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/SetStackPrimaryAsset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/UnstackAction.svelte';
-  import LoadingDots from '$lib/components/LoadingDots.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import RemoveFromAlbumAction from '$lib/components/timeline/actions/RemoveFromAlbumAction.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -34,7 +33,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, IconButton, Tooltip, type ActionItem } from '@immich/ui';
+  import { ActionButton, CommandPaletteDefaultProvider, IconButton, Meter, type ActionItem } from '@immich/ui';
   import {
     mdiArrowLeft,
     mdiArrowRight,
@@ -96,6 +95,7 @@
 
   const zoomPercentage = $derived(getZoomPercentage(naturalDimensions, containerDimensions, assetViewerManager.zoom));
   const showZoomPercentage = $derived(isPhotoViewer && isDisplayedAssetReady && zoomPercentage > 0);
+  const downloadProgress = $derived(assetViewerManager.imageLoaderStatus?.progress ?? 0);
 
   const onScaleToFit = () => {
     assetViewerManager.animatedZoom(1);
@@ -174,13 +174,15 @@
     data-testid="asset-viewer-navbar-actions"
   >
     {#if assetViewerManager.isImageLoading}
-      <Tooltip text={$t('loading')}>
-        {#snippet child({ props })}
-          <div {...props} role="status" aria-label={$t('loading')}>
-            <LoadingDots class="me-1" />
-          </div>
-        {/snippet}
-      </Tooltip>
+      <Meter
+        size="tiny"
+        containerClass="w-16"
+        value={downloadProgress}
+        max={100}
+        aria-label={$t('loading')}
+        valueLabel={`${downloadProgress}%`}
+        data-testid="asset-viewer-navbar-meter"
+      />
     {/if}
 
     <ActionButton action={Actions.Select} />

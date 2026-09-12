@@ -10,6 +10,7 @@ export type ImageLoaderStatus = {
   quality: Record<ImageQuality, ImageStatus>;
   started: boolean;
   hasError: boolean;
+  progress: number;
 };
 
 type ImageLoaderCallbacks = {
@@ -36,12 +37,14 @@ export class AdaptiveImageLoader {
   private qualityConfigs: Record<ImageQuality, QualityConfig>;
   private highestLoadedQualityIndex = -1;
   private destroyed = false;
+  private downloadAbortController?: AbortController;
 
   status = $state<ImageLoaderStatus>({
     started: false,
     hasError: false,
     urls: { thumbnail: undefined, preview: undefined, original: undefined },
     quality: { thumbnail: 'unloaded', preview: 'unloaded', original: 'unloaded' },
+    progress: 0,
   });
 
   constructor(
@@ -62,6 +65,7 @@ export class AdaptiveImageLoader {
       throw new Error('Start requires imageLoader to be specified');
     }
 
+    void this.downloadWithProgress('thumbnail', this.qualityList[0].url);
     this.destroyFunctions.push(
       this.imageLoader(
         this.qualityList[0].url,
@@ -77,6 +81,13 @@ export class AdaptiveImageLoader {
       return;
     }
     this.status.started = true;
+  }
+
+  onProgress(_: ImageQuality, progress: number) {
+    if (this.destroyed) {
+      return;
+    }
+    this.status.progress = Math.min(100, Math.max(0, Math.round(progress)));
   }
 
   onLoad(quality: ImageQuality) {
@@ -98,6 +109,7 @@ export class AdaptiveImageLoader {
 
     this.highestLoadedQualityIndex = index;
     this.status.quality[quality] = 'success';
+    this.status.progress = 100;
     this.callbacks?.onUrlChange?.(this.qualityConfigs[quality].url);
     this.callbacks?.onImageReady?.();
 
@@ -114,9 +126,73 @@ export class AdaptiveImageLoader {
     this.status.hasError = true;
     this.status.quality[quality] = 'error';
     this.status.urls[quality] = undefined;
+    this.status.progress = 0;
     this.callbacks?.onError?.();
 
     config.onAfterError?.(this);
+  }
+
+  private async downloadWithProgress(quality: ImageQuality, url: string) {
+    if (!url || typeof fetch !== 'function') {
+      return;
+    }
+
+    this.downloadAbortController?.abort();
+    const controller = new AbortController();
+    this.downloadAbortController = controller;
+
+    this.onProgress(quality, 0);
+
+    try {
+      const targetUrl = (() => {
+        try {
+          return new URL(
+            url,
+            typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost',
+          ).href;
+        } catch {
+          return url;
+        }
+      })();
+
+      const response = await fetch(targetUrl, { signal: controller.signal });
+      if (!response.ok) {
+        return;
+      }
+
+      const contentLengthHeader = response.headers?.get('content-length');
+      const totalBytes = contentLengthHeader ? parseInt(contentLengthHeader, 10) : 0;
+
+      if (!response.body) {
+        if (!controller.signal.aborted && !this.destroyed) {
+          this.onProgress(quality, 100);
+        }
+        return;
+      }
+
+      const reader = response.body.getReader();
+      let loadedBytes = 0;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        if (value) {
+          loadedBytes += value.length;
+          if (totalBytes > 0 && !controller.signal.aborted && !this.destroyed) {
+            const percentage = Math.min(100, Math.round((loadedBytes / totalBytes) * 100));
+            this.onProgress(quality, percentage);
+          }
+        }
+      }
+
+      if (!controller.signal.aborted && !this.destroyed) {
+        this.onProgress(quality, 100);
+      }
+    } catch {
+      // Ignore network errors or aborted fetches
+    }
   }
 
   trigger(quality: ImageQuality) {
@@ -137,6 +213,7 @@ export class AdaptiveImageLoader {
 
     this.status.hasError = false;
     this.status.urls[quality] = url;
+    void this.downloadWithProgress(quality, url);
     if (this.imageLoader) {
       this.destroyFunctions.push(
         this.imageLoader(
@@ -152,6 +229,7 @@ export class AdaptiveImageLoader {
 
   destroy() {
     this.destroyed = true;
+    this.downloadAbortController?.abort();
     if (this.imageLoader) {
       for (const destroy of this.destroyFunctions) {
         destroy();
