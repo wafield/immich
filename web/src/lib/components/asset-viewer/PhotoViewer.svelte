@@ -57,6 +57,7 @@
   onDestroy(() => {
     assetViewerManager.clearHighlightedFaces();
     assetViewerManager.hideHiddenPeople();
+    assetViewerManager.containerSize = undefined;
   });
 
   let containerWidth = $state(0);
@@ -65,6 +66,10 @@
   const container = $derived({
     width: containerWidth,
     height: containerHeight,
+  });
+
+  $effect(() => {
+    assetViewerManager.containerSize = container;
   });
 
   const overlaySize = $derived.by((): Size => {

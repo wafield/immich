@@ -1,6 +1,8 @@
 import {
   getContentMetrics,
   getNaturalSize,
+  getScaleFactor,
+  getZoomPercentage,
   mapNormalizedRectToContent,
   mapNormalizedToContent,
   scaleToCover,
@@ -46,6 +48,35 @@ describe('scaleToFit', () => {
 
   it('should handle square images in portrait container', () => {
     expect(scaleToFit({ width: 500, height: 500 }, { width: 400, height: 600 })).toEqual({ width: 400, height: 400 });
+  });
+});
+
+describe('getScaleFactor', () => {
+  it('should calculate scale factor when image is wider than container', () => {
+    expect(getScaleFactor({ width: 6000, height: 4000 }, { width: 3000, height: 2000 })).toBe(0.5);
+  });
+
+  it('should calculate scale factor when height limits scale', () => {
+    expect(getScaleFactor({ width: 6000, height: 4000 }, { width: 6000, height: 2000 })).toBe(0.5);
+  });
+
+  it('should return 0 for non-measurable dimensions', () => {
+    expect(getScaleFactor({ width: 0, height: 0 }, { width: 3000, height: 2000 })).toBe(0);
+    expect(getScaleFactor({ width: 6000, height: 4000 }, { width: 0, height: 0 })).toBe(0);
+  });
+});
+
+describe('getZoomPercentage', () => {
+  it('should return 50% for 6000x4000 image in 3000x2000 container at 1x zoom', () => {
+    expect(getZoomPercentage({ width: 6000, height: 4000 }, { width: 3000, height: 2000 }, 1)).toBe(50);
+  });
+
+  it('should return 100% when zoomed 2x on 50% fit image', () => {
+    expect(getZoomPercentage({ width: 6000, height: 4000 }, { width: 3000, height: 2000 }, 2)).toBe(100);
+  });
+
+  it('should return 0 for unmeasurable sizes', () => {
+    expect(getZoomPercentage({ width: 0, height: 0 }, { width: 3000, height: 2000 }, 1)).toBe(0);
   });
 });
 

@@ -131,9 +131,33 @@ describe('AssetViewerNavBar component', () => {
       expect(queryByTestId('asset-viewer-navbar-zoom-level')).not.toBeInTheDocument();
     });
 
-    it('displays 100% zoom percentage when photo asset is in original version at 1:1 zoom level', () => {
-      const asset = assetFactory.build({ type: AssetTypeEnum.Image });
+    it('displays 50% zoom percentage when 6000x4000 image is fit to 3000x2000 container at 1x zoom', () => {
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image, width: 6000, height: 4000 });
       assetViewerManager.resetZoomState();
+      assetViewerManager.containerSize = { width: 3000, height: 2000 };
+      assetViewerManager.imageLoaderStatus = {
+        started: true,
+        hasError: false,
+        urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
+        quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+      };
+
+      const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
+        asset,
+        viewerKind: 'PhotoViewer',
+        ...additionalProps,
+      });
+
+      const zoomElement = getByTestId('asset-viewer-navbar-zoom-level');
+      expect(zoomElement).toBeInTheDocument();
+      expect(zoomElement).toHaveTextContent('50%');
+    });
+
+    it('displays 100% zoom percentage when photo asset reaches 1:1 zoom level (e.g. 2x zoom on 50% fit)', () => {
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image, width: 6000, height: 4000 });
+      assetViewerManager.resetZoomState();
+      assetViewerManager.zoom = 2;
+      assetViewerManager.containerSize = { width: 3000, height: 2000 };
       assetViewerManager.imageLoaderStatus = {
         started: true,
         hasError: false,
@@ -153,8 +177,9 @@ describe('AssetViewerNavBar component', () => {
     });
 
     it('displays updated percentage when zoom in level changes', () => {
-      const asset = assetFactory.build({ type: AssetTypeEnum.Image });
-      assetViewerManager.zoom = 2;
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image, width: 4000, height: 2000 });
+      assetViewerManager.zoom = 1.5;
+      assetViewerManager.containerSize = { width: 4000, height: 2000 };
       assetViewerManager.imageLoaderStatus = {
         started: true,
         hasError: false,
@@ -170,7 +195,7 @@ describe('AssetViewerNavBar component', () => {
 
       const zoomElement = getByTestId('asset-viewer-navbar-zoom-level');
       expect(zoomElement).toBeInTheDocument();
-      expect(zoomElement).toHaveTextContent('200%');
+      expect(zoomElement).toHaveTextContent('150%');
     });
   });
 });

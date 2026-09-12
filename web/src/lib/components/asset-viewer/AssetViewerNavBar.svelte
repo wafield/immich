@@ -24,6 +24,7 @@
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { ViewerKind } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import type { OnUndoDelete } from '$lib/utils/actions';
+  import { getNaturalSize, getZoomPercentage } from '$lib/utils/container-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
@@ -74,8 +75,20 @@
   const isPhotoViewer = $derived(viewerKind === 'PhotoViewer');
   const isDisplayedAssetReady = $derived(assetViewerManager.imageLoaderStatus?.quality.original === 'success');
 
-  const showZoomPercentage = $derived(isPhotoViewer && isDisplayedAssetReady);
-  const zoomPercentage = $derived(Math.round(assetViewerManager.zoom * 100));
+  const naturalDimensions = $derived.by(() => {
+    if (assetViewerManager.imgRef) {
+      const size = getNaturalSize(assetViewerManager.imgRef);
+      if (size.width > 0 && size.height > 0) {
+        return size;
+      }
+    }
+    return { width: asset.width ?? 0, height: asset.height ?? 0 };
+  });
+
+  const containerDimensions = $derived(assetViewerManager.containerSize ?? { width: 0, height: 0 });
+
+  const zoomPercentage = $derived(getZoomPercentage(naturalDimensions, containerDimensions, assetViewerManager.zoom));
+  const showZoomPercentage = $derived(isPhotoViewer && isDisplayedAssetReady && zoomPercentage > 0);
 
   const { Cast } = $derived(getGlobalActions($t));
 
@@ -108,16 +121,16 @@
   </div>
 
   <div
-    class="pointer-events-none absolute inset-x-0 flex items-center justify-center"
+    class="pointer-events-none absolute inset-x-0 items-center justify-center hidden md:flex"
     data-testid="asset-viewer-navbar-center"
   >
     {#if showZoomPercentage}
-      <span
-        class="text-sm font-medium text-white/90 select-none tabular-nums"
+      <p
+        class="rounded-lg border px-6 py-1 text-sm font-medium text-white/90 select-none tabular-nums dark:bg-subtle"
         data-testid="asset-viewer-navbar-zoom-level"
       >
         {zoomPercentage}%
-      </span>
+      </p>
     {/if}
   </div>
 

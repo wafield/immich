@@ -6,6 +6,7 @@ import { userPreferencesManager } from '$lib/managers/user-preferences-manager.s
 import type { ImageLoaderStatus } from '$lib/utils/adaptive-image-loader.svelte';
 import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
+import type { Size } from '$lib/utils/container-utils';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 
 export interface Faces {
@@ -38,6 +39,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
   #animationFrameId: number | null = null;
 
   imgRef = $state<HTMLImageElement | undefined>();
+  containerSize = $state<Size | undefined>();
   imageLoaderStatus = $state<ImageLoaderStatus | undefined>();
   #isImageLoading = $derived.by(() => {
     const quality = this.imageLoaderStatus?.quality;

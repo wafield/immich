@@ -44,13 +44,26 @@ export const scaleToCover = (dimensions: Size, container: Size): Size => {
   };
 };
 
-export const scaleToFit = (dimensions: Size, container: Size): Size => {
-  if (!isMeasurable(dimensions)) {
-    return { width: 0, height: 0 };
+export const getScaleFactor = (dimensions: Size, container: Size): number => {
+  if (!isMeasurable(dimensions) || !isMeasurable(container)) {
+    return 0;
   }
   const scaleX = container.width / dimensions.width;
   const scaleY = container.height / dimensions.height;
   const scale = Math.min(scaleX, scaleY);
+  return Number.isFinite(scale) ? scale : 0;
+};
+
+export const getZoomPercentage = (dimensions: Size, container: Size, zoom = 1): number => {
+  const scale = getScaleFactor(dimensions, container);
+  return Math.round(scale * zoom * 100);
+};
+
+export const scaleToFit = (dimensions: Size, container: Size): Size => {
+  const scale = getScaleFactor(dimensions, container);
+  if (scale === 0) {
+    return { width: 0, height: 0 };
+  }
   return {
     width: dimensions.width * scale,
     height: dimensions.height * scale,
