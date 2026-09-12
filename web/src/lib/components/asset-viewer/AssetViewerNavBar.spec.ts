@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import { fireEvent } from '@testing-library/svelte';
 import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -196,6 +197,59 @@ describe('AssetViewerNavBar component', () => {
       const zoomElement = getByTestId('asset-viewer-navbar-zoom-level');
       expect(zoomElement).toBeInTheDocument();
       expect(zoomElement).toHaveTextContent('150%');
+    });
+
+    it('zooms to 1x (initial fit) when scale to fit button is clicked', async () => {
+      const animatedZoomSpy = vi.spyOn(assetViewerManager, 'animatedZoom');
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image, width: 6000, height: 4000 });
+      assetViewerManager.zoom = 2;
+      assetViewerManager.containerSize = { width: 3000, height: 2000 };
+      assetViewerManager.imageLoaderStatus = {
+        started: true,
+        hasError: false,
+        urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
+        quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+      };
+
+      const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
+        asset,
+        viewerKind: 'PhotoViewer',
+        ...additionalProps,
+      });
+
+      const fitButton = getByTestId('asset-viewer-navbar-scale-to-fit');
+      expect(fitButton).toBeInTheDocument();
+      await fireEvent.click(fitButton);
+
+      expect(animatedZoomSpy).toHaveBeenCalledWith(1);
+      animatedZoomSpy.mockRestore();
+    });
+
+    it('zooms to 100% when scale to 100% button is clicked', async () => {
+      const animatedZoomSpy = vi.spyOn(assetViewerManager, 'animatedZoom');
+      const asset = assetFactory.build({ type: AssetTypeEnum.Image, width: 6000, height: 4000 });
+      assetViewerManager.zoom = 1;
+      assetViewerManager.containerSize = { width: 3000, height: 2000 };
+      assetViewerManager.imageLoaderStatus = {
+        started: true,
+        hasError: false,
+        urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
+        quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+      };
+
+      const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
+        asset,
+        viewerKind: 'PhotoViewer',
+        ...additionalProps,
+      });
+
+      const scale100Button = getByTestId('asset-viewer-navbar-scale-to-100');
+      expect(scale100Button).toBeInTheDocument();
+      await fireEvent.click(scale100Button);
+
+      // 6000x4000 in 3000x2000 container has 0.5 scale factor, so 100% is 1 / 0.5 = 2x zoom
+      expect(animatedZoomSpy).toHaveBeenCalledWith(2);
+      animatedZoomSpy.mockRestore();
     });
   });
 });

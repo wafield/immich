@@ -2,6 +2,8 @@ import {
   getContentMetrics,
   getNaturalSize,
   getScaleFactor,
+  getScaleTo100Zoom,
+  getZoomForPercentage,
   getZoomPercentage,
   mapNormalizedRectToContent,
   mapNormalizedToContent,
@@ -77,6 +79,24 @@ describe('getZoomPercentage', () => {
 
   it('should return 0 for unmeasurable sizes', () => {
     expect(getZoomPercentage({ width: 0, height: 0 }, { width: 3000, height: 2000 }, 1)).toBe(0);
+  });
+});
+
+describe('getScaleTo100Zoom', () => {
+  it('should return 2 for 6000x4000 image in 3000x2000 container (50% fit scale)', () => {
+    expect(getScaleTo100Zoom({ width: 6000, height: 4000 }, { width: 3000, height: 2000 })).toBe(2);
+  });
+
+  it('should return 4 for 4000x4000 image in 1000x1000 container (25% fit scale)', () => {
+    expect(getScaleTo100Zoom({ width: 4000, height: 4000 }, { width: 1000, height: 1000 })).toBe(4);
+  });
+
+  it('should return 1 for 1000x1000 image in 1000x1000 container (100% fit scale)', () => {
+    expect(getScaleTo100Zoom({ width: 1000, height: 1000 }, { width: 1000, height: 1000 })).toBe(1);
+  });
+
+  it('should return 1 for unmeasurable sizes', () => {
+    expect(getScaleTo100Zoom({ width: 0, height: 0 }, { width: 3000, height: 2000 })).toBe(1);
   });
 });
 

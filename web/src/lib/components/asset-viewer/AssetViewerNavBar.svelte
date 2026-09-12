@@ -24,7 +24,7 @@
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { ViewerKind } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import type { OnUndoDelete } from '$lib/utils/actions';
-  import { getNaturalSize, getZoomPercentage } from '$lib/utils/container-utils';
+  import { getNaturalSize, getScaleTo100Zoom, getZoomPercentage } from '$lib/utils/container-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     AssetTypeEnum,
@@ -34,8 +34,15 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { ActionButton, CommandPaletteDefaultProvider, Tooltip, type ActionItem } from '@immich/ui';
-  import { mdiArrowLeft, mdiArrowRight, mdiDotsVertical, mdiVideoOutline } from '@mdi/js';
+  import { ActionButton, CommandPaletteDefaultProvider, IconButton, Tooltip, type ActionItem } from '@immich/ui';
+  import {
+    mdiArrowLeft,
+    mdiArrowRight,
+    mdiDotsVertical,
+    mdiFitToPageOutline,
+    mdiFitToScreenOutline,
+    mdiVideoOutline,
+  } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -90,6 +97,15 @@
   const zoomPercentage = $derived(getZoomPercentage(naturalDimensions, containerDimensions, assetViewerManager.zoom));
   const showZoomPercentage = $derived(isPhotoViewer && isDisplayedAssetReady && zoomPercentage > 0);
 
+  const onScaleToFit = () => {
+    assetViewerManager.animatedZoom(1);
+  };
+
+  const onScaleTo100 = () => {
+    const targetZoom = getScaleTo100Zoom(naturalDimensions, containerDimensions);
+    assetViewerManager.animatedZoom(targetZoom);
+  };
+
   const { Cast } = $derived(getGlobalActions($t));
 
   const Close: ActionItem = $derived({
@@ -121,7 +137,7 @@
   </div>
 
   <div
-    class="pointer-events-none absolute inset-x-0 items-center justify-center hidden md:flex"
+    class="pointer-events-none absolute inset-x-0 items-center justify-center gap-2 hidden md:flex"
     data-testid="asset-viewer-navbar-center"
   >
     {#if showZoomPercentage}
@@ -131,6 +147,28 @@
       >
         {zoomPercentage}%
       </p>
+      <div class="pointer-events-auto dark flex items-center gap-1">
+        <IconButton
+          icon={mdiFitToScreenOutline}
+          title={$t('scale_to_fit', { default: 'Scale to fit' })}
+          aria-label={$t('scale_to_fit', { default: 'Scale to fit' })}
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          onclick={onScaleToFit}
+          data-testid="asset-viewer-navbar-scale-to-fit"
+        />
+        <IconButton
+          icon={mdiFitToPageOutline}
+          title={$t('scale_to_100', { default: 'Scale to 100%' })}
+          aria-label={$t('scale_to_100', { default: 'Scale to 100%' })}
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          onclick={onScaleTo100}
+          data-testid="asset-viewer-navbar-scale-to-100"
+        />
+      </div>
     {/if}
   </div>
 

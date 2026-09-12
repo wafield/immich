@@ -59,6 +59,18 @@ export const getZoomPercentage = (dimensions: Size, container: Size, zoom = 1): 
   return Math.round(scale * zoom * 100);
 };
 
+export const getZoomForPercentage = (dimensions: Size, container: Size, targetPercentage = 100): number => {
+  const scale = getScaleFactor(dimensions, container);
+  if (scale <= 0) {
+    return 1;
+  }
+  return targetPercentage / (scale * 100);
+};
+
+export const getScaleTo100Zoom = (dimensions: Size, container: Size): number => {
+  return getZoomForPercentage(dimensions, container, 100);
+};
+
 export const scaleToFit = (dimensions: Size, container: Size): Size => {
   const scale = getScaleFactor(dimensions, container);
   if (scale === 0) {
