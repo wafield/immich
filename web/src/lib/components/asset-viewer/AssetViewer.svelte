@@ -62,12 +62,7 @@
   };
 
   export type ViewerKind =
-    | 'PhotoViewer'
-    | 'VideoViewer'
-    | 'LiveVideoViewer'
-    | 'ImagePanaramaViewer'
-    | 'CropArea'
-    | 'StackVideoViewer';
+    'PhotoViewer' | 'VideoViewer' | 'LiveVideoViewer' | 'ImagePanaramaViewer' | 'CropArea' | 'StackVideoViewer';
 
   interface Props {
     cursor: AssetCursor;
@@ -531,7 +526,7 @@
 >
   <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor}
-    <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
+    <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform bg-immich-dark-gray">
       <AssetViewerNavBar
         {asset}
         {album}
@@ -569,7 +564,7 @@
   {/if}
 
   <!-- Asset Viewer -->
-  <div data-viewer-content class="relative z-[-1] col-span-4 col-start-1 row-span-full row-start-1">
+  <div data-viewer-content class="relative z-[-1] col-span-4 col-start-1 row-span-1 row-start-2">
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         asset={previewStackedAsset!}

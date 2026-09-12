@@ -136,18 +136,15 @@
     <ActionButton action={Close} />
   </div>
 
-  <div
-    class="pointer-events-none absolute inset-x-0 items-center justify-center gap-2 hidden md:flex"
-    data-testid="asset-viewer-navbar-center"
-  >
+  <div class="inset-x-0 items-center justify-center gap-2 hidden md:flex" data-testid="asset-viewer-navbar-center">
     {#if showZoomPercentage}
       <p
-        class="rounded-lg border px-6 py-1 text-sm font-medium text-white/90 select-none tabular-nums dark:bg-subtle"
+        class="pointer-events-none rounded-lg border px-6 py-1 text-sm font-medium text-white/90 select-none tabular-nums dark:bg-subtle"
         data-testid="asset-viewer-navbar-zoom-level"
       >
         {zoomPercentage}%
       </p>
-      <div class="pointer-events-auto dark flex items-center gap-1">
+      <div class="dark flex items-center gap-1">
         <IconButton
           icon={mdiFitToScreenOutline}
           title={$t('scale_to_fit', { default: 'Scale to fit' })}

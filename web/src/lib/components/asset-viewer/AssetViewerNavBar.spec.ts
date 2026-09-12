@@ -84,6 +84,7 @@ describe('AssetViewerNavBar component', () => {
         hasError: false,
         urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
         quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+        progress: 100,
       };
 
       const { queryByTestId } = renderWithTooltips(AssetViewerNavBar, {
@@ -102,6 +103,7 @@ describe('AssetViewerNavBar component', () => {
         hasError: false,
         urls: { thumbnail: 'thumb.jpg', preview: undefined, original: undefined },
         quality: { thumbnail: 'success', preview: 'unloaded', original: 'unloaded' },
+        progress: 0,
       };
 
       const { queryByTestId } = renderWithTooltips(AssetViewerNavBar, {
@@ -121,6 +123,7 @@ describe('AssetViewerNavBar component', () => {
         hasError: false,
         urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: undefined },
         quality: { thumbnail: 'success', preview: 'success', original: 'unloaded' },
+        progress: 100,
       };
 
       const { queryByTestId } = renderWithTooltips(AssetViewerNavBar, {
@@ -141,6 +144,7 @@ describe('AssetViewerNavBar component', () => {
         hasError: false,
         urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
         quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+        progress: 100,
       };
 
       const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
@@ -164,6 +168,7 @@ describe('AssetViewerNavBar component', () => {
         hasError: false,
         urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
         quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+        progress: 100,
       };
 
       const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
@@ -186,6 +191,7 @@ describe('AssetViewerNavBar component', () => {
         hasError: false,
         urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
         quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+        progress: 100,
       };
 
       const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
@@ -209,6 +215,7 @@ describe('AssetViewerNavBar component', () => {
         hasError: false,
         urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
         quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+        progress: 100,
       };
 
       const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
@@ -235,6 +242,7 @@ describe('AssetViewerNavBar component', () => {
         hasError: false,
         urls: { thumbnail: 'thumb.jpg', preview: 'prev.jpg', original: 'orig.jpg' },
         quality: { thumbnail: 'success', preview: 'success', original: 'success' },
+        progress: 100,
       };
 
       const { getByTestId } = renderWithTooltips(AssetViewerNavBar, {
