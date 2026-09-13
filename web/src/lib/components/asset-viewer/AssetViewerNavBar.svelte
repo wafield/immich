@@ -129,9 +129,7 @@
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
-<div
-  class="relative flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
->
+<div class="relative flex h-16 place-items-center justify-between px-3 transition-transform duration-200">
   <div class="dark">
     <ActionButton action={Close} />
   </div>

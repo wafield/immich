@@ -6,14 +6,12 @@
   import { uploadAssetsStore } from '$lib/stores/upload';
   import type { CommonPosition } from '$lib/utils/layout-utils';
   import { highlightAlbumAssets } from '$lib/stores/preferences.store';
-  import { fromISODateTime, fromISODateTimeUTC, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
-  import { formatUtcOffset } from '$lib/utils/date-time';
   import { Icon } from '@immich/ui';
   import { mdiCamera, mdiCalendar } from '@mdi/js';
-  import { DateTime } from 'luxon';
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { scale } from 'svelte/transition';
+  import { formatDateTime, formatFullDateTime } from '$lib/utils/date-time-formatter';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -46,48 +44,6 @@
 
   const transitionDuration = $derived(manager.suspendTransitions && !$isUploading ? 0 : 150);
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
-
-  const getAssetDateTime = (asset: TimelineAsset): { dt: DateTime; hasExplicitZone: boolean } | null => {
-    try {
-      const timeZone = asset.timeZone ?? undefined;
-      let dt: DateTime | null = null;
-      if (timeZone && asset.dateTimeOriginal) {
-        dt =
-          typeof asset.dateTimeOriginal === 'string'
-            ? fromISODateTime(asset.dateTimeOriginal, timeZone)
-            : fromTimelinePlainDateTime(asset.dateTimeOriginal).setZone(timeZone);
-      } else if (asset.localDateTime) {
-        dt =
-          typeof asset.localDateTime === 'string'
-            ? fromISODateTimeUTC(asset.localDateTime)
-            : fromTimelinePlainDateTime(asset.localDateTime);
-      }
-      if (dt && dt.isValid) {
-        return { dt, hasExplicitZone: Boolean(timeZone) };
-      }
-    } catch {
-      return null;
-    }
-    return null;
-  };
-
-  const formatDateTime = (asset: TimelineAsset): string => {
-    const result = getAssetDateTime(asset);
-    return result ? result.dt.toFormat('HH:mm:ss') : '';
-  };
-
-  const formatFullDateTime = (asset: TimelineAsset): string => {
-    const result = getAssetDateTime(asset);
-    if (!result) {
-      return '';
-    }
-    const { dt, hasExplicitZone } = result;
-    const dateFormatted = dt.toFormat('MM/dd HH:mm:ss');
-    if (!hasExplicitZone) {
-      return dateFormatted;
-    }
-    return `${dateFormatted} ${formatUtcOffset(dt)}`;
-  };
 </script>
 
 <!-- Image grid -->
@@ -119,7 +75,6 @@
           </div>
         </div>
       {:else if assetInfoDisplay === AssetInfoDisplay.FILE_NAME_CAMERA_DATE_TIME}
-        {@const formattedTime = formatDateTime(asset)}
         <div
           class="top-full flex w-full flex-col justify-center overflow-clip bg-slate-100 p-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200"
           style:height="{AssetInfoBarHeight}px"
@@ -135,15 +90,12 @@
               {/if}
             </div>
             <div class="flex shrink-0 items-center gap-1">
-              {#if formattedTime}
-                <Icon icon={mdiCalendar} size="12" class="shrink-0" />
-                <span class="whitespace-nowrap">{formattedTime}</span>
-              {/if}
+              <Icon icon={mdiCalendar} size="12" class="shrink-0" />
+              <span class="whitespace-nowrap">{formatDateTime(asset)}</span>
             </div>
           </div>
         </div>
       {:else if assetInfoDisplay === AssetInfoDisplay.FILE_NAME_FULL_TIME}
-        {@const fullTime = formatFullDateTime(asset)}
         <div
           class="top-full flex w-full flex-col justify-center overflow-clip bg-slate-100 p-1 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-200"
           style:height="{AssetInfoBarHeight}px"
@@ -152,9 +104,7 @@
             {asset.originalFileName ?? ''}
           </div>
           <div class="overflow-hidden text-center text-slate-600 dark:text-slate-400">
-            {#if fullTime}
-              <span class="truncate whitespace-nowrap">{fullTime}</span>
-            {/if}
+            <span class="truncate whitespace-nowrap">{formatFullDateTime(asset)}</span>
           </div>
         </div>
       {:else if assetInfoDisplay === AssetInfoDisplay.DESCRIPTION}
