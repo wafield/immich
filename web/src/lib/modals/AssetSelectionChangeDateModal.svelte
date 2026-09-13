@@ -11,9 +11,9 @@
     toDatetime,
     type ZoneOption,
   } from '$lib/modals/timezone-utils';
+  import { type AssetResponseDto } from '@immich/sdk';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
   import { updateAssets } from '@immich/sdk';
   import { Field, FormModal, Label, Switch, Table, TableBody, TableCell, TableRow } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';
@@ -26,9 +26,10 @@
     initialDate?: DateTime;
     initialTimeZone?: string;
     assets: TimelineAsset[];
+    originalAssets?: AssetResponseDto[];
     onClose: (success: boolean) => void;
   }
-  let { initialDate = DateTime.now(), initialTimeZone, assets, onClose }: Props = $props();
+  let { initialDate = DateTime.now(), initialTimeZone, assets, originalAssets, onClose }: Props = $props();
 
   let showRelative = $state(false);
   let selectedDuration = $state(0);
@@ -84,15 +85,17 @@
   disabled={!date.isValid}
   size="medium"
 >
-  {#if assets.length === 1}
+  {#if assets.length === 1 && originalAssets?.[0]}
     <Label class="mb-1 block">Current values</Label>
     <Table striped size="small" spacing="small" class="mb-4">
       <TableBody>
         <TableRow>
-          <TableCell class="font-medium">File creation time</TableCell>
-          <TableCell class="font-mono text-xs break-all"
-            >{fromTimelinePlainDateTime(assets[0].fileCreatedAt).toFormat('yyyy-MM-dd HH:mm:ss')}</TableCell
-          >
+          <TableCell class="font-medium">File creation time (for timeline)</TableCell>
+          <TableCell class="font-mono text-xs break-all">{originalAssets[0].fileCreatedAt}</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell class="font-medium">Local date time</TableCell>
+          <TableCell class="font-mono text-xs break-all">{originalAssets[0].localDateTime}</TableCell>
         </TableRow>
         <TableRow>
           <TableCell class="font-medium">Local Offset (hours)</TableCell>
@@ -100,21 +103,11 @@
         </TableRow>
         <TableRow>
           <TableCell class="font-medium">EXIF OriginalDateTime</TableCell>
-          <TableCell class="font-mono text-xs break-all"
-            >{assets[0].dateTimeOriginal
-              ? fromTimelinePlainDateTime(assets[0].dateTimeOriginal).toFormat('yyyy-MM-dd HH:mm:ss')
-              : 'null'}</TableCell
-          >
+          <TableCell class="font-mono text-xs break-all">{originalAssets[0].exifInfo?.dateTimeOriginal}</TableCell>
         </TableRow>
         <TableRow>
           <TableCell class="font-medium">EXIF timezone</TableCell>
-          <TableCell class="font-mono text-xs break-all">{assets[0].timeZone ?? 'null'}</TableCell>
-        </TableRow>
-        <TableRow>
-          <TableCell class="font-medium">Local date time</TableCell>
-          <TableCell class="font-mono text-xs break-all"
-            >{fromTimelinePlainDateTime(assets[0].localDateTime).toFormat('yyyy-MM-dd HH:mm:ss')}</TableCell
-          >
+          <TableCell class="font-mono text-xs break-all">{originalAssets[0].exifInfo?.timeZone}</TableCell>
         </TableRow>
       </TableBody>
     </Table>
@@ -131,9 +124,8 @@
     <DateInput class="mb-2 immich-form-input w-full" id="datetime" type="datetime-local" bind:value={selectedDate} />
   {/if}
   <div class="w-full">
-    <Label for="timezone-combobox" class="mb-1 block">{$t('timezone')}</Label>
     <Combobox
-      id="timezone-combobox"
+      label={$t('timezone')}
       bind:selectedOption
       options={timezones}
       placeholder={$t('search_timezone')}
@@ -151,7 +143,7 @@
               {asset.originalFileName}
             </TableCell>
             <TableCell class="font-mono text-xs break-all">
-              {formatFullDateTime(asset)}
+              {formatFullDateTime(asset.localDateTime, asset.timeZone)}
             </TableCell>
             <TableCell class="font-mono text-xs break-all">
               {getAssetAfterDateTime()}

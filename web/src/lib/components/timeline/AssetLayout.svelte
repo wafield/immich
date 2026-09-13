@@ -91,7 +91,7 @@
             </div>
             <div class="flex shrink-0 items-center gap-1">
               <Icon icon={mdiCalendar} size="12" class="shrink-0" />
-              <span class="whitespace-nowrap">{formatDateTime(asset)}</span>
+              <span class="whitespace-nowrap">{formatDateTime(asset.localDateTime, asset.timeZone)}</span>
             </div>
           </div>
         </div>
@@ -104,7 +104,7 @@
             {asset.originalFileName ?? ''}
           </div>
           <div class="overflow-hidden text-center text-slate-600 dark:text-slate-400">
-            <span class="truncate whitespace-nowrap">{formatFullDateTime(asset)}</span>
+            <span class="truncate whitespace-nowrap">{formatFullDateTime(asset.localDateTime, asset.timeZone)}</span>
           </div>
         </div>
       {:else if assetInfoDisplay === AssetInfoDisplay.DESCRIPTION}
