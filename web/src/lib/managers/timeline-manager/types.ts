@@ -26,6 +26,7 @@ export type TimelineAsset = {
   createdAt: TimelineDateTime;
   deletedAt?: TimelineDateTime | null;
   fileCreatedAt: TimelineDateTime;
+  localOffsetHours?: number | null;
   visibility: AssetVisibility;
   isFavorite: boolean;
   isTrashed: boolean;

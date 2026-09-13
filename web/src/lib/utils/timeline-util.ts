@@ -154,6 +154,10 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   // representation here would place re-inserted assets (e.g. undo archive) in the wrong spot.
   const fileCreatedAt = fromISODateTimeUTCToObject(assetResponse.fileCreatedAt);
   const createdAt = fromISODateTimeUTCToObject(assetResponse.createdAt);
+  const localOffsetHours =
+    (fromISODateTimeUTC(assetResponse.localDateTime).toMillis() -
+      fromISODateTimeUTC(assetResponse.fileCreatedAt).toMillis()) /
+    (1000 * 60 * 60);
 
   return {
     id: assetResponse.id,
@@ -164,6 +168,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     localDateTime,
     createdAt,
     fileCreatedAt,
+    localOffsetHours,
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.visibility,
     isTrashed: assetResponse.isTrashed,

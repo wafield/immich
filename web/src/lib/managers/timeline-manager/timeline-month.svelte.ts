@@ -202,6 +202,7 @@ export class TimelineMonth {
           ? fromISODateTimeUTC(bucketAssets.deletedAt[i]!).toLocal().toObject()
           : null,
         fileCreatedAt,
+        localOffsetHours: bucketAssets.localOffsetHours?.[i] ?? null,
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
         ratio: bucketAssets.ratio[i],

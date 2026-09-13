@@ -60,6 +60,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   dateTimeOriginal: null,
   description: null,
   timeZone: null,
+  localOffsetHours: 0,
 });
 
 export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
@@ -113,6 +114,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.isNotInAnyAlbum.push(asset.isNotInAnyAlbum ?? true);
     bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
     bucketAssets.fileCreatedAt.push(fileCreatedAt);
+    bucketAssets.localOffsetHours.push(asset.localOffsetHours ?? 0);
     bucketAssets.deletedAt?.push(asset.deletedAt ? fromTimelinePlainDateTime(asset.deletedAt).toISO() : null);
     bucketAssets.ownerId.push(asset.ownerId);
     bucketAssets.originalFileName.push(asset.originalFileName ?? faker.system.fileName());

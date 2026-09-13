@@ -71,6 +71,16 @@
     <Table striped size="small" spacing="small" class="mb-4">
       <TableBody>
         <TableRow>
+          <TableCell class="font-medium">File creation time (for Timeline)</TableCell>
+          <TableCell class="font-mono text-xs break-all"
+            >{fromTimelinePlainDateTime(assets[0].fileCreatedAt).toFormat('yyyy-MM-dd HH:mm:ss')}</TableCell
+          >
+        </TableRow>
+        <TableRow>
+          <TableCell class="font-medium">Local Offset (hours)</TableCell>
+          <TableCell class="font-mono text-xs break-all">{assets[0].localOffsetHours}</TableCell>
+        </TableRow>
+        <TableRow>
           <TableCell class="font-medium">EXIF OriginalDateTime</TableCell>
           <TableCell class="font-mono text-xs break-all"
             >{assets[0].dateTimeOriginal
