@@ -497,6 +497,7 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected upsertSegmentForAsset(asset: TimelineAsset) {
+    // Find out the exact dateTime value of this asset used for sorting.
     const dateTime = getOrderingDate(asset, this.#options.orderBy || AssetOrderBy.TakenAt);
     let month = getTimelineMonthByDate(this, dateTime);
 
@@ -631,14 +632,19 @@ export class TimelineManager extends VirtualScrollManager {
     return retrieveRangeUtil(this, start, end);
   }
 
+  /**
+   * Check whether the asset should NOT be added to the timeline, based on various filter options.
+   * @param asset
+   * @returns true if the asset should be excluded, false otherwise.
+   */
   isExcluded(asset: TimelineAsset): boolean {
     return Boolean(
       isMismatched(this.#options.visibility, asset.visibility) ||
-        isMismatched(this.#options.isFavorite, asset.isFavorite) ||
-        isMismatched(this.#options.isTrashed, asset.isTrashed) ||
-        (this.#options.tagId && asset.tags && !asset.tags.includes(this.#options.tagId)) ||
-        (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id)) ||
-        (this.#options.notInAnyAlbum && !asset.isNotInAnyAlbum),
+      isMismatched(this.#options.isFavorite, asset.isFavorite) ||
+      isMismatched(this.#options.isTrashed, asset.isTrashed) ||
+      (this.#options.tagId && asset.tags && !asset.tags.includes(this.#options.tagId)) ||
+      (this.#options.assetFilter !== undefined && !this.#options.assetFilter.has(asset.id)) ||
+      (this.#options.notInAnyAlbum && !asset.isNotInAnyAlbum),
     );
   }
 

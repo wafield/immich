@@ -46,7 +46,8 @@ export async function loadFromTimeBuckets(
     }
   }
 
-  const unprocessedAssets = timelineMonth.addAssets(bucketResponse, true);
+  // Turn bucket response into TimelineAssets and add them to the current month.
+  const unprocessedAssets = timelineMonth.addAssets(bucketResponse, /* preSorted= */ true);
   if (unprocessedAssets.length > 0) {
     console.error(
       `Warning: getTimeBucket API returning assets not in requested month: ${timelineMonth.yearMonth.month}, ${JSON.stringify(

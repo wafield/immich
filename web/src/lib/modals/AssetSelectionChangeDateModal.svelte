@@ -4,7 +4,13 @@
   import DurationInput from '$lib/elements/DurationInput.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '$lib/modals/timezone-utils';
+  import {
+    getPreferredTimeZone,
+    getTimezones,
+    toIsoDate,
+    toDatetime,
+    type ZoneOption,
+  } from '$lib/modals/timezone-utils';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
@@ -13,6 +19,8 @@
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
+  import { formatFullDateTime } from '$lib/utils/date-time-formatter';
+  import { formatUtcOffset } from '$lib/utils/date-time';
 
   interface Props {
     initialDate?: DateTime;
@@ -55,6 +63,16 @@
   };
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
+
+  const getAssetAfterDateTime = (): string => {
+    if (!showRelative) {
+      // Identical to `date`, but displayed in a user-friendly string.
+      const newDateTime = toDatetime(selectedDate, selectedOption);
+      return `${newDateTime.toFormat('MM-dd HH:mm:ss')} ${formatUtcOffset(newDateTime)}`;
+    }
+
+    return '';
+  };
 </script>
 
 <FormModal
@@ -67,11 +85,11 @@
   size="medium"
 >
   {#if assets.length === 1}
-    <Label class="mb-1 block">Asset date time fields</Label>
+    <Label class="mb-1 block">Current values</Label>
     <Table striped size="small" spacing="small" class="mb-4">
       <TableBody>
         <TableRow>
-          <TableCell class="font-medium">File creation time (for Timeline)</TableCell>
+          <TableCell class="font-medium">File creation time</TableCell>
           <TableCell class="font-mono text-xs break-all"
             >{fromTimelinePlainDateTime(assets[0].fileCreatedAt).toFormat('yyyy-MM-dd HH:mm:ss')}</TableCell
           >
@@ -121,5 +139,26 @@
       placeholder={$t('search_timezone')}
       onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
     ></Combobox>
+  </div>
+
+  <Label class="mb-1 block">Preview</Label>
+  <div class="max-h-60 overflow-y-auto">
+    <Table striped size="small" spacing="small">
+      <TableBody>
+        {#each assets as asset (asset.id)}
+          <TableRow>
+            <TableCell class="font-mono text-xs break-all">
+              {asset.originalFileName}
+            </TableCell>
+            <TableCell class="font-mono text-xs break-all">
+              {formatFullDateTime(asset)}
+            </TableCell>
+            <TableCell class="font-mono text-xs break-all">
+              {getAssetAfterDateTime()}
+            </TableCell>
+          </TableRow>
+        {/each}
+      </TableBody>
+    </Table>
   </div>
 </FormModal>

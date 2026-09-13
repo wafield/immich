@@ -6,9 +6,22 @@ export type ViewportTopMonth = TimelineYearMonth | undefined | 'lead-in' | 'lead
 export type AssetApiGetTimeBucketsRequest = Parameters<typeof import('@immich/sdk').getTimeBuckets>[0];
 
 export type TimelineManagerOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
+  /**
+   * If provided, only assets belonging to this album will be loaded and displayed.
+   */
   timelineAlbumId?: string;
+  /**
+   * If true, the timeline will not be initialized automatically on creation.
+   * Use this if you want to initialize the timeline manually.
+   */
   deferInit?: boolean;
+  /**
+   * Filter assets by this set of IDs.
+   */
   assetFilter?: Set<string>;
+  /**
+   * If true, only assets not belonging to any album will be loaded and displayed.
+   */
   notInAnyAlbum?: boolean;
 };
 
@@ -22,6 +35,8 @@ export type TimelineAsset = {
   tags?: string[];
   ratio: number;
   thumbhash: string | null;
+
+  /** Front-end-only concept. Derived from fileCreatedAt and localOffsetHours. */
   localDateTime: TimelineDateTime;
   createdAt: TimelineDateTime;
   deletedAt?: TimelineDateTime | null;

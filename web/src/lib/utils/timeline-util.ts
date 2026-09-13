@@ -39,6 +39,12 @@ export const fromISODateTimeUTC = (isoDateTimeUtc: string) => fromISODateTime(is
 export const fromISODateTimeUTCToObject = (isoDateTimeUtc: string): TimelineDateTime =>
   (fromISODateTimeUTC(isoDateTimeUtc) as DateTime<true>).toObject();
 
+/**
+ * Gets the timezone offset from UTC for an asset, in hours.
+ * @param isoDateTimeUtc The ISO date-time of the asset in UTC.
+ * @param localUtcOffsetHours The timezone offset from UTC in hours.
+ * @returns The timezone offset from UTC in hours.
+ */
 export const getTimes = (isoDateTimeUtc: string, localUtcOffsetHours: number) => {
   const utcDateTime = fromISODateTimeUTC(isoDateTimeUtc);
   const fileCreatedAt = (utcDateTime as DateTime<true>).toObject();
@@ -229,6 +235,12 @@ export const plainDateTimeCompare = (ascending: boolean, a: TimelineDateTime, b:
   return aDateTime.millisecond - bDateTime.millisecond;
 };
 
+/**
+ * Returns items in setA that are not in setB.
+ * @param setA
+ * @param setB
+ * @returns
+ */
 export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   const result = new SvelteSet<T>();
   for (const value of setA) {
@@ -239,9 +251,20 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   return result;
 }
 
-export const getOrderingDate = (asset: TimelineAsset, order: AssetOrderBy) =>
-  order === AssetOrderBy.CreatedAt
-    ? asset.createdAt
-    : order === AssetOrderBy.DeletedAt && asset.deletedAt
-      ? asset.deletedAt
-      : asset.localDateTime;
+/**
+ * Gets the date to use for ordering assets based on the ordering method.
+ * @param asset The asset to get the ordering date for.
+ * @param order The order to use for ordering assets.
+ * @returns The date to use for ordering assets.
+ */
+export function getOrderingDate(asset: TimelineAsset, order: AssetOrderBy) {
+  if (order === AssetOrderBy.CreatedAt) {
+    // As in "recently added" tab.
+    return asset.createdAt;
+  }
+  if (order === AssetOrderBy.DeletedAt && asset.deletedAt) {
+    // As in "Trash" tab".
+    return asset.deletedAt;
+  }
+  return asset.localDateTime;
+}

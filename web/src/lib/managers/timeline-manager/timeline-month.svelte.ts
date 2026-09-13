@@ -40,6 +40,8 @@ export class TimelineMonth {
 
   #initialCount: number = 0;
   #sortOrder: AssetOrder = AssetOrder.Desc;
+
+  // Default sorting order is TakenAt.
   #orderBy: AssetOrderBy = AssetOrderBy.TakenAt;
   percent: number = $state(0);
 
@@ -173,7 +175,14 @@ export class TimelineMonth {
     };
   }
 
+  /**
+   * Adds assets to the timeline month. It is called by the timeline-manager after receiving a bucket of assets from the API.
+   * @param bucketAssets The assets to add to the timeline month.
+   * @param preSorted Whether the assets are already sorted by date.
+   * @returns
+   */
   addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
+    // A handy cache used for managing the days and assets for the current month.
     const addContext = new GroupInsertionCache();
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const { localDateTime, fileCreatedAt } = getTimes(
@@ -255,6 +264,7 @@ export class TimelineMonth {
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: GroupInsertionCache) {
+    // Get the date/time used for ordering in the current timeline. This could be createdAt (for Recently Added) or deletedAt (for Trash).
     const dateTime = getOrderingDate(timelineAsset, this.#orderBy);
 
     const { year, month } = this.yearMonth;

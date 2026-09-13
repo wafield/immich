@@ -33,6 +33,7 @@
       assets: [toTimelineAsset(asset)],
       initialDate: dateTime,
       initialTimeZone: timeZone,
+      originalAssets: [asset],
     });
   };
 </script>
