@@ -91,6 +91,42 @@ describe('DateSelectionModal component', () => {
     expect(screen.queryByText('Original date time')).not.toBeInTheDocument();
   });
 
+  test('toggles on showRelative initially when more than 1 asset is passed in', () => {
+    const asset1 = { id: 'asset-1', ownerId: 'user-1' } as any;
+    const asset2 = { id: 'asset-2', ownerId: 'user-1' } as any;
+
+    render(AssetSelectionChangeDateModal, {
+      initialDate,
+      initialTimeZone,
+      assets: [asset1, asset2],
+      onClose,
+    });
+
+    expect(getRelativeInputToggle()).toBeChecked();
+  });
+
+  test('allows flipping the showRelative switch freely after initialization', async () => {
+    const asset1 = { id: 'asset-1', ownerId: 'user-1' } as any;
+    const asset2 = { id: 'asset-2', ownerId: 'user-1' } as any;
+
+    render(AssetSelectionChangeDateModal, {
+      initialDate,
+      initialTimeZone,
+      assets: [asset1, asset2],
+      onClose,
+    });
+
+    expect(getRelativeInputToggle()).toBeChecked();
+
+    await fireEvent.click(getRelativeInputToggle());
+    expect(getRelativeInputToggle()).not.toBeChecked();
+
+    await fireEvent.click(getRelativeInputToggle());
+    expect(getRelativeInputToggle()).toBeChecked();
+  });
+
+
+
   test('calls onConfirm with correct date on confirm', async () => {
     render(AssetSelectionChangeDateModal, {
       props: { initialDate, initialTimeZone, assets: [], onClose },
@@ -226,6 +262,47 @@ describe('DateSelectionModal component', () => {
     });
   });
 
+  test('renders calculated new date time and timezone in preview table when offset changes', async () => {
+    const asset = {
+      id: 'asset-1',
+      ownerId: 'user-1',
+      originalFileName: 'test.jpg',
+      localDateTime: {
+        year: 2024,
+        month: 1,
+        day: 1,
+        hour: 12,
+        minute: 0,
+        second: 0,
+        millisecond: 0,
+      },
+      timeZone: 'Europe/Berlin',
+    } as any;
+
+    render(AssetSelectionChangeDateModal, {
+      props: { initialDate, initialTimeZone, assets: [asset], onClose },
+    });
+
+    await fireEvent.click(getRelativeInputToggle());
+
+    // Initially with 0 duration, both second and third cells show original formatted time
+    expect(screen.getAllByText('01-01 12:00:00 UTC+1')).toHaveLength(2);
+
+    const minutesInput = screen.getByPlaceholderText('minutes');
+    await fireEvent.input(minutesInput, { target: { value: 30 } });
+
+    // With 30 minutes added, the third cell updates to 12:30:00 UTC+1
+    expect(screen.getByText('01-01 12:00:00 UTC+1')).toBeInTheDocument();
+    expect(screen.getByText('01-01 12:30:00 UTC+1')).toBeInTheDocument();
+
+    // When changing timezone to LA, the third cell updates to LA timezone (UTC-8)
+    const laButton = screen.getByRole('button', { name: 'LA' });
+    await fireEvent.click(laButton);
+    expect(screen.getByText('01-01 12:30:00 UTC-8')).toBeInTheDocument();
+  });
+
+
+
   test('correctly handles date preview', () => {
     const testCases = [
       {
@@ -288,7 +365,7 @@ describe('DateSelectionModal component', () => {
         onClose,
       });
 
-      expect(screen.getByRole('button', { name: 'Los Angeles' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'LA' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Tokyo' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Beijing' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Paris' })).toBeInTheDocument();
@@ -305,9 +382,9 @@ describe('DateSelectionModal component', () => {
       const tokyoButton = screen.getByRole('button', { name: 'Tokyo' });
       await fireEvent.click(tokyoButton);
 
-      expect(getTimeZoneInput().value).toContain('Asia/Tokyo');
+      expect(getTimeZoneInput().value).toContain('Asia/Chita');
 
-      const laButton = screen.getByRole('button', { name: 'Los Angeles' });
+      const laButton = screen.getByRole('button', { name: 'LA' });
       await fireEvent.click(laButton);
 
       expect(getTimeZoneInput().value).toContain('America/Los_Angeles');
@@ -326,7 +403,7 @@ describe('DateSelectionModal component', () => {
 
       // Click tokyo button
       await fireEvent.click(tokyoButton);
-      expect(getTimeZoneInput().value).toContain('Asia/Tokyo');
+      expect(getTimeZoneInput().value).toContain('Asia/Chita');
 
       // Now select Paris via combobox
       await user.clear(getTimeZoneInput());

@@ -21,6 +21,12 @@
   import { t } from 'svelte-i18n';
   import { formatFullDateTime } from '$lib/utils/date-time-formatter';
   import { formatUtcOffset } from '$lib/utils/date-time';
+  import {
+    fromISODateTime,
+    fromISODateTimeUTC,
+    fromTimelinePlainDateTime,
+    type TimelineDateTime,
+  } from '$lib/utils/timeline-util';
 
   interface Props {
     initialDate?: DateTime;
@@ -31,7 +37,8 @@
   }
   let { initialDate = DateTime.now(), initialTimeZone, assets, originalAssets, onClose }: Props = $props();
 
-  let showRelative = $state(false);
+  // svelte-ignore state_referenced_locally
+  let showRelative = $state(assets.length > 1);
   let selectedDuration = $state(0);
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm:ss"));
   const timezones = $derived(getTimezones(selectedDate));
@@ -72,14 +79,25 @@
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 
-  const getAssetAfterDateTime = (): string => {
+  const getAssetAfterDateTime = (asset: TimelineAsset): string => {
     if (!showRelative) {
       // Identical to `date`, but displayed in a user-friendly string.
       const newDateTime = toDatetime(selectedDate, selectedOption);
       return `${newDateTime.toFormat('MM-dd HH:mm:ss')} ${formatUtcOffset(newDateTime)}`;
     }
 
-    return '';
+    const targetTimeZone = selectedOption?.value;
+    const currentDateTime =
+      typeof asset.localDateTime === 'string'
+        ? targetTimeZone
+          ? fromISODateTime(asset.localDateTime, targetTimeZone)
+          : fromISODateTimeUTC(asset.localDateTime)
+        : targetTimeZone
+          ? DateTime.fromObject(asset.localDateTime, { zone: targetTimeZone })
+          : fromTimelinePlainDateTime(asset.localDateTime);
+
+    const newDateTime = currentDateTime.plus({ minutes: selectedDuration });
+    return formatFullDateTime(newDateTime.toObject() as TimelineDateTime, targetTimeZone);
   };
 </script>
 
@@ -146,7 +164,7 @@
         color={selectedOption?.value === 'America/Los_Angeles' ? 'primary' : 'secondary'}
         onclick={() => selectPresetTimezone('America/Los_Angeles')}
       >
-        Los Angeles
+        LA
       </Button>
       <Button
         type="button"
@@ -200,7 +218,7 @@
               {formatFullDateTime(asset.localDateTime, asset.timeZone)}
             </TableCell>
             <TableCell class="font-mono text-xs break-all">
-              {getAssetAfterDateTime()}
+              {getAssetAfterDateTime(asset)}
             </TableCell>
           </TableRow>
         {/each}
