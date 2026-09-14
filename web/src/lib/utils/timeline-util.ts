@@ -156,7 +156,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
 
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
   // Keep this consistent with the bucket loader (getTimes), which stores fileCreatedAt as UTC
-  // components. The timeline sorts assets within a day by fileCreatedAt, so a mismatched
+  // components. The timeline sorts assets within a day by localDateTime, so a mismatched
   // representation here would place re-inserted assets (e.g. undo archive) in the wrong spot.
   const fileCreatedAt = fromISODateTimeUTCToObject(assetResponse.fileCreatedAt);
   const createdAt = fromISODateTimeUTCToObject(assetResponse.createdAt);

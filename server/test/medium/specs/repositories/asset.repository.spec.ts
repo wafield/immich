@@ -65,11 +65,13 @@ const keyframeRow = (assetId: string, n: number) => ({
 
 describe(AssetRepository.name, () => {
   describe('getTimeBucket', () => {
-    it('should order assets by local day first and fileCreatedAt within each day', async () => {
+    it('should order assets by local day first and localDateTime within each day', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
       const auth = factory.auth({ user: { id: user.id } });
 
+      // nextLocalDayEarlierAsset has an earlier localDateTime (01:30) but a later fileCreatedAt (23:50 UTC)
+      // than nextLocalDayLaterAsset (01:45 local, 23:20 UTC), verifying intra-day sorting uses localDateTime.
       const [{ asset: previousLocalDayAsset }, { asset: nextLocalDayEarlierAsset }, { asset: nextLocalDayLaterAsset }] =
         await Promise.all([
           ctx.newAsset({
@@ -79,12 +81,12 @@ describe(AssetRepository.name, () => {
           }),
           ctx.newAsset({
             ownerId: user.id,
-            fileCreatedAt: new Date('2026-03-08T23:30:00.000Z'),
+            fileCreatedAt: new Date('2026-03-08T23:50:00.000Z'),
             localDateTime: new Date('2026-03-09T01:30:00.000Z'),
           }),
           ctx.newAsset({
             ownerId: user.id,
-            fileCreatedAt: new Date('2026-03-08T23:45:00.000Z'),
+            fileCreatedAt: new Date('2026-03-08T23:20:00.000Z'),
             localDateTime: new Date('2026-03-09T01:45:00.000Z'),
           }),
         ]);

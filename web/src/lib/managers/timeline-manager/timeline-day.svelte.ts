@@ -98,7 +98,7 @@ export class TimelineDay {
 
   sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
     const sortFn = plainDateTimeCompare.bind(undefined, sortOrder === AssetOrder.Asc);
-    this.viewerAssets.sort((a, b) => sortFn(a.asset.fileCreatedAt, b.asset.fileCreatedAt));
+    this.viewerAssets.sort((a, b) => sortFn(a.asset.localDateTime, b.asset.localDateTime));
   }
 
   getFirstAsset() {

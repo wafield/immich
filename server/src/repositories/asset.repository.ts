@@ -1142,12 +1142,14 @@ export class AssetRepository {
           .orderBy(
             options.orderBy === AssetOrderBy.CreatedAt
               ? sql`"createdAt"`
-              : options.orderBy == AssetOrderBy.DeletedAt
+              : options.orderBy === AssetOrderBy.DeletedAt
                 ? sql`"deletedAt"`
                 : sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`,
             order,
           )
-          .orderBy('asset.fileCreatedAt', order)
+          .$if(options.orderBy !== AssetOrderBy.CreatedAt && options.orderBy !== AssetOrderBy.DeletedAt, (qb) =>
+            qb.orderBy('asset.localDateTime', order),
+          )
           .orderBy('asset.originalFileName', order),
       )
       .with('agg', (qb) =>
