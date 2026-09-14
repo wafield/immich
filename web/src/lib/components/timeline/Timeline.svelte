@@ -217,8 +217,10 @@
     if (scrolled && scrollTarget) {
       await tick();
       focusAsset(scrollTarget);
-    } else {
+    } else if (scrollTarget) {
       timelineManager.scrollTo(lastVisibleScrollTop);
+    } else {
+      timelineManager.scrollTo(0);
     }
 
     invisible = false;
