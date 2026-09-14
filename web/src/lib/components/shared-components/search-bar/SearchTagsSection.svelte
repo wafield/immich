@@ -6,6 +6,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import TagPill from '../TagPill.svelte';
 
   interface Props {

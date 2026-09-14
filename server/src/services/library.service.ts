@@ -4,6 +4,8 @@ import { R_OK, W_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
+import type { ArgOf } from 'src/repositories/event.repository.js';
+import type { JobOf } from 'src/types.js';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
@@ -12,11 +14,11 @@ import {
   CreateLibraryDto,
   LibraryResponseDto,
   LibraryStatsResponseDto,
-  mapLibrary,
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
+  mapLibrary,
 } from 'src/dtos/library.dto.js';
 import { mapNotification } from 'src/dtos/notification.dto.js';
 import {
@@ -32,11 +34,9 @@ import {
   NotificationType,
   QueueName,
 } from 'src/enum.js';
-import type { ArgOf } from 'src/repositories/event.repository.js';
 import { AssetSyncResult } from 'src/repositories/library.repository.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { BaseService } from 'src/services/base.service.js';
-import type { JobOf } from 'src/types.js';
 import { isAssetChecksumConstraint } from 'src/utils/database.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 import { batched, findOrFail, handlePromiseError } from 'src/utils/misc.js';
