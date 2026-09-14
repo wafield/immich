@@ -277,4 +277,63 @@ describe('DateSelectionModal component', () => {
       );
     }
   });
+
+  describe('timezone preset buttons', () => {
+    test('renders 4 preset timezone buttons with correct labels', () => {
+      render(AssetSelectionChangeDateModal, {
+        initialDate,
+        initialTimeZone,
+        assets: [],
+        onClose,
+      });
+
+      expect(screen.getByRole('button', { name: 'Los Angeles' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Tokyo' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Beijing' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Paris' })).toBeInTheDocument();
+    });
+
+    test('updates combobox value when clicking a preset button', async () => {
+      render(AssetSelectionChangeDateModal, {
+        initialDate,
+        initialTimeZone: 'Europe/Berlin',
+        assets: [],
+        onClose,
+      });
+
+      const tokyoButton = screen.getByRole('button', { name: 'Tokyo' });
+      await fireEvent.click(tokyoButton);
+
+      expect(getTimeZoneInput().value).toContain('Asia/Tokyo');
+
+      const laButton = screen.getByRole('button', { name: 'Los Angeles' });
+      await fireEvent.click(laButton);
+
+      expect(getTimeZoneInput().value).toContain('America/Los_Angeles');
+    });
+
+    test('syncs combobox selection to preset buttons', async () => {
+      const user = userEvent.setup();
+      render(AssetSelectionChangeDateModal, {
+        initialDate,
+        initialTimeZone: 'Europe/Berlin',
+        assets: [],
+        onClose,
+      });
+
+      const tokyoButton = screen.getByRole('button', { name: 'Tokyo' });
+
+      // Click tokyo button
+      await fireEvent.click(tokyoButton);
+      expect(getTimeZoneInput().value).toContain('Asia/Tokyo');
+
+      // Now select Paris via combobox
+      await user.clear(getTimeZoneInput());
+      await user.type(getTimeZoneInput(), 'Europe/Paris');
+      await user.keyboard('{ArrowDown}');
+      await user.keyboard('{Enter}');
+
+      expect(getTimeZoneInput().value).toContain('Europe/Paris');
+    });
+  });
 });

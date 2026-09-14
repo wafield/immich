@@ -15,7 +15,7 @@
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
-  import { Field, FormModal, Label, Switch, Table, TableBody, TableCell, TableRow } from '@immich/ui';
+  import { Button, Field, FormModal, Label, Switch, Table, TableBody, TableCell, TableRow } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -40,6 +40,11 @@
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
   let selectedOption = $derived(getPreferredTimeZone(initialDate, initialTimeZone, timezones, lastSelectedTimezone));
 
+  const selectPresetTimezone = (timeZoneValue: string) => {
+    const match = timezones.find((tz) => tz.value === timeZoneValue);
+    lastSelectedTimezone = match ?? ({ value: timeZoneValue } as ZoneOption);
+  };
+
   const onSubmit = async () => {
     const ids = getOwnedAssetsWithWarning(assets, authManager.user);
     try {
@@ -55,6 +60,8 @@
         return;
       }
       const isoDate = toIsoDate(selectedDate, selectedOption);
+
+      // Update the original asset's dateTimeOriginal (this field already encodes date time AND timezone).
       await updateAssets({ assetBulkUpdateDto: { ids, dateTimeOriginal: isoDate } });
       onClose(true);
     } catch (error) {
@@ -131,9 +138,56 @@
       placeholder={$t('search_timezone')}
       onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
     ></Combobox>
+    <div class="mt-2 mb-4 flex w-full text-xs">
+      <Button
+        type="button"
+        class="flex-1 rounded-s-full"
+        size="small"
+        color={selectedOption?.value === 'America/Los_Angeles' ? 'primary' : 'secondary'}
+        onclick={() => selectPresetTimezone('America/Los_Angeles')}
+      >
+        Los Angeles
+      </Button>
+      <Button
+        type="button"
+        class="flex-1 rounded-none"
+        size="small"
+        color={selectedOption?.value === 'Asia/Chita' ? 'primary' : 'secondary'}
+        onclick={() => selectPresetTimezone('Asia/Chita')}
+      >
+        Tokyo
+      </Button>
+      <Button
+        type="button"
+        class="flex-1 rounded-none"
+        size="small"
+        color={selectedOption?.value === 'Asia/Shanghai' ? 'primary' : 'secondary'}
+        onclick={() => selectPresetTimezone('Asia/Shanghai')}
+      >
+        Beijing
+      </Button>
+      <Button
+        type="button"
+        class="flex-1 rounded-none"
+        size="small"
+        color={selectedOption?.value === 'Europe/London' ? 'primary' : 'secondary'}
+        onclick={() => selectPresetTimezone('Europe/London')}
+      >
+        London
+      </Button>
+      <Button
+        type="button"
+        class="flex-1 rounded-e-full"
+        size="small"
+        color={selectedOption?.value === 'Europe/Paris' ? 'primary' : 'secondary'}
+        onclick={() => selectPresetTimezone('Europe/Paris')}
+      >
+        Paris
+      </Button>
+    </div>
   </div>
 
-  <Label class="mb-1 block">Preview</Label>
+  <Label class="mb-1 block">Preview of original date time</Label>
   <div class="max-h-60 overflow-y-auto">
     <Table striped size="small" spacing="small">
       <TableBody>
