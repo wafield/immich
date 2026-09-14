@@ -65,10 +65,11 @@ describe('DateSelectionModal component', () => {
       initialDate,
       initialTimeZone,
       assets: [asset],
+      originalAssets: [asset],
       onClose,
     });
 
-    expect(screen.getByText('Original date time')).toBeInTheDocument();
+    expect(screen.getByText('EXIF OriginalDateTime')).toBeInTheDocument();
     expect(screen.getByText('2023-11-19T18:11:00.000Z')).toBeInTheDocument();
     expect(screen.getByText('EXIF timezone')).toBeInTheDocument();
     expect(screen.getByText('Europe/Berlin')).toBeInTheDocument();

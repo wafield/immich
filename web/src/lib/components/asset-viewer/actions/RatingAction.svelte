@@ -6,6 +6,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { updateAsset, type AssetResponseDto } from '@immich/sdk';
+  import { isModalOpen } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -39,16 +40,20 @@
       handleError(error, $t('errors.unable_to_set_rating'));
     }
   };
+
+  const shortcutList = $derived.by(() => {
+    if (!authManager.authenticated || !authManager.preferences.ratings.enabled || isModalOpen()) {
+      return [];
+    }
+
+    return [
+      { shortcut: { key: '0' }, onShortcut: () => rateAsset(null) },
+      ...[1, 2, 3, 4, 5].map((rating) => ({
+        shortcut: { key: String(rating) },
+        onShortcut: () => rateAsset(rating),
+      })),
+    ];
+  });
 </script>
 
-<svelte:document
-  use:shortcuts={authManager.authenticated && authManager.preferences.ratings.enabled
-    ? [
-        { shortcut: { key: '0' }, onShortcut: () => rateAsset(null) },
-        ...[1, 2, 3, 4, 5].map((rating) => ({
-          shortcut: { key: String(rating) },
-          onShortcut: () => rateAsset(rating),
-        })),
-      ]
-    : []}
-/>
+<svelte:document use:shortcuts={shortcutList} />
