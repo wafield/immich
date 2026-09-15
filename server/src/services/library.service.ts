@@ -251,6 +251,7 @@ export class LibraryService extends BaseService {
       ],
       uploadPath: dto.uploadPath ?? null,
       uiColor: dto.uiColor ?? null,
+      shared: dto.shared ?? false,
     });
     return mapLibrary(library);
   }

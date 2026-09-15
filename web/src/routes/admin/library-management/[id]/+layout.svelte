@@ -15,12 +15,25 @@
     getLibraryFolderActions,
     getLibraryUiColorActions,
     getLibraryUploadPathActions,
+    handleUpdateLibraryShared,
   } from '$lib/services/library.service';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
-  import { Code, CommandPaletteDefaultProvider, Container, Heading, Input, modalManager } from '@immich/ui';
   import {
+    Button,
+    Checkbox,
+    Code,
+    CommandPaletteDefaultProvider,
+    Container,
+    Heading,
+    Input,
+    Label,
+    modalManager,
+  } from '@immich/ui';
+  import {
+    mdiAccountMultipleOutline,
     mdiCameraIris,
     mdiChartPie,
+    mdiCheck,
     mdiFilterMinusOutline,
     mdiFolderOutline,
     mdiPaletteOutline,
@@ -56,6 +69,12 @@
 
   $effect(() => {
     uiColor = data.library.uiColor ?? '';
+  });
+
+  let shared = $state(data.library.shared ?? false);
+
+  $effect(() => {
+    shared = data.library.shared ?? false;
   });
 
   const onLibraryUpdate = () => invalidate('app:library');
@@ -122,6 +141,24 @@
             </button>
           {/if}
           <TableButton action={SubmitUiColor} />
+        </div>
+      </AdminCard>
+
+      <AdminCard icon={mdiAccountMultipleOutline} title={$t('shared')}>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Indicate whether this library is shared, with read and write access to all users in the system.
+        </p>
+        <div class="mt-4 flex items-center gap-3">
+          <Checkbox id="library-shared-checkbox" bind:checked={shared} />
+          <Label label={$t('shared')} for="library-shared-checkbox" />
+          <Button
+            size="small"
+            shape="round"
+            leadingIcon={mdiCheck}
+            onclick={() => handleUpdateLibraryShared(library, shared)}
+          >
+            {$t('confirm')}
+          </Button>
         </div>
       </AdminCard>
 

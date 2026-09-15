@@ -161,6 +161,7 @@ const libraryFactory = (library: Partial<Library> = {}) => ({
   exclusionPatterns: [],
   uploadPath: null,
   uiColor: null,
+  shared: false,
   ...library,
 });
 

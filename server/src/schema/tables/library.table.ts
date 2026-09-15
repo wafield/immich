@@ -36,6 +36,9 @@ export class LibraryTable {
   @Column({ type: 'text', nullable: true })
   uiColor!: string | null;
 
+  @Column({ type: 'boolean', default: false })
+  shared!: Generated<boolean>;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 

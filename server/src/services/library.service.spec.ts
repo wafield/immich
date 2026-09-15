@@ -946,6 +946,24 @@ describe(LibraryService.name, () => {
           }),
         );
       });
+
+      it('should create with shared when provided', async () => {
+        const library = factory.library({ shared: true });
+
+        mocks.library.create.mockResolvedValue(library);
+        await expect(
+          sut.create({
+            ownerId: authStub.admin.user.id,
+            shared: true,
+          }),
+        ).resolves.toEqual(expect.objectContaining({ shared: true }));
+
+        expect(mocks.library.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            shared: true,
+          }),
+        );
+      });
     });
   });
 
@@ -1052,6 +1070,19 @@ describe(LibraryService.name, () => {
 
     it('should reject update if uploadPath exceeds 128 characters', () => {
       expect(() => UpdateLibraryDto.create({ uploadPath: 'a'.repeat(129) })).toThrow();
+    });
+
+    it('should update shared status', async () => {
+      const library = factory.library({ shared: true });
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.library.update.mockResolvedValue(library);
+
+      await expect(sut.update('library-id', { shared: true })).resolves.toEqual(mapLibrary(library));
+      expect(mocks.library.update).toHaveBeenCalledWith(
+        'library-id',
+        expect.objectContaining({ shared: true }),
+      );
     });
   });
 

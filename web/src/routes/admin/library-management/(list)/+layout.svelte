@@ -12,6 +12,7 @@
     CommandPaletteDefaultProvider,
     Container,
     ContextMenuButton,
+    Icon,
     Link,
     MenuItemType,
     Table,
@@ -21,6 +22,7 @@
     TableHeading,
     TableRow,
   } from '@immich/ui';
+  import { mdiCheck, mdiClose } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -52,7 +54,8 @@
 
   const classes = {
     column1: 'w-4/12',
-    column2: 'w-4/12',
+    column2: 'w-3/12',
+    columnShared: 'w-1/12 text-center',
     column3: 'w-1/12',
     column4: 'w-1/12',
     column5: 'w-1/12',
@@ -72,6 +75,7 @@
           <TableHeader>
             <TableHeading class={classes.column1}>{$t('name')}</TableHeading>
             <TableHeading class={classes.column2}>{$t('owner')}</TableHeading>
+            <TableHeading class={classes.columnShared}>{$t('shared')}</TableHeading>
             <TableHeading class={classes.column3}>{$t('photos')}</TableHeading>
             <TableHeading class={classes.column4}>{$t('videos')}</TableHeading>
             <TableHeading class={classes.column5}>{$t('size')}</TableHeading>
@@ -95,6 +99,15 @@
                 </TableCell>
                 <TableCell class={classes.column2}>
                   <Link href={Route.viewUser(owner)}>{owner.name}</Link>
+                </TableCell>
+                <TableCell class={classes.columnShared}>
+                  <div class="flex items-center justify-center">
+                    {#if library.shared}
+                      <Icon icon={mdiCheck} size="18" class="text-primary" />
+                    {:else}
+                      <Icon icon={mdiClose} size="18" class="text-gray-400" />
+                    {/if}
+                  </div>
                 </TableCell>
                 {#await data.statisticsPromise}
                   <TableCell class={classes.column3}>

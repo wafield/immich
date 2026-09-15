@@ -191,6 +191,37 @@ export const handleUpdateLibraryUiColor = async (library: LibraryResponseDto, ui
   }
 };
 
+export const getLibrarySharedActions = (
+  $t: MessageFormatter,
+  library: LibraryResponseDto,
+  shared: boolean,
+) => {
+  const SubmitShared: ActionItem = {
+    icon: mdiCheck,
+    title: $t('save'),
+    onAction: () => handleUpdateLibraryShared(library, shared),
+  };
+
+  return { SubmitShared };
+};
+
+export const handleUpdateLibraryShared = async (library: LibraryResponseDto, shared: boolean) => {
+  const $t = await getFormatter();
+
+  try {
+    const updatedLibrary = await updateLibrary({
+      id: library.id,
+      updateLibraryDto: { shared },
+    });
+    eventManager.emit('LibraryUpdate', updatedLibrary);
+    toastManager.primary($t('admin.library_updated'));
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_library'));
+    return false;
+  }
+};
+
 const handleScanAllLibraries = async () => {
   const $t = await getFormatter();
 

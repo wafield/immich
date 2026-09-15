@@ -2011,6 +2011,8 @@ export type LibraryResponseDto = {
     uploadPath: string | null;
     /** UI color */
     uiColor: string | null;
+    /** Shared status */
+    shared: boolean;
 };
 export type CreateLibraryDto = {
     /** Exclusion patterns (max 128) */
@@ -2025,6 +2027,8 @@ export type CreateLibraryDto = {
     uploadPath?: string;
     /** UI color */
     uiColor?: string | null;
+    /** Shared status */
+    shared?: boolean;
 };
 export type UpdateLibraryDto = {
     /** Exclusion patterns (max 128) */
@@ -2037,6 +2041,8 @@ export type UpdateLibraryDto = {
     uploadPath?: string | null;
     /** UI color */
     uiColor?: string | null;
+    /** Shared status */
+    shared?: boolean;
 };
 export type LibraryStatsResponseDto = {
     /** Number of photos */
