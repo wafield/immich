@@ -977,7 +977,7 @@ describe(LibraryService.name, () => {
       expect(mocks.library.getAll).toHaveBeenCalledWith(false, undefined);
     });
 
-    it('should get owned libraries for non-admin', async () => {
+    it('should get owned and shared libraries for non-admin', async () => {
       const library = factory.library();
 
       mocks.library.getAll.mockResolvedValue([library]);

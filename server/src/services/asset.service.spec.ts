@@ -143,6 +143,16 @@ describe(AssetService.name, () => {
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set([asset.id]));
     });
 
+    it('should allow shared library access', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkSharedLibraryAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+
+      await sut.get(authStub.admin, asset.id);
+
+      expect(mocks.access.asset.checkSharedLibraryAccess).toHaveBeenCalledWith(new Set([asset.id]));
+    });
+
     it('should throw an error for no access', async () => {
       await expect(sut.get(authStub.admin, AssetFactory.create().id)).rejects.toBeInstanceOf(BadRequestException);
 
@@ -794,7 +804,7 @@ describe(AssetService.name, () => {
 
     it('should throw if target library is not found', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
-      mocks.library.get.mockResolvedValue(null);
+      mocks.library.get.mockResolvedValue(null as any);
 
       await expect(
         sut.moveLibrary(authStub.admin, { assetIds: ['asset-1'], targetLibraryId: 'lib-1' }, {} as any),
@@ -803,7 +813,7 @@ describe(AssetService.name, () => {
 
     it('should throw if target library has no upload path configured', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
-      mocks.library.get.mockResolvedValue({ id: 'lib-1', uploadPath: null });
+      mocks.library.get.mockResolvedValue(factory.library({ id: 'lib-1', uploadPath: null }));
 
       await expect(
         sut.moveLibrary(authStub.admin, { assetIds: ['asset-1'], targetLibraryId: 'lib-1' }, {} as any),
@@ -812,7 +822,7 @@ describe(AssetService.name, () => {
 
     it('should throw if upload path does not exist on disk', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
-      mocks.library.get.mockResolvedValue({ id: 'lib-1', uploadPath: '/invalid/path' });
+      mocks.library.get.mockResolvedValue(factory.library({ id: 'lib-1', uploadPath: '/invalid/path' }));
       mocks.storage.existsSync.mockReturnValue(false);
 
       await expect(
@@ -825,7 +835,7 @@ describe(AssetService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       mocks.asset.getById.mockResolvedValue(getForAsset(asset));
-      mocks.asset.getByChecksum.mockResolvedValue({ id: 'asset-2' }); // Collision!
+      mocks.asset.getByChecksum.mockResolvedValue(AssetFactory.create({ id: 'asset-2' })); // Collision!
 
       const mockStorageTemplateService = {
         renderTemplatePath: vitest.fn(),

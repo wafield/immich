@@ -56,6 +56,27 @@ describe(AssetService.name, () => {
         'Not found or no asset.read access',
       );
     });
+
+    it('should return an asset of another user if from a shared library', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const sharedLib = await ctx.database
+        .insertInto('library')
+        .values({
+          name: 'Shared Library',
+          ownerId: user.id,
+          shared: true,
+          importPaths: [],
+          exclusionPatterns: [],
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, libraryId: sharedLib.id });
+
+      const res = await sut.get(factory.auth({ user: otherUser }), asset.id);
+      expect(res.id).toBe(asset.id);
+    });
   });
 
   describe('getStatistics', () => {

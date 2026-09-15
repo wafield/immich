@@ -78,6 +78,7 @@ services:
       # External library.
       - /c/Users/wafie/workspace/Photos:/mnt/PhotoLibrary
       - /c/Users/wafie/workspace/Tests:/mnt/PhotoLibrary2
+      - /c/Users/wafie/workspace/FreddoLib:/mnt/FreddoLib
     env_file:
       - .env
     environment:

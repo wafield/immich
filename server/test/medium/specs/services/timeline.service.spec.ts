@@ -106,6 +106,56 @@ describe(TimelineService.name, () => {
       await expect(response).rejects.toBeInstanceOf(BadRequestException);
       await expect(response).rejects.toThrow('Not found or no timeline.read access');
     });
+
+    it('should return assets from shared libraries even if owned by another user', async () => {
+      const { sut, ctx } = setup();
+      const { user: userA } = await ctx.newUser();
+      const { user: userB } = await ctx.newUser();
+      const sharedLib = await ctx.database
+        .insertInto('library')
+        .values({
+          name: 'Shared Library',
+          ownerId: userB.id,
+          shared: true,
+          importPaths: [],
+          exclusionPatterns: [],
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      const privateLib = await ctx.database
+        .insertInto('library')
+        .values({
+          name: 'Private Library',
+          ownerId: userB.id,
+          shared: false,
+          importPaths: [],
+          exclusionPatterns: [],
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      // User B's asset in shared library
+      const { asset: sharedAsset } = await ctx.newAsset({
+        ownerId: userB.id,
+        libraryId: sharedLib.id,
+        localDateTime: new Date('1970-02-10'),
+      });
+      await ctx.newExif({ assetId: sharedAsset.id, make: 'Canon' });
+
+      // User B's asset in private library
+      const { asset: privateAsset } = await ctx.newAsset({
+        ownerId: userB.id,
+        libraryId: privateLib.id,
+        localDateTime: new Date('1970-02-11'),
+      });
+      await ctx.newExif({ assetId: privateAsset.id, make: 'Canon' });
+
+      const authA = factory.auth({ user: userA });
+
+      // When User A queries with libraryIds including the shared library, only the shared library asset is returned
+      const response = await sut.getTimeBuckets(authA, { libraryIds: [sharedLib.id, privateLib.id] });
+      expect(response).toEqual([{ count: 1, timeBucket: '1970-02-01' }]);
+    });
   });
 
   describe('getTimeBucket', () => {
@@ -224,6 +274,39 @@ describe(TimelineService.name, () => {
       });
       const response2 = JSON.parse(rawResponse2);
       expect(response2).toEqual(expect.objectContaining({ id: [asset2.id, asset1.id], isFavorite: [true, false] }));
+    });
+
+    it('should return assets from shared libraries even if owned by another user', async () => {
+      const { sut, ctx } = setup();
+      const { user: userA } = await ctx.newUser();
+      const { user: userB } = await ctx.newUser();
+      const sharedLib = await ctx.database
+        .insertInto('library')
+        .values({
+          name: 'Shared Library',
+          ownerId: userB.id,
+          shared: true,
+          importPaths: [],
+          exclusionPatterns: [],
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      const { asset: sharedAsset } = await ctx.newAsset({
+        ownerId: userB.id,
+        libraryId: sharedLib.id,
+        localDateTime: new Date('1970-02-10'),
+      });
+      await ctx.newExif({ assetId: sharedAsset.id, make: 'Canon' });
+
+      const authA = factory.auth({ user: userA });
+
+      const rawResponse = await sut.getTimeBucket(authA, {
+        timeBucket: '1970-02-01',
+        libraryIds: [sharedLib.id],
+      });
+      const response = JSON.parse(rawResponse);
+      expect(response.id).toEqual([sharedAsset.id]);
     });
   });
 

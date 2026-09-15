@@ -35,7 +35,9 @@ export class LibraryRepository {
       .selectAll('library')
       .orderBy('createdAt', 'asc')
       .$if(!withDeleted, (qb) => qb.where('library.deletedAt', 'is', null))
-      .$if(!!ownerId, (qb) => qb.where('library.ownerId', '=', ownerId!))
+      .$if(!!ownerId, (qb) =>
+        qb.where((eb) => eb.or([eb('library.ownerId', '=', ownerId!), eb('library.shared', '=', true)])),
+      )
       .execute();
   }
 

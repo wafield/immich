@@ -39,6 +39,7 @@ import {
   asUuid,
   hasPeople,
   inSharedAlbum,
+  inSharedLibrary,
   removeUndefinedKeys,
   truncatedDate,
   unnest,
@@ -946,7 +947,14 @@ export class AssetRepository {
             qb.where((eb) => {
               // TODO this should become a shared `hasAccess` style helper once implement sharing in more places
               const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
-              return options.personId ? eb.or([isOwner, inSharedAlbum(eb, auth.user.id)]) : isOwner;
+              const conds = [isOwner];
+              if (options.personId) {
+                conds.push(inSharedAlbum(eb, auth.user.id));
+              }
+              if (options.libraryIds && options.libraryIds.length > 0) {
+                conds.push(inSharedLibrary(eb, options.libraryIds));
+              }
+              return eb.or(conds);
             }),
           )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
@@ -1079,7 +1087,14 @@ export class AssetRepository {
           .$if(!!options.userIds, (qb) =>
             qb.where((eb) => {
               const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
-              return options.personId ? eb.or([isOwner, inSharedAlbum(eb, auth.user.id)]) : isOwner;
+              const conds = [isOwner];
+              if (options.personId) {
+                conds.push(inSharedAlbum(eb, auth.user.id));
+              }
+              if (options.libraryIds && options.libraryIds.length > 0) {
+                conds.push(inSharedLibrary(eb, options.libraryIds));
+              }
+              return eb.or(conds);
             }),
           )
           .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))

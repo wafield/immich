@@ -478,6 +478,22 @@ describe(AssetMediaService.name, () => {
       );
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['asset-1']));
+      expect(mocks.access.asset.checkSharedLibraryAccess).toHaveBeenCalledWith(new Set(['asset-1']));
+    });
+
+    it('should download a file if in shared library', async () => {
+      const asset = AssetFactory.create();
+      mocks.access.asset.checkSharedLibraryAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForOriginal.mockResolvedValue(asset);
+
+      await expect(sut.downloadOriginal(authStub.admin, asset.id, {})).resolves.toEqual(
+        new ImmichFileResponse({
+          path: asset.originalPath,
+          fileName: asset.originalFileName,
+          contentType: 'image/jpeg',
+          cacheControl: CacheControl.PrivateWithCache,
+        }),
+      );
     });
 
     it('should download a file', async () => {
@@ -582,6 +598,22 @@ describe(AssetMediaService.name, () => {
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']), undefined);
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
+      expect(mocks.access.asset.checkSharedLibraryAccess).toHaveBeenCalledWith(new Set(['id']));
+    });
+
+    it('should view thumbnail if in shared library', async () => {
+      const asset = AssetFactory.from().file({ type: AssetFileType.Preview }).build();
+      mocks.access.asset.checkSharedLibraryAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForThumbnail.mockResolvedValue({ ...asset, path: asset.files[0].path });
+
+      await expect(sut.viewThumbnail(authStub.admin, asset.id, { size: AssetMediaSize.THUMBNAIL })).resolves.toEqual(
+        new ImmichFileResponse({
+          path: asset.files[0].path,
+          cacheControl: CacheControl.PrivateWithCache,
+          contentType: 'image/jpeg',
+          fileName: `IMG_${asset.id}_thumbnail.jpg`,
+        }),
+      );
     });
 
     it('should fall back to preview if the requested thumbnail file does not exist', async () => {
@@ -725,6 +757,7 @@ describe(AssetMediaService.name, () => {
       expect(mocks.access.asset.checkOwnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']), undefined);
       expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(userStub.admin.id, new Set(['id']));
+      expect(mocks.access.asset.checkSharedLibraryAccess).toHaveBeenCalledWith(new Set(['id']));
     });
 
     it('should throw an error if the video asset could not be found', async () => {

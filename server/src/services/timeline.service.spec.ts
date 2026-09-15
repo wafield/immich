@@ -47,6 +47,22 @@ describe(TimelineService.name, () => {
         authStub.admin,
       );
     });
+
+    it('should pass libraryIds options to repository', async () => {
+      mocks.asset.getTimeBuckets.mockResolvedValue([{ timeBucket: 'bucket', count: 1 }]);
+
+      await sut.getTimeBuckets(authStub.admin, {
+        libraryIds: ['lib-1', 'lib-2'],
+      });
+
+      expect(mocks.asset.getTimeBuckets).toHaveBeenCalledWith(
+        {
+          userIds: [authStub.admin.user.id],
+          libraryIds: ['lib-1', 'lib-2'],
+        },
+        authStub.admin,
+      );
+    });
   });
 
   describe('getTimeBucket', () => {

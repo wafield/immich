@@ -314,6 +314,22 @@ export function inSharedAlbum(eb: ExpressionBuilder<DB, 'asset'>, userId: string
   );
 }
 
+export function inSharedLibrary(eb: ExpressionBuilder<DB, 'asset'>, libraryIds: string[]) {
+  const ids = libraryIds.filter((id) => id !== 'null');
+  if (ids.length === 0) {
+    return eb.val(false);
+  }
+  return eb.exists(
+    eb
+      .selectFrom('library')
+      .select(sql.lit(1).as('exists'))
+      .whereRef('library.id', '=', 'asset.libraryId')
+      .where('library.shared', '=', true)
+      .where('library.id', 'in', ids)
+      .where('library.deletedAt', 'is', null),
+  );
+}
+
 export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: string[]) {
   return qb.innerJoin(
     (eb) =>

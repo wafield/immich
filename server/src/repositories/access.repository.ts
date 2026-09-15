@@ -226,6 +226,43 @@ class AssetAccess {
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
+  @GenerateSql({ params: [DummyValue.UUID_SET] })
+  @ChunkedSet()
+  async checkSharedLibraryAccess(assetIds: Set<string>) {
+    if (assetIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('library', (join) =>
+        join.onRef('library.id', '=', 'asset.libraryId').on('library.deletedAt', 'is', null),
+      )
+      .select(['asset.id', 'asset.livePhotoVideoId'])
+      .where('library.shared', '=', true)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Locked)
+      .where((eb) =>
+        eb.or([
+          eb('asset.id', 'in', [...assetIds]),
+          eb('asset.livePhotoVideoId', 'in', [...assetIds]),
+        ]),
+      )
+      .execute()
+      .then((assets) => {
+        const allowedIds = new Set<string>();
+        for (const asset of assets) {
+          if (asset.id && assetIds.has(asset.id)) {
+            allowedIds.add(asset.id);
+          }
+          if (asset.livePhotoVideoId && assetIds.has(asset.livePhotoVideoId)) {
+            allowedIds.add(asset.livePhotoVideoId);
+          }
+        }
+        return allowedIds;
+      });
+  }
+
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
   async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>) {
@@ -294,6 +331,28 @@ class AssetFileAccess {
       .innerJoin('asset', 'asset.id', 'asset_file.assetId')
       .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
       .where('asset.ownerId', '=', userId)
+      .where('asset_file.id', 'in', [...fileIds])
+      .execute()
+      .then((files) => new Set(files.map(({ id }) => id)));
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID_SET] })
+  @ChunkedSet()
+  async checkSharedLibraryAccess(fileIds: Set<string>) {
+    if (fileIds.size === 0) {
+      return new Set<string>();
+    }
+
+    return this.db
+      .selectFrom('asset_file')
+      .innerJoin('asset', 'asset.id', 'asset_file.assetId')
+      .innerJoin('library', (join) =>
+        join.onRef('library.id', '=', 'asset.libraryId').on('library.deletedAt', 'is', null),
+      )
+      .select('asset_file.id')
+      .where('library.shared', '=', true)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Locked)
       .where('asset_file.id', 'in', [...fileIds])
       .execute()
       .then((files) => new Set(files.map(({ id }) => id)));

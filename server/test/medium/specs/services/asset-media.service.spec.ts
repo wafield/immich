@@ -290,6 +290,39 @@ describe(AssetService.name, () => {
       expect((result as ImmichFileResponse).path).toBe('/original/preview.jpg');
     });
 
+    it('should allow another user to view thumbnail if asset is in shared library', async () => {
+      const { sut, ctx } = setup();
+
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const sharedLib = await ctx.database
+        .insertInto('library')
+        .values({
+          name: 'Shared Library',
+          ownerId: user.id,
+          shared: true,
+          importPaths: [],
+          exclusionPatterns: [],
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      const { asset } = await ctx.newAsset({ ownerId: user.id, libraryId: sharedLib.id });
+
+      await ctx.newAssetFile({
+        assetId: asset.id,
+        type: AssetFileType.Preview,
+        path: '/original/preview.jpg',
+        isEdited: false,
+      });
+
+      const auth = factory.auth({ user: { id: otherUser.id } });
+      const result = await sut.viewThumbnail(auth, asset.id, { size: AssetMediaSize.PREVIEW });
+
+      expect(result).toBeInstanceOf(ImmichFileResponse);
+      expect((result as ImmichFileResponse).path).toBe('/original/preview.jpg');
+    });
+
     it('should return edited thumbnail when edited=true', async () => {
       const { sut, ctx } = setup();
 
