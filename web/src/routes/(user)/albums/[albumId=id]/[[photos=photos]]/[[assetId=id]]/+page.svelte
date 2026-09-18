@@ -37,6 +37,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
@@ -107,6 +108,78 @@
   let showAlbumMap = $state(false);
   let cancelable: AbortController;
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
+  let albumContainer: HTMLDivElement | undefined = $state();
+  let mapWidthRatio = $state(1 / 2);
+  let isDragging = $state(false);
+
+  const MIN_MAP_RATIO = 0.25;
+  const MAX_MAP_RATIO = 0.7;
+
+  const handlePointerDown = (event: PointerEvent) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) {
+      return;
+    }
+    isDragging = true;
+    const target = event.currentTarget as HTMLElement;
+    target.setPointerCapture(event.pointerId);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    event.preventDefault();
+  };
+
+  const handlePointerMove = (event: PointerEvent) => {
+    if (!isDragging || !albumContainer) {
+      return;
+    }
+    const rect = albumContainer.getBoundingClientRect();
+    if (rect.width <= 0) {
+      return;
+    }
+
+    const currentX = event.clientX;
+    const rawRatio = languageManager.rtl ? (rect.right - currentX) / rect.width : (currentX - rect.left) / rect.width;
+
+    mapWidthRatio = Math.min(MAX_MAP_RATIO, Math.max(MIN_MAP_RATIO, rawRatio));
+    window.dispatchEvent(new Event('resize'));
+  };
+
+  const stopDragging = (event?: PointerEvent) => {
+    if (!isDragging) {
+      return;
+    }
+    isDragging = false;
+    if (event) {
+      try {
+        (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+      } catch {}
+    }
+    document.body.style.removeProperty('cursor');
+    document.body.style.removeProperty('user-select');
+    window.dispatchEvent(new Event('resize'));
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    const step = 0.02;
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      const delta = languageManager.rtl ? step : -step;
+      mapWidthRatio = Math.min(MAX_MAP_RATIO, Math.max(MIN_MAP_RATIO, mapWidthRatio + delta));
+      window.dispatchEvent(new Event('resize'));
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      const delta = languageManager.rtl ? -step : step;
+      mapWidthRatio = Math.min(MAX_MAP_RATIO, Math.max(MIN_MAP_RATIO, mapWidthRatio + delta));
+      window.dispatchEvent(new Event('resize'));
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      mapWidthRatio = MIN_MAP_RATIO;
+      window.dispatchEvent(new Event('resize'));
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      mapWidthRatio = MAX_MAP_RATIO;
+      window.dispatchEvent(new Event('resize'));
+    }
+  };
 
   const timelineMultiSelectManager = new AssetMultiSelectManager();
 
@@ -116,6 +189,10 @@
 
   onDestroy(() => {
     cancelable?.abort();
+    if (isDragging) {
+      document.body.style.removeProperty('cursor');
+      document.body.style.removeProperty('user-select');
+    }
   });
 
   const handleFavorite = async () => {
@@ -393,10 +470,15 @@
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
+<svelte:window onpointerup={() => stopDragging()} onpointercancel={() => stopDragging()} />
+
 <UserPageLayout scrollbar={false}>
-  <div class="flex size-full flex-row gap-2">
+  <div bind:this={albumContainer} class={['flex size-full flex-row', { 'select-none': isDragging }]}>
     {#if showAlbumMap && viewMode === AlbumPageViewMode.VIEW}
-      <div class="h-full w-1/3 min-h-0">
+      <div
+        class={['h-full min-h-0 shrink-0', { 'pointer-events-none': isDragging }]}
+        style:width="{mapWidthRatio * 100}%"
+      >
         {#await import('$lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}
             <!-- show the loading spinner only if loading the map takes too much time -->
@@ -408,9 +490,43 @@
           <Map {mapMarkers} showSettings={false} />
         {/await}
       </div>
+
+      <div
+        role="slider"
+        tabindex={0}
+        aria-orientation="vertical"
+        aria-valuenow={Math.round(mapWidthRatio * 100)}
+        aria-valuemin={25}
+        aria-valuemax={70}
+        aria-label="Resize map"
+        class={[
+          'group relative flex w-3 shrink-0 cursor-col-resize items-center justify-center border-none bg-transparent p-0 select-none touch-none transition-colors sm:w-2',
+          isDragging ? 'bg-primary/20 dark:bg-primary/30' : 'hover:bg-gray-200/60 dark:hover:bg-gray-700/60',
+        ]}
+        onpointerdown={handlePointerDown}
+        onpointermove={handlePointerMove}
+        onpointerup={stopDragging}
+        onpointercancel={stopDragging}
+        onkeydown={handleKeyDown}
+      >
+        <!-- Expanded touch target for mobile/iPad fingers -->
+        <div class="absolute -inset-x-3 inset-y-0 z-10 sm:-inset-x-2"></div>
+        <div
+          class={[
+            'h-8 w-1 rounded-full transition-colors',
+            isDragging ? 'bg-primary' : 'bg-gray-300 group-hover:bg-primary dark:bg-gray-600',
+          ]}
+        ></div>
+      </div>
     {/if}
 
-    <div class={[showAlbumMap ? 'w-2/3 pe-2' : 'w-full', 'h-full min-h-0']}>
+    <div
+      class={[
+        showAlbumMap && viewMode === AlbumPageViewMode.VIEW ? 'pe-2' : 'w-full',
+        'h-full min-h-0 min-w-0 flex-1',
+        { 'pointer-events-none': isDragging },
+      ]}
+    >
       <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
