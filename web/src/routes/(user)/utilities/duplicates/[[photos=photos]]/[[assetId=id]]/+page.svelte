@@ -6,11 +6,12 @@
   import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
-  import { createStack, resolveDuplicates, updateAssets } from '@immich/sdk';
+  import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
   import { Button, modalManager, toastManager } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiPageFirst, mdiPageLast } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -94,7 +95,7 @@
 
   const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
     const assetIds = assets.map((asset) => asset.id);
-    await createStack({ stackCreateDto: { assetIds, stackType: 'duplicate' } });
+    await createStack({ stackCreateDto: { assetIds } });
     await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
     await navigateToIndex(duplicatesIndex);
@@ -133,7 +134,7 @@
         <div class="flex text-xs text-black">
           <Button
             size="small"
-            leadingIcon={mdiPageFirst}
+            leadingIcon={languageManager.rtl ? mdiPageLast : mdiPageFirst}
             color="primary"
             class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
             onclick={handleFirst}
@@ -143,7 +144,7 @@
           </Button>
           <Button
             size="small"
-            leadingIcon={mdiChevronLeft}
+            leadingIcon={languageManager.rtl ? mdiChevronRight : mdiChevronLeft}
             color="primary"
             class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
             onclick={handlePrevious}
@@ -158,7 +159,7 @@
         <div class="flex text-xs text-black">
           <Button
             size="small"
-            trailingIcon={mdiChevronRight}
+            trailingIcon={languageManager.rtl ? mdiChevronLeft : mdiChevronRight}
             color="primary"
             class="flex place-items-center gap-2 rounded-s-full px-2 sm:px-4"
             onclick={handleNext}
@@ -168,7 +169,7 @@
           </Button>
           <Button
             size="small"
-            trailingIcon={mdiPageLast}
+            trailingIcon={languageManager.rtl ? mdiPageFirst : mdiPageLast}
             color="primary"
             class="flex place-items-center gap-2 rounded-e-full px-2 sm:px-4"
             onclick={handleLast}

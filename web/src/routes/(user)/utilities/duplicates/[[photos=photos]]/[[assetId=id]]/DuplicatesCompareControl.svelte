@@ -6,7 +6,6 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
-  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import {
     computeDifferingMetadataFields,
@@ -15,18 +14,19 @@
   } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { Button, HStack, Text, modalManager, IconButton, Icon } from '@immich/ui';
+  import { Button, HStack, modalManager, IconButton, Icon } from '@immich/ui';
   import {
     mdiCheck,
-    mdiKeyboard,
     mdiChevronDown,
     mdiChevronUp,
     mdiImageMultipleOutline,
     mdiTrashCanOutline,
+    mdiKeyboard,
   } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -36,19 +36,6 @@
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable() }: Props = $props();
-  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
-  let selectedAssetIds = $state(new SvelteSet<string>());
-  let trashCount = $derived(assets.length - selectedAssetIds.size);
-
-  const InitialVisibleCount = 5;
-
-  const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
-  const differingCount = $derived(countDifferingMetadataItems(differingMetadataFields));
-  const hasMore = $derived(differingCount > InitialVisibleCount);
-
-  let usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
-  let imageSize = $state<'S' | 'M' | 'L' | 'Full'>('M');
   interface Shortcuts {
     general: ExplainedShortcut[];
     actions: ExplainedShortcut[];
@@ -69,6 +56,20 @@
       { key: ['⇧', 's'], action: $t('stack_duplicates') },
     ],
   };
+
+  let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable() }: Props = $props();
+  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
+  let selectedAssetIds = $state(new SvelteSet<string>());
+  let trashCount = $derived(assets.length - selectedAssetIds.size);
+
+  const InitialVisibleCount = 5;
+
+  const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
+  const differingCount = $derived(countDifferingMetadataItems(differingMetadataFields));
+  const hasMore = $derived(differingCount > InitialVisibleCount);
+
+  let usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
+  let imageSize = $state<'S' | 'M' | 'L' | 'Full'>('M');
 
   onMount(() => {
     if (suggestedKeepAssetIds.length > 0) {

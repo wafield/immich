@@ -53,7 +53,6 @@
     showStackedIcon?: boolean;
     imageClass?: ClassValue;
     brokenAssetClass?: ClassValue;
-    dimmed?: boolean;
     albumUsers?: UserResponseDto[];
     onClick?: (asset: TimelineAsset) => void;
     onPreview?: (asset: TimelineAsset) => void;
@@ -81,7 +80,6 @@
     onMouseEvent = undefined,
     imageClass = '',
     brokenAssetClass = '',
-    dimmed = false,
   }: Props = $props();
 
   let usingMobileDevice = $derived(mediaQueryManager.pointerCoarse);
@@ -217,7 +215,12 @@
 </script>
 
 <div
-  class={['group flex focus-visible:outline-none', backgroundColorClass, { 'rounded-xl': selected }]}
+  class={[
+    'group flex focus-visible:outline-none',
+    backgroundColorClass,
+    { 'rounded-xl': selected },
+    disabled ? 'cursor-not-allowed' : 'cursor-pointer',
+  ]}
   style:width="{width}px"
   style:height="{height}px"
   onmouseenter={onMouseEnter}
@@ -243,15 +246,11 @@
   tabindex={0}
   role="link"
 >
-  <div
-    class={['group absolute inset-y-0', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
-    style:width="inherit"
-    style:height="inherit"
-  >
+  <div class="group absolute inset-y-0" style:width="inherit" style:height="inherit">
     <div class={['absolute size-full bg-transparent transition-transform select-none']}>
       <ImageThumbnail
-        class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
-        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', selected && 'rounded-2xl', brokenAssetClass]}
+        class={['absolute group-focus-visible:rounded-lg', imageClass]}
+        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', brokenAssetClass]}
         url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
@@ -329,14 +328,6 @@
           ></div>
         {/if}
 
-        <!-- Dimmed support -->
-        {#if dimmed && !mouseOver}
-          <div
-            id="a"
-            class={['absolute z-2 size-full bg-gray-700/40 group-focus-visible:rounded-lg', { 'rounded-xl': selected }]}
-          ></div>
-        {/if}
-
         <!-- Bottom-left asset properties -->
         <div class="absolute inset-s-2 bottom-2 z-2 flex gap-1">
           {#if $showLibraryIndicator}
@@ -391,7 +382,7 @@
         {#if asset.stack && showStackedIcon}
           <div
             class={[
-              'absolute z-2 flex place-items-center gap-1 text-xs font-medium text-white',
+              'absolute z-2 flex place-items-center gap-1 pe-2 pt-2 text-xs font-medium text-white',
               asset.isImage && !asset.livePhotoVideoId ? 'inset-e-0 top-0' : 'inset-e-1 top-7',
             ]}
           >

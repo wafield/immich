@@ -1,6 +1,5 @@
 <script lang="ts" module>
-  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text?url';
-  import { addProtocol, setRTLTextPlugin, setWorkerUrl } from 'maplibre-gl';
+  import { addProtocol, setWorkerUrl } from 'maplibre-gl';
   import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
   import { Protocol } from 'pmtiles';
   import { googleProtocol } from './engine';
@@ -9,7 +8,6 @@
   setWorkerUrl(workerUrl);
   void addProtocol('pmtiles', protocol.tile);
   void addProtocol('google', googleProtocol);
-  void setRTLTextPlugin(mapboxRtlUrl, true);
 </script>
 
 <script lang="ts">

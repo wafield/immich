@@ -8,10 +8,11 @@ export const normalizeSearchString = (str: string) => {
       .normalize('NFKC')
 
       // Normalize +s and -s in order to match en-dash, em-dash etc. with ASCII chars.
-      .replaceAll(/[\u200E\u200F\u061C\u200B-\u200D\u2060\uFEFF\u00AD]/gu, '')
-      .replaceAll(/[\u2212\u2010-\u2015\uFE63\uFF0D\u2043\u2213\u2796]/gu, '-')
-      .replaceAll(/[\uFE62\uFF0B\u207A\u208A\uFB29\u2795]/gu, '+')
-      .replaceAll(/[\u00A0\u2000-\u200A\u202F\u205F\u3000]/gu, ' ')
-      .toLocaleLowerCase(),
+      .replaceAll(/[\u{200E}\u{200F}\u{61C}\u{200B}-\u{200D}\u{2060}\u{FEFF}\u{AD}]/gu, '')
+      .replaceAll(/[\u{2212}\u{2010}-\u{2015}\u{FE63}\u{FF0D}\u{2043}\u{2213}\u{2796}]/gu, '-')
+      .replaceAll(/[\u{FE62}\u{FF0B}\u{207A}\u{208A}\u{FB29}\u{2795}]/gu, '+')
+      .replaceAll(/[\u{A0}\u{2000}-\u{200A}\u{202F}\u{205F}\u{3000}]/gu, ' ')
+      .toLocaleLowerCase()
+      .trim(),
   );
 };
