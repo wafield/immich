@@ -50,6 +50,7 @@
     removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.SET_VISIBILITY_TIMELINE | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
+    showMissingGpsIcon?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto;
     albumUsers?: UserResponseDto[];
@@ -82,6 +83,7 @@
     removeAction = null,
     withStacked = false,
     showArchiveIcon = false,
+    showMissingGpsIcon = false,
     isShared = false,
     album,
     albumUsers = [],
@@ -714,6 +716,7 @@
               <Thumbnail
                 showStackedIcon={withStacked}
                 {showArchiveIcon}
+                {showMissingGpsIcon}
                 {asset}
                 {albumUsers}
                 {groupIndex}

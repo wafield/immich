@@ -50,6 +50,7 @@
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
+  import { highlightMissingGps } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -106,6 +107,11 @@
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
   let showAlbumMap = $state(false);
+  let showMissingGps = $derived(showAlbumMap);
+
+  $effect(() => {
+    $highlightMissingGps = showAlbumMap;
+  });
   let cancelable: AbortController;
   let mapMarkers: MapMarkerResponseDto[] = $state([]);
   let albumContainer: HTMLDivElement | undefined = $state();
@@ -193,6 +199,7 @@
       document.body.style.removeProperty('cursor');
       document.body.style.removeProperty('user-select');
     }
+    $highlightMissingGps = false;
   });
 
   const handleFavorite = async () => {
@@ -538,6 +545,7 @@
         {isSelectionMode}
         {singleSelect}
         {showArchiveIcon}
+        showMissingGpsIcon={showMissingGps}
         {onSelect}
         onEscape={handleEscape}
         withStacked={true}

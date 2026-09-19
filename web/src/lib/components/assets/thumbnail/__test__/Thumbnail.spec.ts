@@ -1,7 +1,7 @@
 import { render } from '@testing-library/svelte';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
-import { highlightMissingTimezone } from '$lib/stores/preferences.store';
+import { highlightMissingGps, highlightMissingTimezone } from '$lib/stores/preferences.store';
 import { getTabbable } from '$lib/utils/focus-util';
 import { assetFactory } from '@test-data/factories/asset-factory';
 
@@ -36,6 +36,7 @@ describe('Thumbnail component', () => {
 
   afterEach(() => {
     highlightMissingTimezone.set(false);
+    highlightMissingGps.set(false);
   });
 
   it('should only contain a single tabbable element (the container)', () => {
@@ -99,6 +100,55 @@ describe('Thumbnail component', () => {
     });
 
     const icon = baseElement.querySelector('[data-icon-missing-timezone]');
+    expect(icon).toBeNull();
+  });
+
+  it('renders missing GPS icon when showMissingGpsIcon is true and GPS is missing', () => {
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', latitude: null, longitude: null });
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      showMissingGpsIcon: true,
+    });
+
+    const icon = baseElement.querySelector('[data-icon-missing-gps]');
+    expect(icon).not.toBeNull();
+  });
+
+  it('renders missing GPS icon when highlightMissingGps store is true and GPS is missing', () => {
+    highlightMissingGps.set(true);
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', latitude: null, longitude: null });
+    const { baseElement } = render(Thumbnail, {
+      asset,
+    });
+
+    const icon = baseElement.querySelector('[data-icon-missing-gps]');
+    expect(icon).not.toBeNull();
+  });
+
+  it('does not render missing GPS icon when asset has GPS data', () => {
+    const asset = assetFactory.build({
+      originalPath: 'image.jpg',
+      originalMimeType: 'image/jpeg',
+      latitude: 40.7128,
+      longitude: -74.006,
+    });
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      showMissingGpsIcon: true,
+    });
+
+    const icon = baseElement.querySelector('[data-icon-missing-gps]');
+    expect(icon).toBeNull();
+  });
+
+  it('does not render missing GPS icon when showMissingGpsIcon and highlightMissingGps are false', () => {
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', latitude: null, longitude: null });
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      showMissingGpsIcon: false,
+    });
+
+    const icon = baseElement.querySelector('[data-icon-missing-gps]');
     expect(icon).toBeNull();
   });
 });

@@ -149,6 +149,8 @@ export const notInAnyAlbum = persisted<boolean>('not-in-any-album', false, {});
 
 export const highlightMissingTimezone = persisted<boolean>('highlight-missing-timezone', false, {});
 
+export const highlightMissingGps = persisted<boolean>('highlight-missing-gps', false, {});
+
 export enum FolderAssetsSortBy {
   CaptureTime = 'capture-time',
   AddedTime = 'added-time',

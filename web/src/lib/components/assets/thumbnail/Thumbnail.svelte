@@ -5,6 +5,7 @@
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { librariesMap } from '$lib/stores/library.store';
   import {
+    highlightMissingGps,
     highlightMissingTimezone,
     locale,
     playVideoThumbnailOnHover,
@@ -31,6 +32,7 @@
     mdiRaw,
     mdiContentDuplicate,
     mdiMapClock,
+    mdiMapMarkerOff,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
@@ -51,6 +53,7 @@
     readonly?: boolean;
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
+    showMissingGpsIcon?: boolean;
     imageClass?: ClassValue;
     brokenAssetClass?: ClassValue;
     albumUsers?: UserResponseDto[];
@@ -73,6 +76,7 @@
     readonly = false,
     showArchiveIcon = false,
     showStackedIcon = true,
+    showMissingGpsIcon = false,
     albumUsers = [],
     onClick = undefined,
     onPreview = undefined,
@@ -88,6 +92,14 @@
   let loaded = $state(false);
   let thumbError = $state(false);
   let skipFade = $state(false);
+
+  const hasGpsData = (asset: TimelineAsset) => {
+    const lat = asset.latitude ?? (asset as any).exifInfo?.latitude;
+    const lon = asset.longitude ?? (asset as any).exifInfo?.longitude;
+    return (
+      lat !== null && lat !== undefined && !Number.isNaN(lat) && lon !== null && lon !== undefined && !Number.isNaN(lon)
+    );
+  };
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -347,7 +359,10 @@
             <Icon icon={mdiCardText} size="24" class="text-white" />
           {/if}
           {#if $highlightMissingTimezone && !asset.timeZone}
-            <Icon icon={mdiMapClock} size="24" class="text-danger" />
+            <Icon data-icon-missing-timezone icon={mdiMapClock} size="24" class="text-danger" />
+          {/if}
+          {#if (showMissingGpsIcon || $highlightMissingGps) && !hasGpsData(asset)}
+            <Icon data-icon-missing-gps icon={mdiMapMarkerOff} size="24" class="text-danger" />
           {/if}
           {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
             <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
