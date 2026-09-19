@@ -440,7 +440,7 @@
 {#if assets.length > 0}
   <div
     bind:this={containerElement}
-    style:position="relative"
+    class="relative isolate"
     style:height={containerHeight + 'px'}
     style:width={geometry.containerWidth + 'px'}
   >
@@ -469,7 +469,7 @@
           />
           {#if showAssetName && !isTimelineAsset(asset)}
             <div
-              class="absolute top-[100%] h-[42px] w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs font-semibold whitespace-pre-wrap dark:bg-slate-800"
+              class="absolute top-full h-[42px] w-full overflow-clip bg-slate-100 p-1 text-center font-mono text-xs font-semibold whitespace-pre-wrap dark:bg-slate-800"
             >
               {asset.originalFileName}
             </div>
