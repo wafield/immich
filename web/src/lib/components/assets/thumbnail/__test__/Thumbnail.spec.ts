@@ -204,4 +204,47 @@ describe('Thumbnail component', () => {
     expect(event.defaultPrevented).toBe(true);
     expect(onClick).toHaveBeenCalledWith(expect.objectContaining({ id: asset.id }));
   });
+
+  it('calls onPreview instead of onSelect when space bar is pressed in selection mode', () => {
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
+    const onPreview = vi.fn();
+    const onSelect = vi.fn();
+    const onClick = vi.fn();
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      selected: true,
+      onPreview,
+      onSelect,
+      onClick,
+    });
+
+    const container = baseElement.querySelector('[data-thumbnail-focus-container]') as HTMLElement;
+    expect(container).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    const notPrevented = container.dispatchEvent(event);
+
+    expect(notPrevented).toBe(false);
+    expect(event.defaultPrevented).toBe(true);
+    expect(onPreview).toHaveBeenCalledWith(expect.objectContaining({ id: asset.id }));
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('calls onSelect when "x" is pressed on focused thumbnail', () => {
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
+    const onSelect = vi.fn();
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      onSelect,
+    });
+
+    const container = baseElement.querySelector('[data-thumbnail-focus-container]') as HTMLElement;
+    expect(container).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: 'x', bubbles: true, cancelable: true });
+    container.dispatchEvent(event);
+
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: asset.id }));
+  });
 });

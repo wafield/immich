@@ -122,6 +122,14 @@
     onClick?.($state.snapshot(asset));
   };
 
+  const openViewer = () => {
+    if (onPreview) {
+      onPreview($state.snapshot(asset));
+      return;
+    }
+    onClick?.($state.snapshot(asset));
+  };
+
   const handleClick = (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {
       window.open(currentUrlReplaceAssetId(asset.id), '_blank');
@@ -241,7 +249,7 @@
   onkeydown={(evt) => {
     if (['Enter', ' ', 'Spacebar'].includes(evt.key)) {
       evt.preventDefault();
-      callClickHandlers();
+      openViewer();
     } else if (evt.key === 'x') {
       onSelect?.(asset);
     }

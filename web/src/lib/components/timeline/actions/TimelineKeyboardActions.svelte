@@ -24,6 +24,7 @@
   import { archiveAssets, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { AssetVisibility } from '@immich/sdk';
   import { isModalOpen, modalManager } from '@immich/ui';
+  import { navigate } from '$lib/utils/navigation';
 
   type Props = {
     timelineManager: TimelineManager;
@@ -139,9 +140,10 @@
         preventDefault: false,
         onShortcut: (event) => {
           const thumb = getFocusedThumb();
-          if (thumb) {
+          const assetId = thumb?.dataset.asset;
+          if (assetId) {
             event.preventDefault();
-            thumb.click();
+            void navigate({ targetRoute: 'current', assetId });
           }
         },
       },
