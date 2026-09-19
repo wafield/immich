@@ -350,7 +350,7 @@
         {/if}
 
         <!-- Bottom-left asset properties -->
-        <div class="absolute inset-s-2 bottom-2 z-2 flex gap-1">
+        <div class="absolute inset-s-2 bottom-2 z-2 flex gap-1 max-md:inset-s-1 max-md:bottom-1 max-md:scale-75">
           {#if $showLibraryIndicator}
             {@const targetLibrary = asset.libraryId ? $librariesMap.get(asset.libraryId) : null}
             {@const libraryColor = asset.libraryId === null ? '#ffffff' : targetLibrary?.uiColor}

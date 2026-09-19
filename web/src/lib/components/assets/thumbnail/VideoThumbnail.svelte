@@ -107,7 +107,7 @@
 
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <span
-    class="pe-2 pt-2 drop-shadow-[1px_1px_6px_rgb(0_0_0)] @max-[99px]:scale-75 @max-[99px]:pe-1 @max-[99px]:pt-1"
+    class="pe-2 pt-2 drop-shadow-[1px_1px_6px_rgb(0_0_0)] max-md:scale-75 max-md:pe-1 max-md:pt-1"
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
   >
