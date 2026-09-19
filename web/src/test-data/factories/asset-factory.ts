@@ -56,6 +56,8 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   country: faker.location.country(),
   people: [faker.person.fullName()],
   originalFileName: Sync.each(() => faker.system.fileName()),
+  latitude: Sync.each(() => faker.location.latitude()),
+  longitude: Sync.each(() => faker.location.longitude()),
   model: null,
   dateTimeOriginal: null,
   description: null,
@@ -87,6 +89,8 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     deletedAt: [],
     ownerId: [],
     originalFileName: [],
+    latitude: [],
+    longitude: [],
     projectionType: [],
     ratio: [],
     stack: [],
@@ -118,6 +122,8 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.deletedAt?.push(asset.deletedAt ? fromTimelinePlainDateTime(asset.deletedAt).toISO() : null);
     bucketAssets.ownerId.push(asset.ownerId);
     bucketAssets.originalFileName.push(asset.originalFileName ?? faker.system.fileName());
+    bucketAssets.latitude.push(asset.latitude ?? faker.location.latitude());
+    bucketAssets.longitude.push(asset.longitude ?? faker.location.longitude());
     bucketAssets.projectionType.push(asset.projectionType!);
     bucketAssets.ratio.push(asset.ratio);
     bucketAssets.stack?.push(

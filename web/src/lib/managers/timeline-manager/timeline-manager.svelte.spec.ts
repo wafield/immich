@@ -103,6 +103,15 @@ describe('TimelineManager', () => {
       expect(firstAsset).toHaveProperty('dateTimeOriginal');
       expect(firstAsset).toHaveProperty('description');
     });
+
+    it('populates latitude and longitude on timeline assets', () => {
+      const firstAsset = timelineManager.getFirstAsset();
+      expect(firstAsset).toBeDefined();
+      expect(firstAsset?.latitude).toBeDefined();
+      expect(typeof firstAsset?.latitude).toBe('number');
+      expect(firstAsset?.longitude).toBeDefined();
+      expect(typeof firstAsset?.longitude).toBe('number');
+    });
   });
 
   describe('loadTimelineMonth', () => {

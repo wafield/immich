@@ -161,11 +161,9 @@ const TimeBucketAssetResponseSchema = z
       .describe('Array of asset descriptions extracted from EXIF data'),
     latitude: z
       .array(z.number().meta({ format: 'double' }).nullable())
-      .optional()
       .describe('Array of latitude coordinates extracted from EXIF GPS data'),
     longitude: z
       .array(z.number().meta({ format: 'double' }).nullable())
-      .optional()
       .describe('Array of longitude coordinates extracted from EXIF GPS data'),
     timeZone: z
       .array(z.string().nullable())

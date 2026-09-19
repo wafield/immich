@@ -227,6 +227,8 @@ export class TimelineMonth {
         thumbhash: bucketAssets.thumbhash[i],
         people: null, // People are not included in the bucket assets
         originalFileName: bucketAssets.originalFileName[i],
+        latitude: bucketAssets.latitude[i],
+        longitude: bucketAssets.longitude[i],
         model: bucketAssets.model?.[i] ?? null,
         description: bucketAssets.description?.[i] ?? null,
         dateTimeOriginal: bucketAssets.dateTimeOriginal?.at(i)
@@ -234,11 +236,6 @@ export class TimelineMonth {
           : null,
         timeZone: bucketAssets.timeZone?.[i] ?? null,
       };
-
-      if (bucketAssets.latitude?.at(i) && bucketAssets.longitude?.at(i)) {
-        timelineAsset.latitude = bucketAssets.latitude?.[i];
-        timelineAsset.longitude = bucketAssets.longitude?.[i];
-      }
 
       if (this.timelineManager.isExcluded(timelineAsset)) {
         continue;

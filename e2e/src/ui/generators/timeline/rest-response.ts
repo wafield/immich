@@ -46,6 +46,8 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     visibility: [],
     originalFileName: [],
     timeZone: [],
+    latitude: [],
+    longitude: [],
   };
 
   for (const asset of assets) {
@@ -53,6 +55,8 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     result.id.push(asset.id);
     result.ownerId.push(asset.ownerId);
     result.originalFileName.push(`${asset.id}.${asset.isVideo ? 'mp4' : 'jpg'}`);
+    result.latitude.push(asset.latitude);
+    result.longitude.push(asset.longitude);
     result.ratio.push(asset.ratio);
     result.thumbhash.push(asset.thumbhash);
     result.dateTimeOriginal?.push(asset.fileCreatedAt);
@@ -70,11 +74,6 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     result.country?.push(asset.country);
     result.visibility.push(asset.visibility);
     result.timeZone?.push(null);
-  }
-
-  if (assets.some((a) => a.latitude !== null || a.longitude !== null)) {
-    result.latitude = assets.map((a) => a.latitude);
-    result.longitude = assets.map((a) => a.longitude);
   }
 
   result.stack = assets.map(() => null);

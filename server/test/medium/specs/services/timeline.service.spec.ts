@@ -174,6 +174,25 @@ describe(TimelineService.name, () => {
       expect(response).toEqual(expect.objectContaining({ isTrashed: [true] }));
     });
 
+    it('should return latitude and longitude as lists', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({
+        ownerId: user.id,
+        localDateTime: new Date('1970-02-12'),
+      });
+      await ctx.newExif({ assetId: asset.id, latitude: 37.7749, longitude: -122.4194 });
+      const auth = factory.auth({ user: { id: user.id } });
+      const rawResponse = await sut.getTimeBucket(auth, { timeBucket: '1970-02-01' });
+      const response = JSON.parse(rawResponse);
+      expect(response).toEqual(
+        expect.objectContaining({
+          latitude: [37.7749],
+          longitude: [-122.4194],
+        }),
+      );
+    });
+
     it('should handle a bucket without any assets', async () => {
       const { sut } = setup();
       const rawResponse = await sut.getTimeBucket(factory.auth(), { timeBucket: '1970-02-01' });
@@ -196,6 +215,8 @@ describe(TimelineService.name, () => {
         localOffsetHours: [],
         ownerId: [],
         originalFileName: [],
+        latitude: [],
+        longitude: [],
         projectionType: [],
         ratio: [],
         status: [],

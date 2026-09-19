@@ -1009,6 +1009,12 @@ export class AssetRepository {
             'asset.isEdited',
             'asset.libraryId',
             'asset.originalFileName',
+            (!auth.sharedLink || auth.sharedLink.showExif
+              ? 'asset_exif.latitude'
+              : sql<number | null>`null`.as('latitude')),
+            (!auth.sharedLink || auth.sharedLink.showExif
+              ? 'asset_exif.longitude'
+              : sql<number | null>`null`.as('longitude')),
             sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),
@@ -1056,7 +1062,6 @@ export class AssetRepository {
               'asset_exif.timeZone',
             ]),
           )
-          .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
@@ -1189,6 +1194,8 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['deletedAt']), sql.lit('{}')).as('deletedAt'),
             eb.fn.coalesce(eb.fn('array_agg', ['ownerId']), sql.lit('{}')).as('ownerId'),
             eb.fn.coalesce(eb.fn('array_agg', ['originalFileName']), sql.lit('{}')).as('originalFileName'),
+            eb.fn.coalesce(eb.fn('array_agg', ['latitude']), sql.lit('{}')).as('latitude'),
+            eb.fn.coalesce(eb.fn('array_agg', ['longitude']), sql.lit('{}')).as('longitude'),
             eb.fn.coalesce(eb.fn('array_agg', ['projectionType']), sql.lit('{}')).as('projectionType'),
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
@@ -1202,12 +1209,6 @@ export class AssetRepository {
               eb.fn.coalesce(eb.fn('array_agg', ['dateTimeOriginal']), sql.lit('{}')).as('dateTimeOriginal'),
               eb.fn.coalesce(eb.fn('array_agg', ['description']), sql.lit('{}')).as('description'),
               eb.fn.coalesce(eb.fn('array_agg', ['timeZone']), sql.lit('{}')).as('timeZone'),
-            ]),
-          )
-          .$if(!!options.withCoordinates, (qb) =>
-            qb.select((eb) => [
-              eb.fn.coalesce(eb.fn('array_agg', ['latitude']), sql.lit('{}')).as('latitude'),
-              eb.fn.coalesce(eb.fn('array_agg', ['longitude']), sql.lit('{}')).as('longitude'),
             ]),
           )
           .$if(!!options.withStacked, (qb) =>
