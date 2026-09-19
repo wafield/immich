@@ -20,12 +20,11 @@
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
-  import { mdiCog, mdiImageMultiple, mdiMap, mdiMapMarker, mdiThemeLightDark } from '@mdi/js';
+  import { mdiCog, mdiFitToScreenOutline, mdiImageMultiple, mdiMap, mdiMapMarker, mdiThemeLightDark } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import {
-    GlobeControl,
     LngLat,
     LngLatBounds,
     Marker,
@@ -95,9 +94,8 @@
     autoFitBounds = true,
   }: Props = $props();
 
-  // Calculate initial bounds from markers once during initialization
-  const initialBounds = (() => {
-    if (!autoFitBounds || center || zoom !== undefined || !mapMarkers || mapMarkers.length === 0) {
+  function getMarkersBounds() {
+    if (!mapMarkers || mapMarkers.length === 0) {
       return undefined;
     }
 
@@ -106,7 +104,29 @@
       bounds.extend([marker.lon, marker.lat]);
     }
     return bounds;
+  }
+
+  // Calculate initial bounds from markers once during initialization
+  const initialBounds = (() => {
+    if (!autoFitBounds || center || zoom !== undefined) {
+      return undefined;
+    }
+
+    return getMarkersBounds();
   })();
+
+  export function resetMapViewport() {
+    if (!map) {
+      return;
+    }
+
+    const bounds = getMarkersBounds();
+    if (!bounds) {
+      return;
+    }
+
+    map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+  }
 
   let map: Map | undefined = $state();
   let marker: Marker | null = null;
@@ -403,6 +423,16 @@
             </ControlButton>
           </ControlGroup>
         </Control>
+
+        {#if mapMarkers && mapMarkers.length > 0}
+          <Control position="top-left">
+            <ControlGroup>
+              <ControlButton onclick={resetMapViewport}>
+                <Icon title="Reset map viewport" icon={mdiFitToScreenOutline} size="70%" class="text-black/80" />
+              </ControlButton>
+            </ControlGroup>
+          </Control>
+        {/if}
 
         {#if !simplified}
           <GeolocateControl position="top-left" />
