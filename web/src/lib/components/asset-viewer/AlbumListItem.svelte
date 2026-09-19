@@ -86,7 +86,11 @@
   };
   function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
     let didPress = false;
-    const start = () => {
+    let startX = 0;
+    let startY = 0;
+    const start = (e: PointerEvent) => {
+      startX = e.clientX;
+      startY = e.clientY;
       didPress = false;
       // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
       timer = setTimeout(() => {
@@ -95,6 +99,11 @@
         disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
         didPress = true;
       }, 350);
+    };
+    const move = (e: PointerEvent) => {
+      if (Math.hypot(e.clientX - startX, e.clientY - startY) > 8) {
+        clearLongPressTimer();
+      }
     };
     const click = (e: MouseEvent) => {
       if (!didPress) {
@@ -105,12 +114,16 @@
     };
     element.addEventListener('click', click);
     element.addEventListener('pointerdown', start, { capture: true });
+    element.addEventListener('pointermove', move, { passive: true });
     element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
+    element.addEventListener('pointercancel', clearLongPressTimer, { capture: true, passive: true });
     return {
       destroy: () => {
         element.removeEventListener('click', click);
         element.removeEventListener('pointerdown', start, true);
+        element.removeEventListener('pointermove', move);
         element.removeEventListener('pointerup', clearLongPressTimer, true);
+        element.removeEventListener('pointercancel', clearLongPressTimer, true);
       },
     };
   }

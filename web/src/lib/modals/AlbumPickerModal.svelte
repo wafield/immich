@@ -10,6 +10,7 @@
   import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiImageAlbum, mdiKeyboardReturn } from '@mdi/js';
   import { onMount } from 'svelte';
+  import type { Action } from 'svelte/action';
   import { t } from 'svelte-i18n';
   import AlbumListItem from '../components/asset-viewer/AlbumListItem.svelte';
   import NewAlbumListItem from '../components/shared-components/album-selection/NewAlbumListItem.svelte';
@@ -35,9 +36,7 @@
   const multiSelectActive = $derived(multiSelectedAlbumIds.length > 0);
 
   const rowConverter = new AlbumModalRowConverter();
-  const albumModalRows = $derived(
-    rowConverter.toModalRows(search, albums, selectedRowIndex, multiSelectedAlbumIds),
-  );
+  const albumModalRows = $derived(rowConverter.toModalRows(search, albums, selectedRowIndex, multiSelectedAlbumIds));
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
   const onNewAlbum = async (name: string) => {
@@ -146,6 +145,77 @@
     }
   };
 
+  const preventClickOnSwipe: Action = (node) => {
+    let startX = 0;
+    let startY = 0;
+    let isSwiping = false;
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (Math.hypot(e.clientX - startX, e.clientY - startY) > 8) {
+        isSwiping = true;
+      }
+    };
+
+    const cleanupWindow = () => {
+      removeEventListener('pointermove', onPointerMove);
+      removeEventListener('pointerup', onPointerUp, true);
+      removeEventListener('pointercancel', onPointerCancel, true);
+    };
+
+    const onPointerUp = () => {
+      cleanupWindow();
+      if (isSwiping) {
+        setTimeout(() => {
+          isSwiping = false;
+        }, 100);
+      }
+    };
+
+    const onPointerCancel = () => {
+      cleanupWindow();
+      setTimeout(() => {
+        isSwiping = false;
+      }, 100);
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      startX = e.clientX;
+      startY = e.clientY;
+      isSwiping = false;
+      addEventListener('pointermove', onPointerMove, { passive: true });
+      addEventListener('pointerup', onPointerUp, { capture: true, passive: true });
+      addEventListener('pointercancel', onPointerCancel, { capture: true, passive: true });
+    };
+
+    const onScroll = () => {
+      isSwiping = true;
+    };
+
+    const onClickCapture = (e: MouseEvent) => {
+      if (!isSwiping) {
+        return;
+      }
+
+      e.stopPropagation();
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      isSwiping = false;
+    };
+
+    node.addEventListener('pointerdown', onPointerDown, { capture: true });
+    node.addEventListener('scroll', onScroll, { passive: true });
+    node.addEventListener('click', onClickCapture, { capture: true });
+
+    return {
+      destroy() {
+        cleanupWindow();
+        node.removeEventListener('pointerdown', onPointerDown, true);
+        node.removeEventListener('scroll', onScroll);
+        node.removeEventListener('click', onClickCapture, true);
+      },
+    };
+  };
+
   const title = $derived(
     selectedItemsCount === undefined
       ? $t('select_albums')
@@ -178,7 +248,7 @@
           bind:value={search}
           use:initInput
         />
-        <div class="immich-scrollbar overflow-y-auto">
+        <div class="immich-scrollbar overflow-y-auto" use:preventClickOnSwipe>
           <!-- eslint-disable-next-line svelte/require-each-key -->
           {#each albumModalRows as row}
             {#if row.type === AlbumModalRowType.NEW_ALBUM}
