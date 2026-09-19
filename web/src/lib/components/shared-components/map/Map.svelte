@@ -20,7 +20,15 @@
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
-  import { mdiCog, mdiFitToScreenOutline, mdiImageMultiple, mdiMap, mdiMapMarker, mdiThemeLightDark } from '@mdi/js';
+  import {
+    mdiCog,
+    mdiCrosshairsGps,
+    mdiFitToScreenOutline,
+    mdiImageMultiple,
+    mdiMap,
+    mdiMapMarker,
+    mdiThemeLightDark,
+  } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
@@ -50,6 +58,13 @@
   } from 'svelte-maplibre';
   import type { SelectionBBox } from './types';
 
+  export interface HoverCoordinate {
+    latitude?: number | null;
+    longitude?: number | null;
+    lat?: number | null;
+    lng?: number | null;
+  }
+
   interface Props {
     mapMarkers?: MapMarkerResponseDto[];
     showSettings?: boolean;
@@ -70,6 +85,7 @@
     rounded?: boolean;
     showSimpleControls?: boolean;
     autoFitBounds?: boolean;
+    hoverCoordinate?: HoverCoordinate | null;
   }
 
   let {
@@ -92,6 +108,7 @@
     rounded = true,
     showSimpleControls = true,
     autoFitBounds = true,
+    hoverCoordinate = null,
   }: Props = $props();
 
   function getMarkersBounds() {
@@ -130,7 +147,64 @@
 
   let map: Map | undefined = $state();
   let marker: Marker | null = null;
+  let hoverMarker: Marker | null = null;
   let abortController: AbortController;
+
+  function updateHoverMarker() {
+    if (!map) {
+      return;
+    }
+
+    const lat = hoverCoordinate?.latitude ?? hoverCoordinate?.lat;
+    const lng = hoverCoordinate?.longitude ?? hoverCoordinate?.lng;
+
+    if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
+      if (hoverMarker) {
+        hoverMarker.remove();
+        hoverMarker = null;
+      }
+      return;
+    }
+
+    const bounds = map.getBounds();
+    if (!bounds) {
+      if (hoverMarker) {
+        hoverMarker.remove();
+        hoverMarker = null;
+      }
+      return;
+    }
+
+    const west = bounds.getWest();
+    const east = bounds.getEast();
+    const showAll = east - west >= 360;
+    const inBounds = showAll
+      ? lat >= bounds.getSouth() && lat <= bounds.getNorth()
+      : bounds.contains([lng, lat]);
+
+    if (!inBounds) {
+      if (hoverMarker) {
+        hoverMarker.remove();
+        hoverMarker = null;
+      }
+      return;
+    }
+
+    if (!hoverMarker) {
+      const el = document.createElement('div');
+      el.className = 'pointer-events-none z-30 flex items-center justify-center text-red-500';
+      el.innerHTML = `<svg viewBox="0 0 24 24" width="36" height="36" style="color: #ef4444; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6)); display: block;"><path fill="currentColor" d="${mdiCrosshairsGps}" /></svg>`;
+      hoverMarker = new Marker({ element: el, anchor: 'center' }).setLngLat([lng, lat]).addTo(map);
+    } else {
+      hoverMarker.setLngLat([lng, lat]);
+    }
+  }
+
+  $effect(() => {
+    void hoverCoordinate;
+    void map;
+    updateHoverMarker();
+  });
 
   let isDarkStyle = $state(($mapSettings.allowDarkMode ? themeManager.value : Theme.Light) === Theme.Dark);
   const styleUrl = $derived(
@@ -318,6 +392,10 @@
 
   onDestroy(() => {
     abortController?.abort();
+    if (hoverMarker) {
+      hoverMarker.remove();
+      hoverMarker = null;
+    }
   });
 
   $effect(() => {
@@ -406,6 +484,7 @@
       event.setMaxZoom(18);
       event.on('click', handleMapClick);
       event.on('moveend', handleMoveEnd);
+      event.on('move', updateHoverMarker);
       // if (!simplified) {
       //   event.addControl(new GlobeControl(), 'top-left');
       // }

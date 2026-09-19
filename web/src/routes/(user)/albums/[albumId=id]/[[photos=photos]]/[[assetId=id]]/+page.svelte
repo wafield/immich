@@ -117,6 +117,18 @@
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
   let showAlbumMap = $state(false);
   let showMissingGps = $derived(showAlbumMap);
+  let hoveredAsset = $state<TimelineAsset | null>(null);
+  let hoverCoordinate = $derived(
+    showAlbumMap &&
+      viewMode === AlbumPageViewMode.VIEW &&
+      hoveredAsset &&
+      hoveredAsset.latitude != null &&
+      hoveredAsset.longitude != null &&
+      !Number.isNaN(hoveredAsset.latitude) &&
+      !Number.isNaN(hoveredAsset.longitude)
+      ? { latitude: hoveredAsset.latitude, longitude: hoveredAsset.longitude }
+      : null,
+  );
 
   $effect(() => {
     $highlightMissingGps = showAlbumMap;
@@ -503,7 +515,7 @@
             </div>
           {/await}
         {:then { default: Map }}
-          <Map {mapMarkers} showSettings={false} onSelect={handleMapSelect} />
+          <Map {mapMarkers} showSettings={false} onSelect={handleMapSelect} {hoverCoordinate} />
         {/await}
       </div>
 
@@ -559,6 +571,7 @@
         {onSelect}
         onEscape={handleEscape}
         withStacked={true}
+        onAssetHover={(asset) => (hoveredAsset = asset)}
       >
         {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
           {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}

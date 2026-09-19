@@ -57,6 +57,7 @@
     person?: PersonResponseDto;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
+    onAssetHover?: (asset: TimelineAsset | null) => void;
     children?: Snippet;
     empty?: Snippet;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
@@ -90,6 +91,7 @@
     person,
     onSelect = () => {},
     onEscape = () => {},
+    onAssetHover,
     children,
     empty,
     customThumbnailLayout,
@@ -97,7 +99,10 @@
   }: Props = $props();
 
   timelineManager = new TimelineManager();
-  onDestroy(() => timelineManager.destroy());
+  onDestroy(() => {
+    timelineManager.destroy();
+    onAssetHover?.(null);
+  });
   $effect(() => options && void timelineManager.updateOptions(options));
 
   let scrollableElement: HTMLElement | undefined = $state();
@@ -640,6 +645,7 @@
 {/if}
 
 <!-- Right margin MUST be equal to the width of scrubber -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <section
   id="asset-grid"
   class={['h-full scrollbar-hidden overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
@@ -649,6 +655,7 @@
   bind:clientWidth={timelineManager.viewportWidth}
   bind:this={scrollableElement}
   onscroll={() => (handleTimelineScroll(), timelineManager.updateSlidingWindow(), updateIsScrolling())}
+  onmouseleave={() => onAssetHover?.(null)}
 >
   {#if viewportTopDayTitle}
     <div
@@ -741,7 +748,10 @@
                   }
                   void onSelectAssets(asset);
                 }}
-                onMouseEvent={() => handleSelectAssetCandidates(asset)}
+                onMouseEvent={(event) => {
+                  handleSelectAssetCandidates(asset);
+                  onAssetHover?.(event.isMouseOver ? asset : null);
+                }}
                 onPreview={isSelectionMode || assetInteraction.selectionActive
                   ? (asset) => void navigate({ targetRoute: 'current', assetId: asset.id })
                   : undefined}
