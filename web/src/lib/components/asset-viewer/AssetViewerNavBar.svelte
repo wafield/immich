@@ -125,15 +125,15 @@
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
-<div class="relative flex h-16 place-items-center justify-between px-3 transition-transform duration-200">
+<div class="relative flex h-12 place-items-center justify-between px-3 transition-transform duration-200 md:h-16">
   <div class="dark">
     <ActionButton action={Close} />
   </div>
 
-  <div class="inset-x-0 items-center justify-center gap-2 hidden md:flex" data-testid="asset-viewer-navbar-center">
+  <div class="inset-x-0 hidden items-center justify-center gap-2 md:flex" data-testid="asset-viewer-navbar-center">
     {#if showZoomPercentage}
       <p
-        class="pointer-events-none rounded-lg border px-6 py-1 text-sm font-medium text-white/90 select-none tabular-nums dark:bg-subtle"
+        class="pointer-events-none rounded-lg border px-6 py-1 text-sm font-medium text-white/90 tabular-nums select-none dark:bg-subtle"
         data-testid="asset-viewer-navbar-zoom-level"
       >
         {zoomPercentage}%

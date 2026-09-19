@@ -518,13 +518,13 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[48px_1fr] overflow-hidden bg-black md:grid-rows-[48px_1fr]"
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
   <!-- Top navigation bar -->
   {#if $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor}
-    <div class="col-span-4 col-start-1 row-span-1 row-start-1 transition-transform bg-immich-dark-gray">
+    <div class="col-span-4 col-start-1 row-span-1 row-start-1 bg-immich-dark-gray transition-transform">
       <AssetViewerNavBar
         {asset}
         {album}
