@@ -109,7 +109,7 @@
 
     /* Used by layouts to ensure proper spacing between navbar and content */
     --navbar-height: 4rem;
-    --navbar-height-md: 3.5rem;
+    --navbar-height-md: 3rem;
   }
 
   :root.dark {
