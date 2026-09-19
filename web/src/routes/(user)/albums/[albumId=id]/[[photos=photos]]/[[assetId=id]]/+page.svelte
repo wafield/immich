@@ -706,7 +706,6 @@
           onFavorite={(ids, isFavorite) => timelineManager.update(ids, (asset) => (asset.isFavorite = isFavorite))}
         ></FavoriteAction>
       {/if}
-      <ActionMenuItem action={Actions.RemoveFromAlbum} />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up" offset={{ x: 175, y: 0 }}>
         <DownloadAction menuItem filename={album.albumName} />
         {#if assetMultiSelectManager.isAllUserOwned}
@@ -731,6 +730,7 @@
         {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
           <TagAction menuItem />
         {/if}
+        <ActionMenuItem action={Actions.RemoveFromAlbum} />
         {#if assetMultiSelectManager.isAllUserOwned}
           <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} onUndoDelete={handleUndoRemoveAssets} />
         {/if}
