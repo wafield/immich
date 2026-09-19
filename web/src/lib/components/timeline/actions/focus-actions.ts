@@ -6,11 +6,12 @@ import { InvocationTracker } from '$lib/utils/invocationTracker';
 
 const tracker = new InvocationTracker();
 
-const getFocusedThumb = () => {
+export const getFocusedThumb = () => {
   const current = document.activeElement as HTMLElement | undefined;
   if (current && current.dataset.thumbnailFocusContainer !== undefined) {
     return current;
   }
+  return (document.querySelector('[data-thumbnail-focus-container][data-focused]') as HTMLElement) || undefined;
 };
 
 export const focusNextAsset = () =>

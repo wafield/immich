@@ -104,7 +104,12 @@ describe('Thumbnail component', () => {
   });
 
   it('renders missing GPS icon when showMissingGpsIcon is true and GPS is missing', () => {
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', latitude: null, longitude: null });
+    const asset = assetFactory.build({
+      originalPath: 'image.jpg',
+      originalMimeType: 'image/jpeg',
+      latitude: null,
+      longitude: null,
+    });
     const { baseElement } = render(Thumbnail, {
       asset,
       showMissingGpsIcon: true,
@@ -116,7 +121,12 @@ describe('Thumbnail component', () => {
 
   it('renders missing GPS icon when highlightMissingGps store is true and GPS is missing', () => {
     highlightMissingGps.set(true);
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', latitude: null, longitude: null });
+    const asset = assetFactory.build({
+      originalPath: 'image.jpg',
+      originalMimeType: 'image/jpeg',
+      latitude: null,
+      longitude: null,
+    });
     const { baseElement } = render(Thumbnail, {
       asset,
     });
@@ -142,7 +152,12 @@ describe('Thumbnail component', () => {
   });
 
   it('does not render missing GPS icon when showMissingGpsIcon and highlightMissingGps are false', () => {
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', latitude: null, longitude: null });
+    const asset = assetFactory.build({
+      originalPath: 'image.jpg',
+      originalMimeType: 'image/jpeg',
+      latitude: null,
+      longitude: null,
+    });
     const { baseElement } = render(Thumbnail, {
       asset,
       showMissingGpsIcon: false,
@@ -150,5 +165,43 @@ describe('Thumbnail component', () => {
 
     const icon = baseElement.querySelector('[data-icon-missing-gps]');
     expect(icon).toBeNull();
+  });
+
+  it('calls onClick and prevents default when space bar is pressed on focused thumbnail', () => {
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
+    const onClick = vi.fn();
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      onClick,
+    });
+
+    const container = baseElement.querySelector('[data-thumbnail-focus-container]') as HTMLElement;
+    expect(container).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
+    const notPrevented = container.dispatchEvent(event);
+
+    expect(notPrevented).toBe(false);
+    expect(event.defaultPrevented).toBe(true);
+    expect(onClick).toHaveBeenCalledWith(expect.objectContaining({ id: asset.id }));
+  });
+
+  it('calls onClick and prevents default when Enter is pressed on focused thumbnail', () => {
+    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg' });
+    const onClick = vi.fn();
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      onClick,
+    });
+
+    const container = baseElement.querySelector('[data-thumbnail-focus-container]') as HTMLElement;
+    expect(container).not.toBeNull();
+
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    const notPrevented = container.dispatchEvent(event);
+
+    expect(notPrevented).toBe(false);
+    expect(event.defaultPrevented).toBe(true);
+    expect(onClick).toHaveBeenCalledWith(expect.objectContaining({ id: asset.id }));
   });
 });

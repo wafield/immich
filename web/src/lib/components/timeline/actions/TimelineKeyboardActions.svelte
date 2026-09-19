@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import {
+    getFocusedThumb,
     setFocusToAsset as setFocusAssetInit,
     setFocusTo as setFocusToInit,
   } from '$lib/components/timeline/actions/focus-actions';
@@ -133,6 +134,17 @@
       { shortcut: { key: 'Y' }, onShortcut: () => setFocusTo('earlier', 'year') },
       { shortcut: { key: 'Y', shift: true }, onShortcut: () => setFocusTo('later', 'year') },
       { shortcut: { key: 'G' }, onShortcut: handleOpenDateModal },
+      {
+        shortcut: { key: ' ' },
+        preventDefault: false,
+        onShortcut: (event) => {
+          const thumb = getFocusedThumb();
+          if (thumb) {
+            event.preventDefault();
+            thumb.click();
+          }
+        },
+      },
     ];
     if (onEscape) {
       shortcuts.push({ shortcut: { key: 'Escape' }, onShortcut: onEscape });

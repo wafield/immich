@@ -239,7 +239,8 @@
   onmouseleave={onMouseLeave}
   use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
   onkeydown={(evt) => {
-    if (evt.key === 'Enter') {
+    if (['Enter', ' ', 'Spacebar'].includes(evt.key)) {
+      evt.preventDefault();
       callClickHandlers();
     } else if (evt.key === 'x') {
       onSelect?.(asset);
