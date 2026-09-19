@@ -17,6 +17,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -483,9 +484,15 @@
   const showDetailPanel = $derived(
     asset.hasMetadata &&
       $slideshowState === SlideshowState.None &&
-      assetViewerManager.isShowDetailPanel &&
+      (mediaQueryManager.maxMd || assetViewerManager.isShowDetailPanel) &&
       !assetViewerManager.isShowEditor,
   );
+
+  $effect(() => {
+    if (asset.id && assetViewerHtmlElement) {
+      assetViewerHtmlElement.scrollTop = 0;
+    }
+  });
 
   const onSwipe = (event: SwipeCustomEvent) => {
     if (assetViewerManager.zoom > 1) {
@@ -518,7 +525,7 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[48px_1fr] overflow-hidden bg-black md:grid-rows-[48px_1fr]"
+  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[48px_1fr] overflow-x-hidden overflow-y-auto bg-black md:grid-rows-[64px_1fr] md:overflow-hidden"
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
@@ -640,11 +647,13 @@
 
   {#if showDetailPanel || assetViewerManager.isShowEditor}
     <div
-      transition:fly={{ duration: 150 }}
+      transition:fly={{ duration: mediaQueryManager.maxMd ? 0 : 150 }}
       id="detail-panel"
       class={[
-        'row-span-4 row-start-1 overflow-y-auto bg-light transition-all dark:bg-immich-dark-bg dark:text-immich-dark-fg',
-        showDetailPanel ? 'w-90' : 'w-100',
+        'bg-light transition-all dark:bg-immich-dark-bg dark:text-immich-dark-fg',
+        showDetailPanel
+          ? 'max-md:absolute max-md:inset-x-0 max-md:top-full max-md:z-20 max-md:min-h-full max-md:w-full max-md:overflow-visible max-md:rounded-xl md:static md:row-span-4 md:row-start-1 md:h-full md:w-90 md:overflow-y-auto'
+          : 'row-span-4 row-start-1 w-100 overflow-y-auto',
       ]}
       translate="yes"
     >

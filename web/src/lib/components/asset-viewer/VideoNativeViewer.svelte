@@ -384,7 +384,7 @@
             autoplay={$autoPlayVideo}
             disablePictureInPicture
             playsinline
-            {...useSwipe(onSwipe)}
+            {...useSwipe(onSwipe, () => ({ touchAction: 'pan-y' }))}
             class="h-full object-contain"
             oncanplay={(e: Event) => handleCanPlay(e.currentTarget as HTMLVideoElement)}
             onloadedmetadata={() => (hasLoadedMetadata = true)}
@@ -410,7 +410,7 @@
             autoplay={$autoPlayVideo}
             disablePictureInPicture
             playsinline
-            {...useSwipe(onSwipe)}
+            {...useSwipe(onSwipe, () => ({ touchAction: 'pan-y' }))}
             class="h-full object-contain"
             oncanplay={(e) => handleCanPlay(e.currentTarget)}
             onloadedmetadata={() => (hasLoadedMetadata = true)}

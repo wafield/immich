@@ -224,7 +224,10 @@
   role="presentation"
   ondblclick={onZoom}
   use:zoomImageAction={{ zoomTarget: adaptiveImage }}
-  {...useSwipe((event) => onSwipe?.(event))}
+  {...useSwipe(
+    (event) => onSwipe?.(event),
+    () => ({ touchAction: assetViewerManager.zoom > 1 ? 'none' : 'pan-y' }),
+  )}
 >
   <AdaptiveImage
     {asset}

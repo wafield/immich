@@ -187,7 +187,9 @@
     <ActionButton action={Actions.PlayMotionPhoto} />
     <ActionButton action={Actions.StopMotionPhoto} />
 
-    <ActionButton action={Actions.Info} />
+    <div class="hidden md:block">
+      <ActionButton action={Actions.Info} />
+    </div>
 
     <ActionButton action={Actions.Favorite} />
     <ActionButton action={Actions.Unfavorite} />

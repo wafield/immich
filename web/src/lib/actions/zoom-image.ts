@@ -13,11 +13,25 @@ export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTML
     maxZoom: 10,
     initialState: assetViewerManager.zoomState,
     zoomTarget: options?.zoomTarget,
+    shouldZoomOnSingleTouch: () => assetViewerManager.zoom > 1,
   });
 
+  const updateTouchAction = () => {
+    node.style.touchAction = assetViewerManager.zoom > 1 ? 'none' : 'pan-y';
+  };
+  updateTouchAction();
+
   const unsubscribes = [
-    assetViewerManager.on({ ZoomChange: (state) => zoomInstance.setState(state) }),
-    zoomInstance.subscribe(({ state }) => assetViewerManager.onZoomChange(state)),
+    assetViewerManager.on({
+      ZoomChange: (state) => {
+        zoomInstance.setState(state);
+        updateTouchAction();
+      },
+    }),
+    zoomInstance.subscribe(({ state }) => {
+      assetViewerManager.onZoomChange(state);
+      updateTouchAction();
+    }),
   ];
 
   const controller = new AbortController();
@@ -125,7 +139,7 @@ export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTML
   );
 
   node.style.overflow = 'visible';
-  node.style.touchAction = 'none';
+  updateTouchAction();
   return {
     update(newOptions?: { zoomTarget?: HTMLElement }) {
       options = newOptions;

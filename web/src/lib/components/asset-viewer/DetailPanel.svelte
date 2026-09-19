@@ -461,7 +461,7 @@
 
 {#if !assetViewerManager.isEditFacesPanelOpen}
   <section class="relative p-2">
-    <div class="sticky top-0 z-2 flex place-items-center gap-2 bg-light pt-1 pb-2 dark:bg-immich-dark-bg">
+    <div class="hidden md:flex sticky top-0 z-2 place-items-center gap-2 bg-light pt-1 pb-2 dark:bg-immich-dark-bg">
       <IconButton
         icon={mdiClose}
         aria-label={$t('close')}
