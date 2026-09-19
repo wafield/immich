@@ -105,6 +105,15 @@
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let timelineManager = $state<TimelineManager>() as TimelineManager;
+  let timelineComponent = $state<Timeline>();
+
+  const handleMapSelect = async (assetIds: string[]) => {
+    if (!assetIds || assetIds.length === 0) {
+      return;
+    }
+    const firstAssetId = assetIds[0];
+    await timelineComponent?.scrollToAsset(firstAssetId);
+  };
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
   let showAlbumMap = $state(false);
   let showMissingGps = $derived(showAlbumMap);
@@ -494,7 +503,7 @@
             </div>
           {/await}
         {:then { default: Map }}
-          <Map {mapMarkers} showSettings={false} />
+          <Map {mapMarkers} showSettings={false} onSelect={handleMapSelect} />
         {/await}
       </div>
 
@@ -535,6 +544,7 @@
       ]}
     >
       <Timeline
+        bind:this={timelineComponent}
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
         {albumUsers}

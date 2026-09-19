@@ -195,13 +195,20 @@
     }
   };
 
-  const scrollToAsset = (asset: TimelineAsset) => {
+  const scrollToTimelineAsset = (asset: TimelineAsset) => {
     const timelineMonth = timelineManager.getTimelineMonthByAssetId(asset.id);
     if (!timelineMonth) {
       return false;
     }
     scrollToAssetPosition(asset.id, timelineMonth);
     return true;
+  };
+
+  export const scrollToAsset = async (assetId: string) => {
+    const scrolled = await scrollAndLoadAsset(assetId);
+    await tick();
+    focusAsset(assetId);
+    return scrolled;
   };
 
   export const scrollAfterNavigate = async () => {
@@ -600,7 +607,7 @@
 />
 
 <TimelineKeyboardActions
-  scrollToAsset={(asset) => scrollToAsset(asset) ?? false}
+  scrollToAsset={(asset) => scrollToTimelineAsset(asset) ?? false}
   {timelineManager}
   {assetInteraction}
   {onEscape}

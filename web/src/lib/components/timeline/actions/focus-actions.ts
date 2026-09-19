@@ -22,8 +22,41 @@ export const focusPreviousAsset = () =>
 const queryHTMLElement = (query: string) => document.querySelector(query) as HTMLElement;
 
 export const focusAsset = (assetId: string) => {
-  const element = queryHTMLElement(`[data-thumbnail-focus-container][data-asset="${assetId}"]`);
-  element?.focus();
+  const query = `[data-thumbnail-focus-container][data-asset="${assetId}"]`;
+  const doFocus = (el: HTMLElement) => {
+    document.querySelectorAll('[data-focused]').forEach((node) => node.removeAttribute('data-focused'));
+    el.setAttribute('data-focused', 'true');
+    try {
+      el.focus({ focusVisible: true } as FocusOptions);
+    } catch {
+      el.focus();
+    }
+    el.addEventListener(
+      'blur',
+      () => {
+        el.removeAttribute('data-focused');
+      },
+      { once: true },
+    );
+  };
+
+  const element = queryHTMLElement(query);
+  if (element) {
+    doFocus(element);
+    return;
+  }
+
+  let retries = 0;
+  const retryFocus = () => {
+    const el = queryHTMLElement(query);
+    if (el) {
+      doFocus(el);
+    } else if (retries < 15) {
+      retries++;
+      requestAnimationFrame(retryFocus);
+    }
+  };
+  requestAnimationFrame(retryFocus);
 };
 
 export const setFocusToAsset = (scrollToAsset: (asset: TimelineAsset) => boolean, asset: TimelineAsset) => {

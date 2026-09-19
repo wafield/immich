@@ -481,6 +481,7 @@
     <div
       class={[
         'pointer-events-none absolute z-1 size-full outline-immich-primary group-focus-visible:outline-4 group-focus-visible:-outline-offset-4 dark:outline-immich-dark-primary',
+        'group-data-[focused]:outline-4 group-data-[focused]:-outline-offset-4 group-data-[focused]:rounded-lg',
       ]}
       data-outline
     ></div>
