@@ -1,6 +1,7 @@
 import { persisted } from 'svelte-persisted-store';
 import { browser } from '$app/environment';
 import { AssetInfoDisplay, defaultLang } from '$lib/constants';
+import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
 import { convertBCP47, getPreferredLocale } from '$lib/utils/i18n';
 
 // Locale to use for formatting dates, numbers, etc.
@@ -173,10 +174,40 @@ export enum RowSize {
   L = 'L',
 }
 
-export const ROW_SIZE_LAYOUT_OPTIONS: Record<RowSize, { rowHeight: number; headerHeight: number; gap: number }> = {
+export interface RowSizeLayout {
+  rowHeight: number;
+  headerHeight: number;
+  gap: number;
+}
+
+export const ROW_SIZE_LAYOUT_OPTIONS_LARGE: Record<RowSize, RowSizeLayout> = {
   [RowSize.S]: { rowHeight: 150, headerHeight: 32, gap: 2 },
   [RowSize.M]: { rowHeight: 240, headerHeight: 48, gap: 3 },
   [RowSize.L]: { rowHeight: 320, headerHeight: 60, gap: 4 },
+};
+
+export const ROW_SIZE_LAYOUT_OPTIONS_SMALL: Record<RowSize, RowSizeLayout> = {
+  [RowSize.S]: { rowHeight: 120, headerHeight: 32, gap: 2 },
+  [RowSize.M]: { rowHeight: 180, headerHeight: 32, gap: 2 },
+  [RowSize.L]: { rowHeight: 220, headerHeight: 32, gap: 2 },
+};
+
+export const ROW_SIZE_LAYOUT_OPTIONS: Record<RowSize, RowSizeLayout> = {
+  get [RowSize.S]() {
+    return mediaQueryManager.isLarge
+      ? ROW_SIZE_LAYOUT_OPTIONS_LARGE[RowSize.S]
+      : ROW_SIZE_LAYOUT_OPTIONS_SMALL[RowSize.S];
+  },
+  get [RowSize.M]() {
+    return mediaQueryManager.isLarge
+      ? ROW_SIZE_LAYOUT_OPTIONS_LARGE[RowSize.M]
+      : ROW_SIZE_LAYOUT_OPTIONS_SMALL[RowSize.M];
+  },
+  get [RowSize.L]() {
+    return mediaQueryManager.isLarge
+      ? ROW_SIZE_LAYOUT_OPTIONS_LARGE[RowSize.L]
+      : ROW_SIZE_LAYOUT_OPTIONS_SMALL[RowSize.L];
+  },
 };
 
 export const rowSize = persisted<RowSize>('row-size', RowSize.M, {});
