@@ -51,16 +51,6 @@
     const { Detail, Scan, Edit, Delete } = getLibraryActions($t, library);
     return [Detail, Scan, Edit, MenuItemType.Divider, Delete];
   };
-
-  const classes = {
-    column1: 'w-4/12',
-    column2: 'w-3/12',
-    columnShared: 'w-1/12 text-center',
-    column3: 'w-1/12',
-    column4: 'w-1/12',
-    column5: 'w-1/12',
-    column6: 'w-1/12 flex justify-end',
-  };
 </script>
 
 <OnEvents {onLibraryCreate} {onLibraryUpdate} {onLibraryDelete} />
@@ -73,19 +63,20 @@
       {#if libraries.length > 0}
         <Table striped size="small" spacing="small">
           <TableHeader>
-            <TableHeading class={classes.column1}>{$t('name')}</TableHeading>
-            <TableHeading class={classes.column2}>{$t('owner')}</TableHeading>
-            <TableHeading class={classes.columnShared}>{$t('shared')}</TableHeading>
-            <TableHeading class={classes.column3}>{$t('photos')}</TableHeading>
-            <TableHeading class={classes.column4}>{$t('videos')}</TableHeading>
-            <TableHeading class={classes.column5}>{$t('size')}</TableHeading>
-            <TableHeading class={classes.column6}></TableHeading>
+            <TableHeading>{$t('name')}</TableHeading>
+            <TableHeading>{$t('owner')}</TableHeading>
+            <TableHeading>{$t('shared')}</TableHeading>
+            <TableHeading>{$t('photos')}</TableHeading>
+            <TableHeading>{$t('videos')}</TableHeading>
+            <TableHeading>{$t('size')}</TableHeading>
+            <TableHeading>{$t('last_scanned')}</TableHeading>
+            <TableHeading></TableHeading>
           </TableHeader>
           <TableBody>
             {#each libraries as library (library.id + library.name)}
               {@const owner = owners[library.id]}
               <TableRow>
-                <TableCell class={classes.column1}>
+                <TableCell>
                   <div class="flex items-center gap-2 px-4">
                     <Link href={Route.viewLibrary(library)}>{library.name}</Link>
                     {#if library.uiColor}
@@ -97,10 +88,10 @@
                     {/if}
                   </div>
                 </TableCell>
-                <TableCell class={classes.column2}>
+                <TableCell>
                   <Link href={Route.viewUser(owner)}>{owner.name}</Link>
                 </TableCell>
-                <TableCell class={classes.columnShared}>
+                <TableCell>
                   <div class="flex items-center justify-center">
                     {#if library.shared}
                       <Icon icon={mdiCheck} size="18" class="text-primary" />
@@ -110,40 +101,43 @@
                   </div>
                 </TableCell>
                 {#await data.statisticsPromise}
-                  <TableCell class={classes.column3}>
+                  <TableCell>
                     <span class="skeleton-loader inline-block h-4 w-14"></span>
                   </TableCell>
-                  <TableCell class={classes.column4}>
+                  <TableCell>
                     <span class="skeleton-loader inline-block h-4 w-14"></span>
                   </TableCell>
-                  <TableCell class={classes.column5}>
+                  <TableCell>
                     <span class="skeleton-loader inline-block h-4 w-20"></span>
                   </TableCell>
                 {:then loadedStats}
                   {@const stats = loadedStats[library.id]}
-                  <TableCell class={classes.column3}>
+                  <TableCell>
                     {stats.photos.toLocaleString($locale)}
                   </TableCell>
-                  <TableCell class={classes.column4}>
+                  <TableCell>
                     {stats.videos.toLocaleString($locale)}
                   </TableCell>
-                  <TableCell class={classes.column5}>
+                  <TableCell>
                     {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(stats.usage, 0)}
                     {diskUsage}
                     {diskUsageUnit}
                   </TableCell>
                 {:catch}
-                  <TableCell class={classes.column3}>
+                  <TableCell>
                     <span class="skeleton-loader inline-block h-4 w-14"></span>
                   </TableCell>
-                  <TableCell class={classes.column4}>
+                  <TableCell>
                     <span class="skeleton-loader inline-block h-4 w-14"></span>
                   </TableCell>
-                  <TableCell class={classes.column5}>
+                  <TableCell>
                     <span class="skeleton-loader inline-block h-4 w-20"></span>
                   </TableCell>
                 {/await}
-                <TableCell class={classes.column6}>
+                <TableCell>
+                  {library.refreshedAt ? new Date(library.refreshedAt).toLocaleString($locale) : '-'}
+                </TableCell>
+                <TableCell>
                   <ContextMenuButton color="primary" aria-label={$t('open')} items={getActionsForLibrary(library)} />
                 </TableCell>
               </TableRow>
