@@ -240,7 +240,7 @@ export class StorageCore {
 
     if (move.oldPath !== newPath) {
       try {
-        this.logger.debug(`Attempting to rename file: ${move.oldPath} => ${newPath}`);
+        this.logger.debug(`Renaming file: ${move.oldPath} => ${newPath}`);
         await this.storageRepository.rename(move.oldPath, newPath);
       } catch (error: any) {
         if (error.code !== 'EXDEV') {
@@ -249,9 +249,6 @@ export class StorageCore {
           );
           return;
         }
-        this.logger.debug(
-          `Unable to rename file. Error renaming file with code ${error.code}. Falling back to copy, verify and delete`,
-        );
         await this.storageRepository.copyFile(move.oldPath, newPath);
 
         if (!(await this.verifyNewPathContentsMatchesExpected(move.oldPath, newPath, assetInfo))) {
@@ -284,7 +281,6 @@ export class StorageCore {
     const newStat = await this.storageRepository.stat(newPath);
     const oldPathSize = assetInfo ? assetInfo.sizeInBytes : oldStat.size;
     const newPathSize = newStat.size;
-    this.logger.debug(`File size check: ${newPathSize} === ${oldPathSize}`);
     if (newPathSize !== oldPathSize) {
       this.logger.warn(`Unable to complete move. File size mismatch: ${newPathSize} !== ${oldPathSize}`);
       return false;
@@ -306,7 +302,6 @@ export class StorageCore {
         );
         return false;
       }
-      this.logger.debug(`File checksum check: ${newChecksum.toString('base64')} === ${checksum.toString('base64')}`);
     }
     return true;
   }
