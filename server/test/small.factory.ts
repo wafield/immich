@@ -162,6 +162,7 @@ const libraryFactory = (library: Partial<Library> = {}) => ({
   uploadPath: null,
   uiColor: null,
   shared: false,
+  automatedDailyMove: false,
   ...library,
 });
 

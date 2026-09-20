@@ -83,6 +83,9 @@
       missingText: $t('start'),
       description: QueueStorageMigrationDescription,
     },
+    [QueueName.DailyAssetMove]: {
+      missingText: $t('start'),
+    },
     [QueueName.Migration]: {
       missingText: $t('start'),
     },

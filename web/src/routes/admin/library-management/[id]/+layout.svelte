@@ -15,9 +15,11 @@
     getLibraryFolderActions,
     getLibraryUiColorActions,
     getLibraryUploadPathActions,
+    handleUpdateLibraryAutomatedDailyMove,
     handleUpdateLibraryShared,
   } from '$lib/services/library.service';
   import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import { getAllLibraries } from '@immich/sdk';
   import {
     Button,
     Checkbox,
@@ -77,6 +79,50 @@
     shared = data.library.shared ?? false;
   });
 
+  let automatedDailyMove = $state((data.library as any).automatedDailyMove ?? false);
+
+  $effect(() => {
+    automatedDailyMove = (data.library as any).automatedDailyMove ?? false;
+  });
+
+  const onToggleAutomatedDailyMove = async (enabled: boolean) => {
+    if (enabled) {
+      if (!uploadPath || uploadPath.trim() === '') {
+        await modalManager.showDialog({
+          title: 'Upload Path Required',
+          prompt: 'An upload path must be configured and saved before enabling automated daily move.',
+        });
+        automatedDailyMove = false;
+        return;
+      }
+
+      // Verify if another library for this user already has automated daily move enabled
+      try {
+        const allLibs = await getAllLibraries();
+        const otherLib = allLibs.find(
+          (l) => l.ownerId === library.ownerId && l.id !== library.id && (l as any).automatedDailyMove,
+        );
+
+        if (otherLib) {
+          const confirmed = await modalManager.showDialog({
+            title: 'Replace Daily Move Library',
+            prompt: `Automated daily move is already enabled for external library "${otherLib.name}". Enabling it for "${library.name}" will turn it off for "${otherLib.name}". Do you want to proceed?`,
+          });
+
+          if (!confirmed) {
+            automatedDailyMove = false;
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check other libraries', err);
+      }
+    }
+
+    automatedDailyMove = enabled;
+    await handleUpdateLibraryAutomatedDailyMove(library, enabled);
+  };
+
   const onLibraryUpdate = () => invalidate('app:library');
 
   const onLibraryDelete = async ({ id }: { id: string }) => {
@@ -115,6 +161,22 @@
         <div class="mt-4 flex items-center gap-2">
           <Input id="library-upload-path" bind:value={uploadPath} placeholder="/media/path/to/upload" class="flex-1" />
           <TableButton action={SubmitUploadPath} />
+        </div>
+        <div class="mt-4 flex flex-col gap-1 border-t border-gray-200 pt-3 dark:border-gray-700">
+          <div class="flex items-center gap-2">
+            <Checkbox
+              id="library-automated-daily-move"
+              checked={automatedDailyMove}
+              onCheckedChange={(checked) => onToggleAutomatedDailyMove(checked)}
+            />
+            <Label for="library-automated-daily-move" class="cursor-pointer text-sm font-medium">
+              enable automated daily move to this library
+            </Label>
+          </div>
+          <p class="ms-6 text-xs text-gray-500 dark:text-gray-400">
+            Automatically moves all assets from this user's default library to this external library at 2:00 AM daily.
+            Only one external library per user can have this enabled.
+          </p>
         </div>
       </AdminCard>
 

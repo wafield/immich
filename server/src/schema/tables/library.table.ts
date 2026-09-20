@@ -39,6 +39,9 @@ export class LibraryTable {
   @Column({ type: 'boolean', default: false })
   shared!: Generated<boolean>;
 
+  @Column({ type: 'boolean', default: false })
+  automatedDailyMove!: Generated<boolean>;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 

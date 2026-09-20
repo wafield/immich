@@ -831,14 +831,15 @@ describe(AssetService.name, () => {
     });
 
     it('should handle checksum collision and return error for specific asset', async () => {
-      const asset = AssetFactory.create({ id: 'asset-1', libraryId: 'old-lib-id', checksum: Buffer.from('abc') });
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
-      mocks.asset.getByChecksum.mockResolvedValue(AssetFactory.create({ id: 'asset-2' })); // Collision!
 
       const mockStorageTemplateService = {
-        renderTemplatePath: vitest.fn(),
+        moveAssetToLibrary: vitest.fn().mockResolvedValue({
+          id: 'asset-1',
+          success: false,
+          error: 'Asset checksum already exists in target library',
+        }),
       } as any;
 
       const res = await sut.moveLibrary(
@@ -847,6 +848,11 @@ describe(AssetService.name, () => {
         mockStorageTemplateService,
       );
 
+      expect(mockStorageTemplateService.moveAssetToLibrary).toHaveBeenCalledWith({
+        assetId: 'asset-1',
+        targetLibraryId: null,
+        targetUploadPath: undefined,
+      });
 
       expect(res).toEqual([
         {
@@ -857,14 +863,15 @@ describe(AssetService.name, () => {
       ]);
     });
 
-    it('should take no action if asset is already in target library', async () => {
-      const asset = AssetFactory.create({ id: 'asset-1', libraryId: null });
+    it('should delegate to moveAssetToLibrary and return success', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
 
       const mockStorageTemplateService = {
-        renderTemplatePath: vitest.fn(),
+        moveAssetToLibrary: vitest.fn().mockResolvedValue({
+          id: 'asset-1',
+          success: true,
+        }),
       } as any;
 
       const res = await sut.moveLibrary(
@@ -873,10 +880,13 @@ describe(AssetService.name, () => {
         mockStorageTemplateService,
       );
 
+      expect(mockStorageTemplateService.moveAssetToLibrary).toHaveBeenCalledWith({
+        assetId: 'asset-1',
+        targetLibraryId: null,
+        targetUploadPath: undefined,
+      });
       expect(res[0].id).toBe('asset-1');
       expect(res[0].success).toBe(true);
-      expect(mockStorageTemplateService.renderTemplatePath).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
   });
 });

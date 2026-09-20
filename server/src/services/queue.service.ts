@@ -201,6 +201,10 @@ export class QueueService extends BaseService {
         return this.jobRepository.queue({ name: JobName.StorageTemplateMigration });
       }
 
+      case QueueName.DailyAssetMove: {
+        return this.jobRepository.queue({ name: JobName.DailyAssetMove });
+      }
+
       case QueueName.Migration: {
         return this.jobRepository.queue({ name: JobName.FileMigrationQueueAll });
       }
@@ -257,6 +261,7 @@ export class QueueService extends BaseService {
       QueueName.StorageTemplateMigration,
       QueueName.DuplicateDetection,
       QueueName.BackupDatabase,
+      QueueName.DailyAssetMove,
     ].includes(name);
   }
 

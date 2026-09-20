@@ -200,6 +200,7 @@ export type ConcurrentQueueName = Exclude<
   | QueueName.FacialRecognition
   | QueueName.DuplicateDetection
   | QueueName.BackupDatabase
+  | QueueName.DailyAssetMove
 >;
 
 export type Jobs = { [K in JobItem['name']]: (JobItem & { name: K })['data'] };
@@ -357,6 +358,7 @@ export type JobItem =
   // Storage Template
   | { name: JobName.StorageTemplateMigration; data?: IBaseJob }
   | { name: JobName.StorageTemplateMigrationSingle; data: IEntityJob }
+  | { name: JobName.DailyAssetMove; data?: IBaseJob }
 
   // Migration
   | { name: JobName.FileMigrationQueueAll; data?: IBaseJob }

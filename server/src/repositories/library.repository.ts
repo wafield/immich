@@ -124,4 +124,36 @@ export class LibraryRepository {
   streamAssetIds(libraryId: string) {
     return this.db.selectFrom('asset').select(['id']).where('libraryId', '=', libraryId).stream();
   }
+
+  /**
+   * Gets libraries that are enabled for automated daily moving. There should be at most one library per user.
+   */
+  getDailyMoveLibraries() {
+    return this.db
+      .selectFrom('library')
+      .selectAll('library')
+      .where('library.automatedDailyMove', '=', true)
+      .where('library.deletedAt', 'is', null)
+      .execute();
+  }
+
+  getDailyMoveLibraryForOwner(ownerId: string) {
+    return this.db
+      .selectFrom('library')
+      .selectAll('library')
+      .where('library.ownerId', '=', ownerId)
+      .where('library.automatedDailyMove', '=', true)
+      .where('library.deletedAt', 'is', null)
+      .executeTakeFirst();
+  }
+
+  clearDailyMoveForOwner(ownerId: string, excludeLibraryId?: string) {
+    return this.db
+      .updateTable('library')
+      .set({ automatedDailyMove: false })
+      .where('library.ownerId', '=', ownerId)
+      .where('library.automatedDailyMove', '=', true)
+      .$if(!!excludeLibraryId, (qb) => qb.where('library.id', '!=', excludeLibraryId!))
+      .execute();
+  }
 }

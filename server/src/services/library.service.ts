@@ -237,6 +237,20 @@ export class LibraryService extends BaseService {
   }
 
   async create(dto: CreateLibraryDto): Promise<LibraryResponseDto> {
+    if (dto.automatedDailyMove === true) {
+      if (!dto.uploadPath || dto.uploadPath.trim() === '') {
+        throw new BadRequestException(
+          'Target external library must have an upload path configured to enable automated daily move',
+        );
+      }
+
+      if (!this.storageRepository.existsSync(dto.uploadPath)) {
+        throw new BadRequestException(`Upload path does not exist on disk: ${dto.uploadPath}`);
+      }
+
+      await this.libraryRepository.clearDailyMoveForOwner(dto.ownerId);
+    }
+
     const library = await this.libraryRepository.create({
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
@@ -252,6 +266,7 @@ export class LibraryService extends BaseService {
       uploadPath: dto.uploadPath ?? null,
       uiColor: dto.uiColor ?? null,
       shared: dto.shared ?? false,
+      automatedDailyMove: dto.automatedDailyMove ?? false,
     });
     return mapLibrary(library);
   }
@@ -397,7 +412,7 @@ export class LibraryService extends BaseService {
   }
 
   async update(id: string, dto: UpdateLibraryDto): Promise<LibraryResponseDto> {
-    await this.findOrFail(id);
+    const currentLibrary = await this.findOrFail(id);
 
     if (dto.importPaths) {
       const validation = await this.validate(id, { importPaths: dto.importPaths });
@@ -420,6 +435,21 @@ export class LibraryService extends BaseService {
       if (!hasWriteAccess) {
         throw new BadRequestException(`Lacking write permission for folder`);
       }
+    }
+
+    if (dto.automatedDailyMove === true) {
+      const targetUploadPath = dto.uploadPath === undefined ? currentLibrary.uploadPath : dto.uploadPath;
+      if (!targetUploadPath || targetUploadPath.trim() === '') {
+        throw new BadRequestException(
+          'Target external library must have an upload path configured to enable automated daily move',
+        );
+      }
+
+      if (!this.storageRepository.existsSync(targetUploadPath)) {
+        throw new BadRequestException(`Upload path does not exist on disk: ${targetUploadPath}`);
+      }
+
+      await this.libraryRepository.clearDailyMoveForOwner(currentLibrary.ownerId, id);
     }
 
     const library = await this.libraryRepository.update(id, dto);

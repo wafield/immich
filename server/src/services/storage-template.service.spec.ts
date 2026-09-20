@@ -1,6 +1,6 @@
 import { Stats } from 'node:fs';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
-import { AssetPathType, AssetType, JobStatus } from 'src/enum.js';
+import { AssetPathType, AssetType, AssetVisibility, JobStatus } from 'src/enum.js';
 import { StorageTemplateService } from 'src/services/storage-template.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
@@ -20,12 +20,12 @@ describe(StorageTemplateService.name, () => {
     expect(sut).toBeDefined();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     ({ sut, mocks } = newTestService(StorageTemplateService));
 
     mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: true } });
 
-    sut.onConfigInit({ newConfig: defaults });
+    await sut.onConfigInit({ newConfig: defaults });
   });
 
   describe('onConfigValidate', () => {
@@ -1027,6 +1027,226 @@ describe(StorageTemplateService.name, () => {
         expect.stringContaining(`/data/library/${user.id}/2022/2022-06-19/IMG_7065.JPG`),
         expect.stringContaining(`/data/library/${user.id}/2022/2022-06-19/IMG_7065.jpg`),
       );
+    });
+  });
+
+  describe('handleDailyAssetMove', () => {
+    it('should skip daily asset move if storage template is disabled', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: false } });
+      const res = await sut.handleDailyAssetMove();
+      expect(res).toBe(JobStatus.Skipped);
+    });
+
+    it('should return success when no libraries are configured for automated daily move', async () => {
+      mocks.library.getDailyMoveLibraries.mockResolvedValue([]);
+      const res = await sut.handleDailyAssetMove();
+      expect(res).toBe(JobStatus.Success);
+    });
+
+    it('should skip duplicate asset and send notification when checksum collision occurs in target library', async () => {
+      const user = UserFactory.create();
+      const library = {
+        id: 'target-lib-1',
+        name: 'Target External Library',
+        ownerId: user.id,
+        uploadPath: '/target/upload',
+        automatedDailyMove: true,
+      };
+      const asset = AssetFactory.from({
+        ownerId: user.id,
+        libraryId: null,
+        isExternal: false,
+        checksum: Buffer.from('checksum-1'),
+        originalFileName: 'photo.jpg',
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      const existingDuplicate = AssetFactory.from({
+        id: 'dup-id',
+        ownerId: user.id,
+        libraryId: library.id,
+        checksum: Buffer.from('checksum-1'),
+      }).build();
+
+      mocks.library.getDailyMoveLibraries.mockResolvedValue([library]);
+      mocks.storage.existsSync.mockReturnValue(true);
+      mocks.user.get.mockResolvedValue(user);
+      mocks.asset.streamDefaultLibraryAssetIds.mockReturnValue(makeStream([{ id: asset.id }]));
+      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getByChecksum.mockResolvedValue(existingDuplicate);
+      mocks.notification.create.mockResolvedValue({ id: 'notif-1' });
+
+      const res = await sut.handleDailyAssetMove();
+      expect(res).toBe(JobStatus.Success);
+      expect(mocks.notification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: user.id,
+          title: 'Duplicate File Skipped',
+        }),
+      );
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_notification', user.id, expect.anything());
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
+    it('should move asset from default library to external library uploadPath', async () => {
+      const user = UserFactory.create();
+      const library = {
+        id: 'target-lib-1',
+        name: 'Target External Library',
+        ownerId: user.id,
+        uploadPath: '/target/upload',
+        automatedDailyMove: true,
+      };
+      const asset = AssetFactory.from({
+        ownerId: user.id,
+        libraryId: null,
+        isExternal: false,
+        checksum: Buffer.from('checksum-unique'),
+        originalFileName: 'photo.jpg',
+        originalPath: '/upload/user-id/photo.jpg',
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      mocks.library.getDailyMoveLibraries.mockResolvedValue([library]);
+      mocks.storage.existsSync.mockReturnValue(true);
+      mocks.user.get.mockResolvedValue(user);
+      mocks.asset.streamDefaultLibraryAssetIds.mockReturnValue(makeStream([{ id: asset.id }]));
+      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getByChecksum.mockResolvedValue(undefined);
+
+      const res = await sut.handleDailyAssetMove();
+      expect(res).toBe(JobStatus.Success);
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: asset.id,
+          libraryId: library.id,
+          isExternal: true,
+        }),
+      );
+    });
+
+    it('should move hidden assets and deleted/trashed assets', async () => {
+      const user = UserFactory.create();
+      const library = {
+        id: 'target-lib-1',
+        name: 'Target External Library',
+        ownerId: user.id,
+        uploadPath: '/target/upload',
+        automatedDailyMove: true,
+      };
+      const hiddenAsset = AssetFactory.from({
+        ownerId: user.id,
+        libraryId: null,
+        isExternal: false,
+        visibility: AssetVisibility.Hidden,
+        checksum: Buffer.from('checksum-hidden'),
+        originalFileName: 'hidden.jpg',
+        originalPath: '/upload/user-id/hidden.jpg',
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      const deletedAsset = AssetFactory.from({
+        ownerId: user.id,
+        libraryId: null,
+        isExternal: false,
+        deletedAt: new Date(),
+        checksum: Buffer.from('checksum-deleted'),
+        originalFileName: 'deleted.jpg',
+        originalPath: '/upload/user-id/deleted.jpg',
+      })
+        .owner(user)
+        .exif()
+        .build();
+
+      mocks.library.getDailyMoveLibraries.mockResolvedValue([library]);
+      mocks.storage.existsSync.mockReturnValue(true);
+      mocks.user.get.mockResolvedValue(user);
+      mocks.asset.streamDefaultLibraryAssetIds.mockReturnValue(
+        makeStream([{ id: hiddenAsset.id }, { id: deletedAsset.id }]),
+      );
+      mocks.asset.getById.mockImplementation(async (id: string) => {
+        if (id === hiddenAsset.id) return hiddenAsset;
+        if (id === deletedAsset.id) return deletedAsset;
+        return undefined;
+      });
+      mocks.asset.getByChecksum.mockResolvedValue(undefined);
+
+      const res = await sut.handleDailyAssetMove();
+      expect(res).toBe(JobStatus.Success);
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: hiddenAsset.id,
+          libraryId: library.id,
+          isExternal: true,
+        }),
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: deletedAsset.id,
+          libraryId: library.id,
+          isExternal: true,
+        }),
+      );
+    });
+  });
+
+  describe('moveAssetToLibrary', () => {
+    it('should return error if asset is not found', async () => {
+      mocks.asset.getById.mockResolvedValue(undefined);
+
+      const res = await sut.moveAssetToLibrary({
+        assetId: 'missing-asset',
+        targetLibraryId: 'lib-1',
+      });
+
+      expect(res).toEqual({
+        id: 'missing-asset',
+        success: false,
+        error: 'Asset not found',
+      });
+    });
+
+    it('should return success if asset is already in target library', async () => {
+      const asset = AssetFactory.from({ libraryId: 'lib-1' }).build();
+      mocks.asset.getById.mockResolvedValue(asset);
+
+      const res = await sut.moveAssetToLibrary({
+        assetId: asset.id,
+        targetLibraryId: 'lib-1',
+      });
+
+      expect(res).toEqual({ id: asset.id, success: true });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
+    it('should handle checksum collision and invoke onDuplicate callback', async () => {
+      const asset = AssetFactory.from({ id: 'asset-1', libraryId: null, checksum: Buffer.from('abc') }).build();
+      const duplicate = AssetFactory.from({ id: 'asset-2', libraryId: 'lib-1', checksum: Buffer.from('abc') }).build();
+
+      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getByChecksum.mockResolvedValue(duplicate);
+
+      const onDuplicate = vitest.fn();
+
+      const res = await sut.moveAssetToLibrary({
+        assetId: asset.id,
+        targetLibraryId: 'lib-1',
+        onDuplicate,
+      });
+
+      expect(onDuplicate).toHaveBeenCalledWith(asset, duplicate);
+      expect(res).toEqual({
+        id: asset.id,
+        success: false,
+        error: 'Asset checksum already exists in target library',
+      });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
   });
 });

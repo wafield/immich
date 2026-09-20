@@ -222,6 +222,26 @@ export const handleUpdateLibraryShared = async (library: LibraryResponseDto, sha
   }
 };
 
+export const handleUpdateLibraryAutomatedDailyMove = async (
+  library: LibraryResponseDto,
+  automatedDailyMove: boolean,
+) => {
+  const $t = await getFormatter();
+
+  try {
+    const updatedLibrary = await updateLibrary({
+      id: library.id,
+      updateLibraryDto: { automatedDailyMove },
+    });
+    eventManager.emit('LibraryUpdate', updatedLibrary);
+    toastManager.primary($t('admin.library_updated'));
+    return true;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_library'));
+    return false;
+  }
+};
+
 const handleScanAllLibraries = async () => {
   const $t = await getFormatter();
 

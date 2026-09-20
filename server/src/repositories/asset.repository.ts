@@ -1507,4 +1507,15 @@ export class AssetRepository {
       .where('asset.id', '=', id)
       .executeTakeFirstOrThrow();
   }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  streamDefaultLibraryAssetIds(ownerId: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['id'])
+      .where('ownerId', '=', asUuid(ownerId))
+      .where('libraryId', 'is', null)
+      .where('isExternal', '=', false)
+      .stream();
+  }
 }

@@ -250,6 +250,11 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
       icon: mdiPencil,
       title: $t('editor'),
     },
+    [QueueName.DailyAssetMove]: {
+      icon: mdiFolderMove,
+      title: $t('admin.daily_asset_move'),
+      subtitle: $t('admin.daily_asset_move_description'),
+    },
   };
 
   return items[queue.name];
