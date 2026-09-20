@@ -353,7 +353,7 @@
 {#if showVideo}
   <div
     transition:fade={{ duration: assetViewerFadeDuration }}
-    class="flex h-full place-content-center place-items-center select-none"
+    class="flex size-full min-h-0 place-content-center place-items-center select-none"
     bind:clientWidth={containerWidth}
     bind:clientHeight={containerHeight}
   >
@@ -372,7 +372,7 @@
         dir="ltr"
         lang={$lang}
         nohotkeys
-        class="dark h-full max-w-full"
+        class="dark h-full max-h-full max-w-full min-h-0"
         style:aspect-ratio={aspectRatio}
         defaultduration={asset.duration! / 1000}
       >

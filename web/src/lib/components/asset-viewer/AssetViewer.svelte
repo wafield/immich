@@ -525,7 +525,7 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[48px_1fr] overflow-x-hidden overflow-y-auto bg-black md:grid-rows-[64px_1fr] md:overflow-hidden"
+  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[48px_minmax(0,1fr)] overflow-x-hidden overflow-y-auto bg-black md:grid-rows-[64px_minmax(0,1fr)] md:overflow-hidden"
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
@@ -568,7 +568,7 @@
   {/if}
 
   <!-- Asset Viewer -->
-  <div data-viewer-content class="relative z-[-1] col-span-4 col-start-1 row-span-1 row-start-2">
+  <div data-viewer-content class="relative z-[-1] col-span-4 col-start-1 row-span-1 row-start-2 size-full min-h-0 overflow-hidden">
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         asset={previewStackedAsset!}
