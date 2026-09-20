@@ -830,6 +830,7 @@ export enum QueueName {
   Workflow = 'workflow',
   IntegrityCheck = 'integrityCheck',
   Editor = 'editor',
+  DailyAssetMove = 'dailyAssetMove',
 }
 
 export const QueueNameSchema = z.enum(QueueName).describe('Queue name').meta({ id: 'QueueName' });
@@ -880,6 +881,7 @@ export enum JobName {
   LibrarySyncFilesQueueAll = 'LibrarySyncFilesQueueAll',
   LibrarySyncFiles = 'LibrarySyncFiles',
   LibraryScanQueueAll = 'LibraryScanQueueAll',
+  DailyAssetMove = 'DailyAssetMove',
 
   HlsSessionCleanup = 'HlsSessionCleanup',
 
@@ -990,6 +992,7 @@ export enum DatabaseLock {
   IntegrityCheck = 67,
   VersionCheck = 800,
   HlsSessionCleanup = 850,
+  DailyAssetMove = 900,
 }
 
 export enum MaintenanceAction {
@@ -1203,6 +1206,7 @@ export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
   VersionCheck = 'VersionCheck',
+  DailyAssetMove = 'DailyAssetMove',
 }
 
 export enum ConfigVisibility {

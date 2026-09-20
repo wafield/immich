@@ -50,6 +50,7 @@
     [QueueName.Workflow]: $t('workflows'),
     [QueueName.Editor]: $t('editor'),
     [QueueName.IntegrityCheck]: $t('integrity_checks'),
+    [QueueName.DailyAssetMove]: $t('admin.daily_asset_move'),
   });
 </script>
 

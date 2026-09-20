@@ -21403,6 +21403,10 @@
       },
       "CreateLibraryDto": {
         "properties": {
+          "automatedDailyMove": {
+            "description": "Automated daily move status",
+            "type": "boolean"
+          },
           "exclusionPatterns": {
             "description": "Exclusion patterns (max 128)",
             "items": {
@@ -22868,6 +22872,7 @@
           "LibrarySyncFilesQueueAll",
           "LibrarySyncFiles",
           "LibraryScanQueueAll",
+          "DailyAssetMove",
           "HlsSessionCleanup",
           "MemoryCleanup",
           "MemoryGenerate",
@@ -22944,6 +22949,10 @@
             "minimum": -9007199254740991,
             "type": "integer"
           },
+          "automatedDailyMove": {
+            "description": "Automated daily move status",
+            "type": "boolean"
+          },
           "createdAt": {
             "description": "Creation date",
             "example": "2024-01-01T00:00:00.000Z",
@@ -23013,6 +23022,7 @@
         },
         "required": [
           "assetCount",
+          "automatedDailyMove",
           "createdAt",
           "exclusionPatterns",
           "id",
@@ -25593,7 +25603,8 @@
           "ocr",
           "workflow",
           "integrityCheck",
-          "editor"
+          "editor",
+          "dailyAssetMove"
         ],
         "type": "string"
       },
@@ -25715,6 +25726,9 @@
           "backupDatabase": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "dailyAssetMove": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "duplicateDetection": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -25770,6 +25784,7 @@
         "required": [
           "backgroundTask",
           "backupDatabase",
+          "dailyAssetMove",
           "duplicateDetection",
           "editor",
           "faceDetection",
@@ -31459,6 +31474,10 @@
       },
       "UpdateLibraryDto": {
         "properties": {
+          "automatedDailyMove": {
+            "description": "Automated daily move status",
+            "type": "boolean"
+          },
           "exclusionPatterns": {
             "description": "Exclusion patterns (max 128)",
             "items": {

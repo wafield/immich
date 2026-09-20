@@ -1979,6 +1979,7 @@ export type QueuesResponseLegacyDto = {
     thumbnailGeneration: QueueResponseLegacyDto;
     videoConversion: QueueResponseLegacyDto;
     workflow: QueueResponseLegacyDto;
+    dailyAssetMove: QueueResponseLegacyDto;
 };
 export type JobCreateDto = {
     name: ManualJobName;
@@ -2013,6 +2014,8 @@ export type LibraryResponseDto = {
     uiColor: string | null;
     /** Shared status */
     shared: boolean;
+    /** Automated daily move status */
+    automatedDailyMove: boolean;
 };
 export type CreateLibraryDto = {
     /** Exclusion patterns (max 128) */
@@ -2029,6 +2032,8 @@ export type CreateLibraryDto = {
     uiColor?: string | null;
     /** Shared status */
     shared?: boolean;
+    /** Automated daily move status */
+    automatedDailyMove?: boolean;
 };
 export type UpdateLibraryDto = {
     /** Exclusion patterns (max 128) */
@@ -2043,6 +2048,8 @@ export type UpdateLibraryDto = {
     uiColor?: string | null;
     /** Shared status */
     shared?: boolean;
+    /** Automated daily move status */
+    automatedDailyMove?: boolean;
 };
 export type LibraryStatsResponseDto = {
     /** Number of photos */
@@ -8661,7 +8668,8 @@ export enum QueueName {
     Ocr = "ocr",
     Workflow = "workflow",
     IntegrityCheck = "integrityCheck",
-    Editor = "editor"
+    Editor = "editor",
+    DailyAssetMove = "dailyAssetMove"
 }
 export enum QueueCommand {
     Start = "start",

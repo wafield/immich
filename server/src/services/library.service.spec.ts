@@ -1084,6 +1084,48 @@ describe(LibraryService.name, () => {
         expect.objectContaining({ shared: true }),
       );
     });
+
+    it('should reject enabling automatedDailyMove if no uploadPath is configured', async () => {
+      const library = factory.library({ uploadPath: null });
+      mocks.library.get.mockResolvedValue(library);
+
+      await expect(sut.update('library-id', { automatedDailyMove: true })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should reject enabling automatedDailyMove if uploadPath does not exist on disk', async () => {
+      const library = factory.library({ uploadPath: '/missing/path' });
+      mocks.library.get.mockResolvedValue(library);
+      mocks.storage.existsSync.mockReturnValue(false);
+
+      await expect(sut.update('library-id', { automatedDailyMove: true })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should clear automatedDailyMove from other libraries owned by same user and update target library', async () => {
+      const library = factory.library({ id: 'library-id', ownerId: 'user-1', uploadPath: '/valid/upload/path' });
+      const updatedLibrary = factory.library({
+        ...library,
+        automatedDailyMove: true,
+      });
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.storage.existsSync.mockReturnValue(true);
+      mocks.library.clearDailyMoveForOwner.mockResolvedValue();
+      mocks.library.update.mockResolvedValue(updatedLibrary);
+
+      await expect(sut.update('library-id', { automatedDailyMove: true })).resolves.toEqual(
+        mapLibrary(updatedLibrary),
+      );
+
+      expect(mocks.library.clearDailyMoveForOwner).toHaveBeenCalledWith('user-1', 'library-id');
+      expect(mocks.library.update).toHaveBeenCalledWith(
+        'library-id',
+        expect.objectContaining({ automatedDailyMove: true }),
+      );
+    });
   });
 
   describe('create', () => {
@@ -1107,6 +1149,35 @@ describe(LibraryService.name, () => {
 
     it('should reject creation if uploadPath exceeds 128 characters', () => {
       expect(() => CreateLibraryDto.create({ ownerId: newUuid(), uploadPath: 'a'.repeat(129) })).toThrow();
+    });
+
+    it('should reject creation with automatedDailyMove if uploadPath is missing', async () => {
+      await expect(
+        sut.create({ ownerId: 'owner-id', name: 'My Library', automatedDailyMove: true }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should create library with automatedDailyMove and clear previous library for owner', async () => {
+      const library = factory.library({
+        ownerId: 'owner-id',
+        uploadPath: '/custom/upload/path',
+        automatedDailyMove: true,
+      });
+
+      mocks.storage.existsSync.mockReturnValue(true);
+      mocks.library.clearDailyMoveForOwner.mockResolvedValue();
+      mocks.library.create.mockResolvedValue(library);
+
+      await expect(
+        sut.create({
+          ownerId: 'owner-id',
+          name: 'My Library',
+          uploadPath: '/custom/upload/path',
+          automatedDailyMove: true,
+        }),
+      ).resolves.toEqual(mapLibrary(library));
+
+      expect(mocks.library.clearDailyMoveForOwner).toHaveBeenCalledWith('owner-id');
     });
   });
 

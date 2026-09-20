@@ -7,20 +7,26 @@ import type { ArgOf } from 'src/repositories/event.repository.js';
 import type { JobOf, StorageAsset } from 'src/types.js';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { OnEvent, OnJob } from 'src/decorators.js';
+import { AssetMoveResponseDto } from 'src/dtos/asset.dto.js';
 import { ConfigTemplateStorageOptionDto } from 'src/dtos/config.dto.js';
+import { mapNotification } from 'src/dtos/notification.dto.js';
 import {
   AssetFileType,
   AssetPathType,
   AssetType,
+  CronJob,
   DatabaseLock,
   JobName,
   JobStatus,
+  NotificationLevel,
+  NotificationType,
   QueueName,
   StorageFolder,
 } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
-import { getAssetFile } from 'src/utils/asset.util.js';
+import { getAssetFile, getAssetFiles } from 'src/utils/asset.util.js';
 import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file.js';
+import { batched, handlePromiseError } from 'src/utils/misc.js';
 
 const storageTokens = {
   secondOptions: ['s', 'ss', 'SSS'],
@@ -61,6 +67,14 @@ export interface MoveAssetMetadata {
   filename: string;
 }
 
+export interface MoveAssetToLibraryOptions {
+  assetId: string;
+  targetLibraryId: string | null;
+  targetUploadPath?: string | null;
+  storageLabel?: string | null;
+  onDuplicate?: (asset: any, existingDuplicate: any) => Promise<void> | void;
+}
+
 interface RenderMetadata {
   asset: StorageAsset;
   filename: string;
@@ -89,18 +103,33 @@ export class StorageTemplateService extends BaseService {
     return this._template;
   }
 
+  private dailyMoveLock = false;
+
   @OnEvent({ name: 'ConfigInit' })
-  onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
+  async onConfigInit({ newConfig }: ArgOf<'ConfigInit'>) {
     const template = newConfig.storageTemplate.template;
     if (!this._template || template !== this.template.raw) {
       this.logger.debug(`Compiling new storage template: ${template}`);
       this._template = this.compile(template);
     }
+
+    if (!this.dailyMoveLock) {
+      this.dailyMoveLock = await this.databaseRepository.tryLock(DatabaseLock.DailyAssetMove);
+      if (this.dailyMoveLock) {
+        this.logger.debug('Scheduling daily asset move job for 0 2 * * *');
+        this.cronRepository.create({
+          name: CronJob.DailyAssetMove,
+          expression: '0 2 * * *',
+          start: true,
+          onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.DailyAssetMove }), this.logger),
+        });
+      }
+    }
   }
 
   @OnEvent({ name: 'ConfigUpdate', server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
-    this.onConfigInit({ newConfig });
+  async onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
+    await this.onConfigInit({ newConfig });
   }
 
   @OnEvent({ name: 'ConfigValidate' })
@@ -210,6 +239,299 @@ export class StorageTemplateService extends BaseService {
     this.logger.log('Finished storage template migration');
 
     return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.DailyAssetMove, queue: QueueName.DailyAssetMove })
+  async handleDailyAssetMove(): Promise<JobStatus> {
+    this.logger.log('Starting automated daily asset library move');
+    const { storageTemplate } = await this.getConfig({ withCache: true });
+    if (!storageTemplate.enabled) {
+      this.logger.warn('Storage template is disabled in system settings, skipping daily asset move');
+      return JobStatus.Skipped;
+    }
+
+    // Wait for any active or pending StorageTemplateMigration jobs to finish first
+    while (true) {
+      const counts = await this.jobRepository.getJobCounts(QueueName.StorageTemplateMigration);
+      if (!counts || (counts.active === 0 && counts.waiting === 0)) {
+        break;
+      }
+      this.logger.debug('Storage template migration tasks in progress, waiting before daily asset move...');
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
+    const libraries = await this.libraryRepository.getDailyMoveLibraries();
+    if (libraries.length === 0) {
+      this.logger.debug('No external libraries configured for automated daily move');
+      return JobStatus.Success;
+    }
+
+    for (const library of libraries) {
+      try {
+        const uploadPath = library.uploadPath;
+        if (!uploadPath) {
+          this.logger.warn(`Daily move target library "${library.name}" has no upload path configured, skipping`);
+          continue;
+        }
+
+        if (!this.storageRepository.existsSync(uploadPath)) {
+          this.logger.warn(
+            `Daily move target upload path does not exist on disk: ${uploadPath}, skipping library "${library.name}"`,
+          );
+          continue;
+        }
+
+        const owner = await this.userRepository.get(library.ownerId, {});
+        if (!owner) {
+          this.logger.warn(`Owner for library "${library.name}" not found, skipping`);
+          continue;
+        }
+
+        const storageLabel = owner.storageLabel || null;
+        let movedCount = 0;
+        let skippedDuplicateCount = 0;
+
+        for await (const assetBatch of batched(
+          this.assetRepository.streamDefaultLibraryAssetIds(library.ownerId),
+          100,
+        )) {
+          for (const { id: assetId } of assetBatch) {
+            try {
+              const res = await this.moveAssetToLibrary({
+                assetId,
+                targetLibraryId: library.id,
+                targetUploadPath: uploadPath,
+                storageLabel,
+                onDuplicate: async (asset) => {
+                  skippedDuplicateCount++;
+                  const title = 'Duplicate File Skipped';
+                  const filename = asset.originalFileName || asset.id;
+                  const description = `File "${filename}" was not moved to external library "${library.name}" because an identical asset already exists in the target library.`;
+                  this.logger.warn(description);
+
+                  const notification = await this.notificationRepository.create({
+                    userId: asset.ownerId,
+                    type: NotificationType.SystemMessage,
+                    level: NotificationLevel.Warning,
+                    title,
+                    description,
+                  });
+
+                  this.websocketRepository.clientSend('on_notification', asset.ownerId, mapNotification(notification));
+                },
+              });
+
+              if (res.success) {
+                movedCount++;
+              }
+            } catch (assetError: any) {
+              this.logger.error(
+                `Failed to move asset ${assetId} during daily move: ${assetError.message}`,
+                assetError.stack,
+              );
+            }
+          }
+        }
+
+        // Clean up empty source directories in user's default library folder
+        const defaultUserFolder = StorageCore.getLibraryFolder({ id: library.ownerId, storageLabel });
+        await this.storageRepository.removeEmptyDirs(defaultUserFolder);
+
+        this.logger.log(
+          `Daily asset move completed for library "${library.name}": moved ${movedCount} asset(s), skipped ${skippedDuplicateCount} duplicate(s)`,
+        );
+      } catch (libraryError: any) {
+        this.logger.error(
+          `Error processing daily move for library ${library.id}: ${libraryError.message}`,
+          libraryError.stack,
+        );
+      }
+    }
+
+    this.logger.log('Finished automated daily asset library move');
+    return JobStatus.Success;
+  }
+
+  async moveAssetToLibrary({
+    assetId,
+    targetLibraryId,
+    targetUploadPath,
+    storageLabel,
+    onDuplicate,
+  }: MoveAssetToLibraryOptions): Promise<AssetMoveResponseDto> {
+    const asset = await this.assetRepository.getById(assetId, {
+      exifInfo: true,
+      owner: true,
+      files: true,
+      library: true,
+    });
+
+    if (!asset) {
+      return { id: assetId, success: false, error: 'Asset not found' };
+    }
+
+    if (asset.libraryId === targetLibraryId) {
+      return { id: assetId, success: true };
+    }
+
+    // Check duplicate checksum collision in target library
+    const existingDuplicate = await this.assetRepository.getByChecksum({
+      ownerId: asset.ownerId,
+      libraryId: targetLibraryId ?? undefined,
+      checksum: asset.checksum,
+    });
+
+    if (existingDuplicate && existingDuplicate.id !== asset.id) {
+      if (onDuplicate) {
+        await onDuplicate(asset, existingDuplicate);
+      }
+      return {
+        id: assetId,
+        success: false,
+        error: 'Asset checksum already exists in target library',
+      };
+    }
+
+    if (storageLabel === undefined) {
+      const ownerUser = await this.userRepository.get(asset.ownerId, {});
+      storageLabel = ownerUser?.storageLabel || null;
+    }
+
+    const assetRootPath = targetUploadPath ?? StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+    const filename = asset.originalFileName || asset.id;
+
+    const storageAsset: StorageAsset = {
+      id: asset.id,
+      ownerId: asset.ownerId,
+      livePhotoVideoId: asset.livePhotoVideoId,
+      type: asset.type,
+      isExternal: asset.isExternal,
+      checksum: asset.checksum,
+      timeZone: asset.exifInfo?.timeZone || null,
+      fileCreatedAt: asset.fileCreatedAt,
+      originalPath: asset.originalPath,
+      originalFileName: filename,
+      fileSizeInByte: asset.exifInfo?.fileSizeInByte || null,
+      files: asset.files ?? [],
+      make: asset.exifInfo?.make || null,
+      model: asset.exifInfo?.model || null,
+      lensModel: asset.exifInfo?.lensModel || null,
+    };
+
+    const newPath = await this.renderTemplatePath(
+      storageAsset,
+      {
+        storageLabel,
+        filename,
+      },
+      assetRootPath,
+    );
+
+    // Move main file
+    const oldPath = asset.originalPath;
+    if (oldPath !== newPath) {
+      await this.storageCore.moveFile({
+        entityId: asset.id,
+        pathType: AssetPathType.Original,
+        oldPath,
+        newPath,
+        assetInfo: {
+          sizeInBytes: asset.exifInfo?.fileSizeInByte || 0,
+          checksum: asset.checksum,
+        },
+      });
+    }
+
+    // Move sidecar file
+    const sidecarPath = getAssetFiles(asset.files ?? []).sidecarFile?.path;
+    if (sidecarPath) {
+      const newSidecarPath = `${newPath}.xmp`;
+      await this.storageCore.moveFile({
+        entityId: asset.id,
+        pathType: AssetFileType.Sidecar,
+        oldPath: sidecarPath,
+        newPath: newSidecarPath,
+      });
+    }
+
+    // Move live photo motion video
+    let livePhotoVideoNewPath: string | null = null;
+    let shouldMoveLivePhotoVideo = false;
+    if (asset.livePhotoVideoId) {
+      const livePhotoVideo = await this.assetRepository.getById(asset.livePhotoVideoId, {
+        exifInfo: true,
+        owner: true,
+        files: true,
+      });
+
+      if (livePhotoVideo && !livePhotoVideo.originalPath.includes('/encoded-video/')) {
+        shouldMoveLivePhotoVideo = true;
+      }
+
+      if (livePhotoVideo) {
+        const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
+        const motionStorageAsset: StorageAsset = {
+          id: livePhotoVideo.id,
+          ownerId: livePhotoVideo.ownerId,
+          livePhotoVideoId: livePhotoVideo.livePhotoVideoId,
+          type: livePhotoVideo.type,
+          isExternal: livePhotoVideo.isExternal,
+          checksum: livePhotoVideo.checksum,
+          timeZone: livePhotoVideo.exifInfo?.timeZone || null,
+          fileCreatedAt: livePhotoVideo.fileCreatedAt,
+          originalPath: livePhotoVideo.originalPath,
+          originalFileName: livePhotoVideo.originalFileName || motionFilename,
+          fileSizeInByte: livePhotoVideo.exifInfo?.fileSizeInByte || null,
+          files: livePhotoVideo.files ?? [],
+          make: livePhotoVideo.exifInfo?.make || null,
+          model: livePhotoVideo.exifInfo?.model || null,
+          lensModel: livePhotoVideo.exifInfo?.lensModel || null,
+        };
+
+        livePhotoVideoNewPath = await this.renderTemplatePath(
+          motionStorageAsset,
+          {
+            storageLabel,
+            filename: motionFilename,
+          },
+          assetRootPath,
+          storageAsset,
+        );
+
+        if (shouldMoveLivePhotoVideo && livePhotoVideo.originalPath !== livePhotoVideoNewPath) {
+          await this.storageCore.moveFile({
+            entityId: livePhotoVideo.id,
+            pathType: AssetPathType.Original,
+            oldPath: livePhotoVideo.originalPath,
+            newPath: livePhotoVideoNewPath,
+            assetInfo: {
+              sizeInBytes: livePhotoVideo.exifInfo?.fileSizeInByte || 0,
+              checksum: livePhotoVideo.checksum,
+            },
+          });
+        }
+      }
+    }
+
+    const isExternal = targetLibraryId !== null;
+
+    await this.assetRepository.update({
+      id: asset.id,
+      libraryId: targetLibraryId,
+      isExternal,
+      originalPath: newPath,
+    });
+
+    if (asset.livePhotoVideoId && livePhotoVideoNewPath && shouldMoveLivePhotoVideo) {
+      await this.assetRepository.update({
+        id: asset.livePhotoVideoId,
+        libraryId: targetLibraryId,
+        isExternal,
+        originalPath: livePhotoVideoNewPath,
+      });
+    }
+
+    return { id: assetId, success: true };
   }
 
   @OnEvent({ name: 'AssetDelete' })
