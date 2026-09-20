@@ -8,7 +8,7 @@
   import { userInteraction } from '$lib/stores/user.svelte';
   import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, modalManager } from '@immich/ui';
-  import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
+  import { mdiCog, mdiLogout, mdiHome, mdiPencil, mdiWrench } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
@@ -61,6 +61,20 @@
     </div>
 
     <div class="flex flex-col gap-1">
+      <Button
+        href={Route.photos()}
+        onclick={onClose}
+        size="small"
+        color="secondary"
+        variant="ghost"
+        shape="round"
+        class="border hover:bg-immich-primary/10 dark:border-immich-dark-gray dark:bg-gray-500 dark:text-white dark:hover:bg-immich-dark-primary/50"
+      >
+        <div class="flex place-content-center place-items-center gap-2 px-2 text-center">
+          <Icon icon={mdiHome} size="18" aria-hidden />
+          {$t('photos')}
+        </div>
+      </Button>
       <Button
         href={Route.userSettings()}
         onclick={onClose}
