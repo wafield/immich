@@ -68,7 +68,7 @@
 <CommandPaletteDefaultProvider name={$t('library')} actions={[Create, ScanAll]} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[ScanAll, Create]}>
-  <Container size="large" center class="my-4">
+  <Container size="large" center class="w-(--breakpoint-lg)">
     <div class="flex flex-col items-center gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
         <Table striped size="small" spacing="small">
