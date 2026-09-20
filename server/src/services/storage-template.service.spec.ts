@@ -1,6 +1,7 @@
 import { Stats } from 'node:fs';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
-import { AssetPathType, AssetType, AssetVisibility, JobStatus } from 'src/enum.js';
+import { AssetPathType, AssetType, AssetVisibility, JobStatus, StorageFolder } from 'src/enum.js';
+import { StorageCore } from 'src/cores/storage.core.js';
 import { StorageTemplateService } from 'src/services/storage-template.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
@@ -1129,7 +1130,7 @@ describe(StorageTemplateService.name, () => {
       );
     });
 
-    it('should move hidden assets and deleted/trashed assets', async () => {
+    it('should move archived/locked assets and deleted/trashed assets', async () => {
       const user = UserFactory.create();
       const library = {
         id: 'target-lib-1',
@@ -1142,7 +1143,7 @@ describe(StorageTemplateService.name, () => {
         ownerId: user.id,
         libraryId: null,
         isExternal: false,
-        visibility: AssetVisibility.Hidden,
+        visibility: AssetVisibility.Archive,
         checksum: Buffer.from('checksum-hidden'),
         originalFileName: 'hidden.jpg',
         originalPath: '/upload/user-id/hidden.jpg',
@@ -1247,6 +1248,66 @@ describe(StorageTemplateService.name, () => {
         error: 'Asset checksum already exists in target library',
       });
       expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
+    it('should skip standalone move if asset is an Android motion photo video', async () => {
+      const motionAsset = AssetFactory.from({
+        id: 'motion-1',
+        libraryId: null,
+        originalPath: StorageCore.getBaseFolder(StorageFolder.EncodedVideo) + '/user-1/motion-1-MP.mp4',
+      }).build();
+      mocks.asset.getById.mockResolvedValue(motionAsset);
+
+      const res = await sut.moveAssetToLibrary({
+        assetId: motionAsset.id,
+        targetLibraryId: 'lib-1',
+      });
+
+      expect(res).toEqual({ id: motionAsset.id, success: true });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+    });
+
+    it('should move still photo and update companion video libraryId without moving file for Android motion photo', async () => {
+      const motionAsset = AssetFactory.from({
+        id: 'motion-1',
+        libraryId: null,
+        originalPath: StorageCore.getBaseFolder(StorageFolder.EncodedVideo) + '/user-1/motion-1-MP.mp4',
+      }).build();
+      const stillAsset = AssetFactory.from({
+        id: 'still-1',
+        libraryId: null,
+        livePhotoVideoId: motionAsset.id,
+        originalFileName: 'photo.jpg',
+      }).build();
+
+      mocks.asset.getById.mockImplementation(async (id: string) => {
+        if (id === stillAsset.id) return stillAsset;
+        if (id === motionAsset.id) return motionAsset;
+        return undefined;
+      });
+      mocks.asset.getByChecksum.mockResolvedValue(undefined);
+      mocks.user.get.mockResolvedValue({ id: stillAsset.ownerId, storageLabel: 'test-label' } as any);
+
+      const res = await sut.moveAssetToLibrary({
+        assetId: stillAsset.id,
+        targetLibraryId: 'lib-1',
+        targetUploadPath: '/target/upload',
+      });
+
+      expect(res).toEqual({ id: stillAsset.id, success: true });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: stillAsset.id,
+          libraryId: 'lib-1',
+          isExternal: true,
+        }),
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: motionAsset.id,
+        libraryId: 'lib-1',
+        isExternal: true,
+      });
     });
   });
 });

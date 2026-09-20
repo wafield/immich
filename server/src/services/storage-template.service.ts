@@ -374,6 +374,11 @@ export class StorageTemplateService extends BaseService {
       return { id: assetId, success: true };
     }
 
+    if (StorageCore.isAndroidMotionPath(asset.originalPath)) {
+      this.logger.debug(`Skipping standalone move of Android motion photo video: ${assetId}`);
+      return { id: assetId, success: true };
+    }
+
     // Check duplicate checksum collision in target library
     const existingDuplicate = await this.assetRepository.getByChecksum({
       ownerId: asset.ownerId,
@@ -464,11 +469,12 @@ export class StorageTemplateService extends BaseService {
         files: true,
       });
 
-      if (livePhotoVideo && !livePhotoVideo.originalPath.includes('/encoded-video/')) {
+      // Avoid moving Android motion videos if they come from android motion picture file (.MP.jpg).
+      if (livePhotoVideo && !StorageCore.isAndroidMotionPath(livePhotoVideo.originalPath)) {
         shouldMoveLivePhotoVideo = true;
       }
 
-      if (livePhotoVideo) {
+      if (livePhotoVideo && shouldMoveLivePhotoVideo) {
         const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
         const motionStorageAsset: StorageAsset = {
           id: livePhotoVideo.id,
@@ -522,13 +528,21 @@ export class StorageTemplateService extends BaseService {
       originalPath: newPath,
     });
 
-    if (asset.livePhotoVideoId && livePhotoVideoNewPath && shouldMoveLivePhotoVideo) {
-      await this.assetRepository.update({
-        id: asset.livePhotoVideoId,
-        libraryId: targetLibraryId,
-        isExternal,
-        originalPath: livePhotoVideoNewPath,
-      });
+    if (asset.livePhotoVideoId) {
+      if (shouldMoveLivePhotoVideo && livePhotoVideoNewPath) {
+        await this.assetRepository.update({
+          id: asset.livePhotoVideoId,
+          libraryId: targetLibraryId,
+          isExternal,
+          originalPath: livePhotoVideoNewPath,
+        });
+      } else {
+        await this.assetRepository.update({
+          id: asset.livePhotoVideoId,
+          libraryId: targetLibraryId,
+          isExternal,
+        });
+      }
     }
 
     return { id: assetId, success: true };

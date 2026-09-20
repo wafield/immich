@@ -1512,10 +1512,11 @@ export class AssetRepository {
   streamDefaultLibraryAssetIds(ownerId: string) {
     return this.db
       .selectFrom('asset')
-      .select(['id'])
+      .select('id')
       .where('ownerId', '=', asUuid(ownerId))
       .where('libraryId', 'is', null)
       .where('isExternal', '=', false)
+      .where('visibility', '!=', AssetVisibility.Hidden)
       .stream();
   }
 }
