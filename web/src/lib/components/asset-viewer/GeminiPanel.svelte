@@ -43,6 +43,7 @@
         prompt: trimmedPrompt,
       });
       responseText = response.text;
+      await assetViewerManager.fetchGeminiResponses(asset.id);
     } catch (err: unknown) {
       errorMessage = err instanceof Error ? err.message : String(err);
     } finally {

@@ -3,6 +3,7 @@ import type { ZoomImageWheelState } from '@zoom-image/core';
 import { cubicOut } from 'svelte/easing';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { userPreferencesManager } from '$lib/managers/user-preferences-manager.svelte';
+import { getAssetGenAiHistory, type AssetGenAiResponseDto } from '$lib/services/gemini.service';
 import type { ImageLoaderStatus } from '$lib/utils/adaptive-image-loader.svelte';
 import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
@@ -54,6 +55,8 @@ class AssetViewerManager extends BaseEventManager<Events> {
   isPlayingMotionPhoto = $state(false);
   isShowEditor = $state(false);
   isShowGeminiPanel = $state(false);
+  geminiResponses = $state<AssetGenAiResponseDto[]>([]);
+  geminiResponsesCount = $derived(this.geminiResponses.length);
   #isFaceEditMode = $state(false);
   #isEditFacesPanelOpen = $state(false);
   #viewingAssetStoreState = $state<AssetResponseDto>();
@@ -234,6 +237,18 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.isShowGeminiPanel = false;
   }
 
+  async fetchGeminiResponses(assetId: string) {
+    try {
+      this.geminiResponses = await getAssetGenAiHistory(assetId);
+    } catch {
+      this.geminiResponses = [];
+    }
+  }
+
+  clearGeminiResponses() {
+    this.geminiResponses = [];
+  }
+
   toggleFaceEditMode() {
     this.#isFaceEditMode = !this.#isFaceEditMode;
     this.emit('FaceEditModeChange', this.#isFaceEditMode);
@@ -259,6 +274,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.closeFaceEditMode();
     this.closeEditFacesPanel();
     this.closeGeminiPanel();
+    this.clearGeminiResponses();
   }
 
   get highlightedFaces() {
@@ -288,6 +304,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
   setAsset(asset: AssetResponseDto) {
     this.#viewingAssetStoreState = asset;
     this.#viewState = true;
+    this.fetchGeminiResponses(asset.id);
   }
 
   async setAssetId(id: string): Promise<AssetResponseDto> {

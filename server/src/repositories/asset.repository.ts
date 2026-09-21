@@ -558,6 +558,16 @@ export class AssetRepository {
     return this.db.insertInto('asset_genai').values(entity).returningAll().executeTakeFirstOrThrow();
   }
 
+  getGenAiByAssetId(assetId: string) {
+    return this.db
+      .selectFrom('asset_genai')
+      .selectAll('asset_genai')
+      .where('asset_genai.assetId', '=', assetId)
+      .where('asset_genai.deletedAt', 'is', null)
+      .orderBy('asset_genai.createdAt', 'asc')
+      .execute();
+  }
+
   @ChunkedArray({ chunkSize: 4000 })
   async createAll(assets: Insertable<AssetTable>[]) {
     const assetsWithScreenshot = assets.map((asset) => {

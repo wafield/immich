@@ -1,7 +1,7 @@
 import { GoogleGenAI, type Part } from '@google/genai';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto.js';
-import { GeminiRequestDto, GeminiResponseDto } from 'src/dtos/gemini.dto.js';
+import { AssetGenAiResponseDto, GeminiRequestDto, GeminiResponseDto, mapAssetGenAi } from 'src/dtos/gemini.dto.js';
 import { AssetFileType, Permission } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
@@ -88,5 +88,11 @@ export class GeminiService extends BaseService {
       this.logger.error(`Gemini API error: ${error?.message || error}`, error?.stack);
       throw new BadRequestException(`Gemini API error: ${error?.message || 'Failed to generate content'}`);
     }
+  }
+
+  async getGenAiHistory(auth: AuthDto, assetId: string): Promise<AssetGenAiResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [assetId] });
+    const history = await this.assetRepository.getGenAiByAssetId(assetId);
+    return history.map(mapAssetGenAi);
   }
 }

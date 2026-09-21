@@ -36,7 +36,6 @@
   import {
     mdiArrowLeft,
     mdiArrowRight,
-    mdiCreation,
     mdiDotsVertical,
     mdiFitToPageOutline,
     mdiFitToScreenOutline,
@@ -120,17 +119,11 @@
     onAction: () => setPlayOriginalVideo(!isPlayingOriginalVideo),
   });
 
-  const Gemini: ActionItem = $derived({
-    title: 'Gemini',
-    icon: mdiCreation,
-    onAction: () => assetViewerManager.toggleGeminiPanel(),
-  });
-
   const Actions = $derived(getAssetActions($t, { ...asset, stackPrimaryAssetId: stack?.primaryAssetId }, album));
   const sharedLink = getSharedLink();
 </script>
 
-<CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, Gemini, ...Object.values(Actions)])} />
+<CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
 
 <div class="relative flex h-12 place-items-center justify-between px-3 transition-transform duration-200 md:h-16">
   <div class="dark">
@@ -186,7 +179,17 @@
       />
     {/if}
 
-    <ActionButton action={Gemini} />
+    <div class="flex items-center">
+      <ActionButton action={Actions.Gemini} />
+      {#if assetViewerManager.geminiResponsesCount > 0}
+        <span
+          class="ml-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-white shadow-sm"
+          data-testid="gemini-responses-count"
+        >
+          {assetViewerManager.geminiResponsesCount}
+        </span>
+      {/if}
+    </div>
     <ActionButton action={Actions.Select} />
     <ActionButton action={Actions.Unselect} />
     <ActionButton action={Actions.Offline} />

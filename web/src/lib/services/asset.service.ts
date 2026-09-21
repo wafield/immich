@@ -18,6 +18,7 @@ import {
   mdiCogRefreshOutline,
   mdiCompare,
   mdiContentCopy,
+  mdiCreation,
   mdiDatabaseRefreshOutline,
   mdiDownload,
   mdiDownloadBox,
@@ -351,7 +352,14 @@ export const getAssetActions = (
     shortcuts: { key: 'x' },
   };
 
+  const Gemini: ActionItem = {
+    title: assetViewerManager.geminiResponsesCount > 0 ? `Gemini (${assetViewerManager.geminiResponsesCount})` : 'Gemini',
+    icon: mdiCreation,
+    onAction: () => assetViewerManager.toggleGeminiPanel(),
+  };
+
   return {
+    Gemini,
     Share,
     Download,
     DownloadOriginal,

@@ -7335,6 +7335,61 @@
         ]
       }
     },
+    "/gemini/asset/{id}": {
+      "get": {
+        "description": "Retrieve all historical Gemini responses for a specific asset.",
+        "operationId": "getGenAiHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetGenAiResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve GenAI responses for an asset",
+        "tags": [
+          "Gemini"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "asset.read"
+      }
+    },
     "/gemini/generate": {
       "post": {
         "description": "Send a multimodal request (text, image, or both) to Google Gemini API.",
@@ -20359,6 +20414,51 @@
           "encoded_video"
         ],
         "type": "string"
+      },
+      "AssetGenAiResponseDto": {
+        "properties": {
+          "assetId": {
+            "description": "Asset ID associated with the response",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "Timestamp when the response was generated",
+            "format": "date-time",
+            "type": "string"
+          },
+          "deletedAt": {
+            "description": "Deletion timestamp, or null if active",
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "description": "ID of the GenAI response entry",
+            "type": "string"
+          },
+          "modelName": {
+            "description": "Model name used for generation",
+            "type": "string"
+          },
+          "prompt": {
+            "description": "Prompt sent to Gemini",
+            "type": "string"
+          },
+          "response": {
+            "description": "Generated response from Gemini",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "createdAt",
+          "deletedAt",
+          "id",
+          "modelName",
+          "prompt",
+          "response"
+        ],
+        "type": "object"
       },
       "AssetIdErrorReason": {
         "description": "Error reason if failed",

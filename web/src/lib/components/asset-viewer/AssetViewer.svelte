@@ -421,6 +421,7 @@
       }
       await ocrManager.getAssetOcr(asset.id);
       await faceManager.getAssetFaces(asset.id);
+      await assetViewerManager.fetchGeminiResponses(asset.id);
     }
   };
 

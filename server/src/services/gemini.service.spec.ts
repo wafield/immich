@@ -141,4 +141,36 @@ describe(GeminiService.name, () => {
     expect(result).toEqual({ text: 'Response without asset' });
     expect(mocks.asset.createGenAi).not.toHaveBeenCalled();
   });
+
+  it('should retrieve genai history for an asset', async () => {
+    const assetId = '11111111-1111-1111-1111-111111111111';
+    mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
+    const fakeHistory = [
+      {
+        id: 'rec-1',
+        assetId,
+        prompt: 'Prompt 1',
+        response: 'Response 1',
+        modelName: 'gemini-3.8-flash',
+        createdAt: new Date('2026-09-20T10:00:00Z'),
+        deletedAt: null,
+      },
+    ];
+    mocks.asset.getGenAiByAssetId.mockResolvedValue(fakeHistory as any);
+
+    const result = await sut.getGenAiHistory(authStub.user1, assetId);
+
+    expect(result).toEqual([
+      {
+        id: 'rec-1',
+        assetId,
+        prompt: 'Prompt 1',
+        response: 'Response 1',
+        modelName: 'gemini-3.8-flash',
+        createdAt: '2026-09-20T10:00:00.000Z',
+        deletedAt: null,
+      },
+    ]);
+    expect(mocks.asset.getGenAiByAssetId).toHaveBeenCalledWith(assetId);
+  });
 });
