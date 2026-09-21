@@ -7,15 +7,10 @@ module.exports = {
       // make exiftool-vendored.pl a regular dependency since Docker prod
       // images build with --no-optional to reduce image size
       if (pkg.name === "exiftool-vendored") {
-        const binaryPackage =
-          process.platform === "win32"
-            ? "exiftool-vendored.exe"
-            : "exiftool-vendored.pl";
-
-        if (pkg.optionalDependencies[binaryPackage]) {
-          pkg.dependencies[binaryPackage] =
-            pkg.optionalDependencies[binaryPackage];
-          delete pkg.optionalDependencies[binaryPackage];
+        if (pkg.optionalDependencies["exiftool-vendored.pl"]) {
+          pkg.dependencies["exiftool-vendored.pl"] =
+            pkg.optionalDependencies["exiftool-vendored.pl"];
+          delete pkg.optionalDependencies["exiftool-vendored.pl"];
         }
       }
       return pkg;
