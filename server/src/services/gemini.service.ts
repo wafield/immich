@@ -69,8 +69,20 @@ export class GeminiService extends BaseService {
         contents: parts,
       });
 
+      const responseText = response.text ?? '';
+
+      if (dto.assetId) {
+        await this.assetRepository.createGenAi({
+          assetId: dto.assetId,
+          prompt: promptText ?? '',
+          response: responseText,
+          modelName: model,
+          createdAt: new Date(),
+        });
+      }
+
       return {
-        text: response.text ?? '',
+        text: responseText,
       };
     } catch (error: any) {
       this.logger.error(`Gemini API error: ${error?.message || error}`, error?.stack);

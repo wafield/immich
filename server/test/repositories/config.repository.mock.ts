@@ -38,6 +38,11 @@ export const envData: EnvData = {
     config: {},
   },
 
+  gemini: {
+    apiKey: '',
+    model: 'gemini-3.8-flash',
+  },
+
   licensePublicKey: {
     client: 'client-public-key',
     server: 'server-public-key',

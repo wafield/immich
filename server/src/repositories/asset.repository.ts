@@ -14,8 +14,8 @@ import {
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import path, { parse } from 'node:path';
+import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { LockableProperty, Stack } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
 import {
@@ -31,6 +31,7 @@ import { DB } from 'src/schema/index.js';
 import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table.js';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table.js';
 import { AssetFileTable } from 'src/schema/tables/asset-file.table.js';
+import { AssetGenAiTable } from 'src/schema/tables/asset-genai.table.js';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table.js';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table.js';
 import { AssetTable } from 'src/schema/tables/asset.table.js';
@@ -553,6 +554,10 @@ export class AssetRepository {
       .executeTakeFirstOrThrow();
   }
 
+  createGenAi(entity: Insertable<AssetGenAiTable>) {
+    return this.db.insertInto('asset_genai').values(entity).returningAll().executeTakeFirstOrThrow();
+  }
+
   @ChunkedArray({ chunkSize: 4000 })
   async createAll(assets: Insertable<AssetTable>[]) {
     const assetsWithScreenshot = assets.map((asset) => {
@@ -1009,12 +1014,12 @@ export class AssetRepository {
             'asset.isEdited',
             'asset.libraryId',
             'asset.originalFileName',
-            (!auth.sharedLink || auth.sharedLink.showExif
+            !auth.sharedLink || auth.sharedLink.showExif
               ? 'asset_exif.latitude'
-              : sql<number | null>`null`.as('latitude')),
-            (!auth.sharedLink || auth.sharedLink.showExif
+              : sql<number | null>`null`.as('latitude'),
+            !auth.sharedLink || auth.sharedLink.showExif
               ? 'asset_exif.longitude'
-              : sql<number | null>`null`.as('longitude')),
+              : sql<number | null>`null`.as('longitude'),
             sql`asset."isFavorite" and asset."ownerId" = ${auth.user.id}`.as('isFavorite'),
             sql`asset.type = 'IMAGE'`.as('isImage'),
             sql`asset."deletedAt" is not null`.as('isTrashed'),

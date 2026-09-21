@@ -122,5 +122,23 @@ describe(GeminiService.name, () => {
         { inlineData: { mimeType: 'image/jpeg', data: Buffer.from('fake-asset-bytes').toString('base64') } },
       ],
     });
+    expect(mocks.asset.createGenAi).toHaveBeenCalledWith({
+      assetId: '11111111-1111-1111-1111-111111111111',
+      prompt: 'Identify landmarks',
+      response: 'Identified landmarks in asset',
+      modelName: 'gemini-3.8-flash',
+      createdAt: expect.any(Date),
+    });
+  });
+
+  it('should not save genai entry if assetId is not provided', async () => {
+    generateContentMock.mockResolvedValue({ text: 'Response without asset' });
+
+    const result = await sut.generateContent(authStub.user1, {
+      prompt: 'Question without asset',
+    });
+
+    expect(result).toEqual({ text: 'Response without asset' });
+    expect(mocks.asset.createGenAi).not.toHaveBeenCalled();
   });
 });
