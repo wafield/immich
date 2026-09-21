@@ -53,6 +53,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
   isShowActivityPanel = $state(false);
   isPlayingMotionPhoto = $state(false);
   isShowEditor = $state(false);
+  isShowGeminiPanel = $state(false);
   #isFaceEditMode = $state(false);
   #isEditFacesPanelOpen = $state(false);
   #viewingAssetStoreState = $state<AssetResponseDto>();
@@ -167,8 +168,14 @@ class AssetViewerManager extends BaseEventManager<Events> {
   }
 
   toggleActivityPanel() {
-    this.closeDetailPanel();
-    this.isShowActivityPanel = !this.isShowActivityPanel;
+    if (!this.isShowActivityPanel) {
+      this.closeDetailPanel();
+      this.closeEditor();
+      this.closeGeminiPanel();
+      this.isShowActivityPanel = true;
+    } else {
+      this.isShowActivityPanel = false;
+    }
   }
 
   closeActivityPanel() {
@@ -180,8 +187,14 @@ class AssetViewerManager extends BaseEventManager<Events> {
   }
 
   toggleDetailPanel() {
-    this.closeActivityPanel();
-    this.isShowDetailPanel = !this.isShowDetailPanel;
+    if (!this.isShowDetailPanel) {
+      this.closeActivityPanel();
+      this.closeEditor();
+      this.closeGeminiPanel();
+      this.isShowDetailPanel = true;
+    } else {
+      this.isShowDetailPanel = false;
+    }
   }
 
   closeDetailPanel() {
@@ -189,12 +202,36 @@ class AssetViewerManager extends BaseEventManager<Events> {
   }
 
   openEditor() {
+    this.closeDetailPanel();
     this.closeActivityPanel();
+    this.closeGeminiPanel();
     this.isShowEditor = true;
   }
 
   closeEditor() {
     this.isShowEditor = false;
+  }
+
+  toggleGeminiPanel() {
+    if (!this.isShowGeminiPanel) {
+      this.closeDetailPanel();
+      this.closeActivityPanel();
+      this.closeEditor();
+      this.isShowGeminiPanel = true;
+    } else {
+      this.isShowGeminiPanel = false;
+    }
+  }
+
+  openGeminiPanel() {
+    this.closeDetailPanel();
+    this.closeActivityPanel();
+    this.closeEditor();
+    this.isShowGeminiPanel = true;
+  }
+
+  closeGeminiPanel() {
+    this.isShowGeminiPanel = false;
   }
 
   toggleFaceEditMode() {
@@ -221,6 +258,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
     this.closeEditor();
     this.closeFaceEditMode();
     this.closeEditFacesPanel();
+    this.closeGeminiPanel();
   }
 
   get highlightedFaces() {

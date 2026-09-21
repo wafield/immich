@@ -47,6 +47,7 @@
   import ActivityStatus from './ActivityStatus.svelte';
   import ActivityViewer from './ActivityViewer.svelte';
   import DetailPanel from './DetailPanel.svelte';
+  import GeminiPanel from './GeminiPanel.svelte';
   import EditorPanel from './editor/EditorPanel.svelte';
   import CropArea from './editor/transform-tool/CropArea.svelte';
   import ImagePanoramaViewer from './ImagePanoramaViewer.svelte';
@@ -484,7 +485,10 @@
   const showDetailPanel = $derived(
     asset.hasMetadata &&
       $slideshowState === SlideshowState.None &&
-      (mediaQueryManager.maxMd || assetViewerManager.isShowDetailPanel) &&
+      (mediaQueryManager.maxMd ||
+        (assetViewerManager.isShowDetailPanel &&
+          !assetViewerManager.isShowActivityPanel &&
+          !assetViewerManager.isShowGeminiPanel)) &&
       !assetViewerManager.isShowEditor,
   );
 
@@ -662,6 +666,20 @@
       {:else if assetViewerManager.isShowEditor}
         <EditorPanel {asset} onClose={closeEditor} />
       {/if}
+    </div>
+  {/if}
+
+  {#if assetViewerManager.isShowGeminiPanel}
+    <div
+      transition:fly={{ duration: mediaQueryManager.maxMd ? 0 : 150 }}
+      id="gemini-panel"
+      class={[
+        'bg-light transition-all dark:bg-immich-dark-bg dark:text-immich-dark-fg',
+        'row-span-4 row-start-1 h-full w-90 overflow-y-auto md:static md:w-90 max-md:fixed max-md:inset-0 max-md:z-20 max-md:w-full',
+      ]}
+      translate="yes"
+    >
+      <GeminiPanel />
     </div>
   {/if}
 
