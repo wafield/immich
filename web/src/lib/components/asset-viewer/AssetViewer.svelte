@@ -679,7 +679,7 @@
       ]}
       translate="yes"
     >
-      <GeminiPanel />
+      <GeminiPanel {asset} />
     </div>
   {/if}
 
