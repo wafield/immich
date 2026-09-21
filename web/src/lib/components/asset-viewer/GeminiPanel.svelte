@@ -1,9 +1,11 @@
 <script lang="ts">
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { generateGeminiContent } from '$lib/services/gemini.service';
+  import { locale } from '$lib/stores/preferences.store';
   import type { AssetResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, LoadingSpinner, Textarea } from '@immich/ui';
-  import { mdiAlertCircleOutline, mdiClose, mdiCreation, mdiSend } from '@mdi/js';
+  import { mdiAlertCircleOutline, mdiClockOutline, mdiClose, mdiCreation, mdiSend } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -16,6 +18,18 @@
   let isLoading = $state(false);
   let responseText = $state<string | null>(null);
   let errorMessage = $state<string | null>(null);
+
+  const formatDateTime = (dateStr: string) => {
+    try {
+      const dt = DateTime.fromISO(dateStr);
+      if (!dt.isValid) {
+        return dateStr;
+      }
+      return dt.setLocale($locale).toLocaleString(DateTime.DATETIME_MED);
+    } catch {
+      return dateStr;
+    }
+  };
 
   $effect(() => {
     // Reset state when viewing a different asset
@@ -43,6 +57,7 @@
         prompt: trimmedPrompt,
       });
       responseText = response.text;
+      prompt = '';
       await assetViewerManager.fetchGeminiResponses(asset.id);
     } catch (err: unknown) {
       errorMessage = err instanceof Error ? err.message : String(err);
@@ -74,6 +89,57 @@
   </div>
 
   <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+    <!-- History Section -->
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center justify-between">
+        <p class="text-xs font-semibold uppercase tracking-wider text-immich-fg/60 dark:text-immich-dark-fg/60">
+          History
+        </p>
+        {#if assetViewerManager.geminiResponsesCount > 0}
+          <span class="text-xs text-immich-fg/40 dark:text-immich-dark-fg/40">
+            {assetViewerManager.geminiResponsesCount}
+            {assetViewerManager.geminiResponsesCount === 1 ? 'entry' : 'entries'}
+          </span>
+        {/if}
+      </div>
+
+      {#if assetViewerManager.geminiResponses.length > 0}
+        <div class="flex flex-col gap-3" data-testid="gemini-history-list">
+          {#each assetViewerManager.geminiResponses as item (item.id)}
+            <div class="flex flex-col gap-2.5" data-testid="gemini-history-item">
+              <div class="flex items-center justify-between text-xs text-immich-fg/50 dark:text-immich-dark-fg/50">
+                <div class="flex items-center gap-1.5">
+                  <Icon icon={mdiClockOutline} size="14" />
+                  <span>{formatDateTime(item.createdAt)}</span>
+                </div>
+                {#if item.modelName}
+                  <span
+                    class="rounded bg-gray-200/60 px-1.5 py-0.5 text-[10px] font-medium text-immich-fg/70 dark:bg-immich-dark-gray/60 dark:text-immich-dark-fg/70"
+                  >
+                    {item.modelName}
+                  </span>
+                {/if}
+              </div>
+
+              <p class="pt-0.5 text-sm font-medium text-immich-fg select-text dark:text-immich-dark-fg">
+                {item.prompt}
+              </p>
+
+              <div
+                class="rounded-lg bg-gray-100 p-4 text-sm leading-relaxed text-immich-fg select-text whitespace-pre-wrap dark:bg-immich-dark-gray/30 dark:text-immich-dark-fg"
+              >
+                {item.response}
+              </div>
+            </div>
+          {/each}
+        </div>
+      {:else}
+        <p class="text-xs italic text-immich-fg/40 dark:text-immich-dark-fg/40">No previous prompts yet.</p>
+      {/if}
+    </div>
+
+    <hr class="border-gray-200 dark:border-immich-dark-gray/40" />
+
     <!-- Custom Prompt Textarea -->
     <div class="flex flex-col gap-2">
       <label
@@ -154,20 +220,6 @@
           <span>Failed to generate response</span>
         </div>
         <p class="mt-1 whitespace-pre-wrap break-words">{errorMessage}</p>
-      </div>
-    {/if}
-
-    <!-- Response Display -->
-    {#if responseText}
-      <div class="flex flex-col gap-2">
-        <p class="text-xs font-semibold uppercase tracking-wider text-immich-fg/60 dark:text-immich-dark-fg/60">
-          Response
-        </p>
-        <div
-          class="rounded-lg bg-gray-100 p-4 text-sm leading-relaxed text-immich-fg select-text whitespace-pre-wrap dark:bg-immich-dark-gray/30 dark:text-immich-dark-fg"
-        >
-          {responseText}
-        </div>
       </div>
     {/if}
   </div>
