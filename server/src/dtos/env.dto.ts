@@ -86,5 +86,7 @@ export const EnvSchema = z
     REDIS_PASSWORD: z.string().optional(),
     REDIS_SOCKET: z.string().optional(),
     REDIS_URL: z.string().optional(),
+    GEMINI_API_KEY: z.string().optional(),
+    GEMINI_MODEL: z.string().optional(),
   })
   .meta({ id: 'EnvDto' });

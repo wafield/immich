@@ -28,6 +28,7 @@ allowBuilds:
   core-js-pure: false
   postman-code-generators: false
   unrs-resolver: false
+  '@google/genai': false
 overrides:
   canvas: 3.2.3
   sharp: ^0.35.3

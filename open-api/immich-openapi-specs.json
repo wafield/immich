@@ -7285,6 +7285,106 @@
         "x-immich-state": "Stable"
       }
     },
+    "/gemini": {
+      "post": {
+        "description": "Send a multimodal request (text, image, or both) to Google Gemini API.",
+        "operationId": "generateContent",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeminiRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Generate content using Google Gemini",
+        "tags": [
+          "Gemini"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ]
+      }
+    },
+    "/gemini/generate": {
+      "post": {
+        "description": "Send a multimodal request (text, image, or both) to Google Gemini API.",
+        "operationId": "generateContentAlias",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeminiRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Generate content using Google Gemini (alias)",
+        "tags": [
+          "Gemini"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/jobs": {
       "get": {
         "deprecated": true,
@@ -17798,6 +17898,10 @@
       "description": "A face is a detected human face within an asset, which can be associated with a person. Faces are normally detected via machine learning, but can also be created manually."
     },
     {
+      "name": "Gemini",
+      "description": "Endpoints related to Google Gemini multimodal AI integration."
+    },
+    {
       "name": "Integrity (admin)",
       "description": "Endpoints for viewing and managing integrity reports."
     },
@@ -22673,6 +22777,58 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "GeminiImageInputDto": {
+        "properties": {
+          "data": {
+            "description": "Base64-encoded image bytes",
+            "type": "string"
+          },
+          "mimeType": {
+            "description": "MIME type of the image, e.g. image/jpeg, image/png, image/webp",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "mimeType"
+        ],
+        "type": "object"
+      },
+      "GeminiRequestDto": {
+        "properties": {
+          "assetId": {
+            "description": "Optional Immich asset ID to use as image input",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "image": {
+            "$ref": "#/components/schemas/GeminiImageInputDto",
+            "description": "Optional inline base64-encoded image data with MIME type"
+          },
+          "prompt": {
+            "description": "Text prompt or question for Gemini",
+            "type": "string"
+          },
+          "text": {
+            "description": "Alternative alias for prompt",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GeminiResponseDto": {
+        "properties": {
+          "text": {
+            "description": "Generated response text from Gemini",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
         "type": "object"
       },
       "HlsVideoResolution": {

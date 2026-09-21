@@ -77,6 +77,11 @@ export interface EnvData {
     url: string;
   };
 
+  gemini: {
+    apiKey: string;
+    model: string;
+  };
+
   network: {
     trustedProxies: string[];
   };
@@ -317,6 +322,11 @@ const getEnv = (): EnvData => {
 
     versionCheck: {
       url: isProd ? 'https://version.immich.cloud/version' : 'https://version.dev.immich.cloud/version',
+    },
+
+    gemini: {
+      apiKey: dto.GEMINI_API_KEY || process.env.GEMINI_API_KEY || '',
+      model: dto.GEMINI_MODEL || process.env.GEMINI_MODEL || 'gemini-3.8-flash',
     },
 
     network: {
