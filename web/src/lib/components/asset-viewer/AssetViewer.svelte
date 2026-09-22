@@ -48,6 +48,7 @@
   import ActivityViewer from './ActivityViewer.svelte';
   import DetailPanel from './DetailPanel.svelte';
   import GeminiPanel from './GeminiPanel.svelte';
+  import PanelResizeHandle from './PanelResizeHandle.svelte';
   import EditorPanel from './editor/EditorPanel.svelte';
   import CropArea from './editor/transform-tool/CropArea.svelte';
   import ImagePanoramaViewer from './ImagePanoramaViewer.svelte';
@@ -118,6 +119,11 @@
 
   let isPlayingOriginalVideo = $state($alwaysLoadOriginalVideo);
   let slideshowStartAssetId = $state<string>();
+
+  const DEFAULT_PANEL_WIDTH = 400;
+  let detailPanelWidth = $state(DEFAULT_PANEL_WIDTH);
+  let geminiPanelWidth = $state(DEFAULT_PANEL_WIDTH);
+  let isDraggingPanel = $state(false);
 
   const setPlayOriginalVideo = (value: boolean) => {
     isPlayingOriginalVideo = value;
@@ -530,7 +536,10 @@
 
 <section
   id="immich-asset-viewer"
-  class="fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[48px_minmax(0,1fr)] overflow-x-hidden overflow-y-auto bg-black md:grid-rows-[64px_minmax(0,1fr)] md:overflow-hidden"
+  class={[
+    'fixed inset-s-0 top-0 z-10 grid size-full grid-cols-4 grid-rows-[48px_minmax(0,1fr)] overflow-x-hidden overflow-y-auto bg-black md:grid-rows-[64px_minmax(0,1fr)] md:overflow-hidden',
+    { 'select-none': isDraggingPanel },
+  ]}
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
@@ -573,7 +582,13 @@
   {/if}
 
   <!-- Asset Viewer -->
-  <div data-viewer-content class="relative z-[-1] col-span-4 col-start-1 row-span-1 row-start-2 size-full min-h-0 overflow-hidden">
+  <div
+    data-viewer-content
+    class={[
+      'relative z-[-1] col-span-4 col-start-1 row-span-1 row-start-2 size-full min-h-0 overflow-hidden',
+      { 'pointer-events-none': isDraggingPanel },
+    ]}
+  >
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         asset={previewStackedAsset!}
@@ -650,6 +665,16 @@
     </div>
   {/if}
 
+  {#if showDetailPanel && mediaQueryManager.isLarge}
+    <PanelResizeHandle
+      containerElement={assetViewerHtmlElement}
+      panelWidth={detailPanelWidth}
+      onResize={(w) => (detailPanelWidth = w)}
+      onDraggingChange={(d) => (isDraggingPanel = d)}
+      ariaLabel="Resize details panel"
+    />
+  {/if}
+
   {#if showDetailPanel || assetViewerManager.isShowEditor}
     <div
       transition:fly={{ duration: mediaQueryManager.maxMd ? 0 : 150 }}
@@ -659,7 +684,9 @@
         showDetailPanel
           ? 'max-md:absolute max-md:inset-x-0 max-md:top-full max-md:z-20 max-md:min-h-full max-md:w-full max-md:overflow-visible max-md:rounded-xl md:static md:row-span-4 md:row-start-1 md:h-full md:w-90 md:overflow-y-auto'
           : 'row-span-4 row-start-1 w-100 overflow-y-auto',
+        { 'transition-none': isDraggingPanel, 'pointer-events-none': isDraggingPanel },
       ]}
+      style:width={showDetailPanel && mediaQueryManager.isLarge ? `${detailPanelWidth}px` : undefined}
       translate="yes"
     >
       {#if showDetailPanel}
@@ -670,14 +697,26 @@
     </div>
   {/if}
 
+  {#if assetViewerManager.isShowGeminiPanel && mediaQueryManager.isLarge}
+    <PanelResizeHandle
+      containerElement={assetViewerHtmlElement}
+      panelWidth={geminiPanelWidth}
+      onResize={(w) => (geminiPanelWidth = w)}
+      onDraggingChange={(d) => (isDraggingPanel = d)}
+      ariaLabel="Resize Gemini panel"
+    />
+  {/if}
+
   {#if assetViewerManager.isShowGeminiPanel}
     <div
       transition:fly={{ duration: mediaQueryManager.maxMd ? 0 : 150 }}
       id="gemini-panel"
       class={[
         'bg-light transition-all dark:bg-immich-dark-bg dark:text-immich-dark-fg',
-        'row-span-4 row-start-1 h-full w-90 overflow-y-auto md:static md:w-90 max-md:fixed max-md:inset-0 max-md:z-20 max-md:w-full',
+        'row-span-4 row-start-1 h-full w-90 overflow-y-auto max-md:fixed max-md:inset-0 max-md:z-20 max-md:w-full md:static md:w-90',
+        { 'transition-none': isDraggingPanel, 'pointer-events-none': isDraggingPanel },
       ]}
+      style:width={mediaQueryManager.isLarge ? `${geminiPanelWidth}px` : undefined}
       translate="yes"
     >
       <GeminiPanel {asset} />
