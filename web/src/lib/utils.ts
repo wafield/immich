@@ -483,3 +483,14 @@ export const isValidLatLng = (latitude?: number | null, longitude?: number | nul
 };
 
 export const IsValidLatLng = isValidLatLng;
+
+/**
+ * Returns whether a hash string represents a valid MapLibre map coordinate anchor (#zoom/lat/lng).
+ */
+export const isValidMapHash = (hash?: string | null): boolean => {
+  if (!hash) {
+    return false;
+  }
+  const parts = hash.replace(/^#\/?/, '').split('/');
+  return parts.length >= 3 && parts.slice(0, 3).every((part) => part.trim() !== '' && !Number.isNaN(Number(part)));
+};

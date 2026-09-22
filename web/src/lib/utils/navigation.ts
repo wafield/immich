@@ -24,15 +24,22 @@ export function getAssetInfoFromParam({ assetId, slug, key }: { assetId?: string
   return assetId ? assetCacheManager.getAsset({ id: assetId, slug, key }, false) : undefined;
 }
 
+function currentHash(): string {
+  return typeof location !== 'undefined' && location.hash ? location.hash : page.url.hash;
+}
+
 function currentUrlWithoutAsset() {
+  const hash = currentHash();
   // This contains special casing for the /photos/:assetId route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
   if (isPhotosRoute(page.route.id)) {
-    return Route.photos() + page.url.search;
+    return Route.photos() + page.url.search + hash;
   }
-  return isSharedLinkSlugRoute(page.route.id)
-    ? Route.viewSharedLink({ slug: page.data.slug, key: page.data.key }) + page.url.search
-    : page.url.pathname.replace(/(\/photos.*)$/, '') + page.url.search;
+  return (
+    (isSharedLinkSlugRoute(page.route.id)
+      ? Route.viewSharedLink({ slug: page.data.slug, key: page.data.key }) + page.url.search
+      : page.url.pathname.replace(/(\/photos.*)$/, '') + page.url.search) + hash
+  );
 }
 
 export function currentUrlReplaceAssetId(assetId: string) {
@@ -41,32 +48,34 @@ export function currentUrlReplaceAssetId(assetId: string) {
   params.delete('at');
   const paramsString = params.toString();
   const searchparams = paramsString === '' ? '' : '?' + params.toString();
+  const hash = currentHash();
   // this contains special casing for the /photos/:assetId photos route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
   return isPhotosRoute(page.route.id)
-    ? `${Route.viewAsset({ id: assetId })}${searchparams}`
-    : `${page.url.pathname.replace(/\/photos\/[^/]+$/, '')}/photos/${assetId}${searchparams}`;
+    ? `${Route.viewAsset({ id: assetId })}${searchparams}${hash}`
+    : `${page.url.pathname.replace(/\/photos\/[^/]+$/, '')}/photos/${assetId}${searchparams}${hash}`;
 }
 
 function replaceScrollTarget(url: string, searchParams?: AssetGridRouteSearchParams | null) {
   const parsed = new URL(url, page.url);
+  const hash = parsed.hash || currentHash();
 
   const { at: assetId } = searchParams || { at: null };
 
   if (!assetId) {
-    return parsed.pathname;
+    return parsed.pathname + hash;
   }
 
   const params = new URLSearchParams(page.url.search);
   if (assetId) {
     params.set('at', assetId);
   }
-  return parsed.pathname + '?' + params.toString();
+  return parsed.pathname + '?' + params.toString() + hash;
 }
 
 function currentUrl() {
   const current = page.url;
-  return current.pathname + current.search + current.hash;
+  return current.pathname + current.search + currentHash();
 }
 
 interface Route {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { browser } from '$app/environment';
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { navigating } from '$app/state';
   import { timeToLoadTheMap } from '$lib/constants';
@@ -51,7 +52,7 @@
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { highlightMissingGps } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { handlePromiseError, isValidLatLng } from '$lib/utils';
+  import { handlePromiseError, isValidLatLng, isValidMapHash } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
   import {
@@ -117,7 +118,14 @@
     await timelineComponent?.scrollToAsset(firstAssetId);
   };
   let showAlbumUsers = $derived(timelineManager?.showAssetOwners ?? false);
-  let showAlbumMap = $state(false);
+  let showAlbumMap = $state(browser && isValidMapHash(location.hash));
+
+  const toggleAlbumMap = () => {
+    showAlbumMap = !showAlbumMap;
+    if (!showAlbumMap && browser && location.hash) {
+      history.replaceState(history.state, '', location.pathname + location.search);
+    }
+  };
   let showMissingGps = $derived(showAlbumMap);
   let hoveredAsset = $state<TimelineAsset | null>(null);
   let hoverCoordinate = $derived(
@@ -564,7 +572,15 @@
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
 
-<svelte:window onpointerup={() => stopDragging()} onpointercancel={() => stopDragging()} />
+<svelte:window
+  onpointerup={() => stopDragging()}
+  onpointercancel={() => stopDragging()}
+  onhashchange={() => {
+    if (isValidMapHash(location.hash) && !showAlbumMap) {
+      showAlbumMap = true;
+    }
+  }}
+/>
 
 <UserPageLayout scrollbar={false}>
   <div bind:this={albumContainer} class={['flex size-full flex-row', { 'select-none': isDragging }]}>
@@ -582,6 +598,7 @@
           {/await}
         {:then { default: Map }}
           <Map
+            hash
             {mapMarkers}
             showSettings={false}
             onSelect={handleMapSelect}
@@ -855,7 +872,7 @@
             shape="round"
             color="secondary"
             icon={mdiMapOutline}
-            onclick={() => (showAlbumMap = !showAlbumMap)}
+            onclick={toggleAlbumMap}
             aria-label={$t('map')}
           />
         {/if}

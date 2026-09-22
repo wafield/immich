@@ -17,7 +17,7 @@
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, handlePromiseError, isValidLatLng } from '$lib/utils';
+  import { getAssetMediaUrl, handlePromiseError, isValidLatLng, isValidMapHash } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
   import {
@@ -129,7 +129,12 @@
 
   // Calculate initial bounds from markers once during initialization
   const initialBounds = (() => {
-    if (!autoFitBounds || center || zoom !== undefined) {
+    if (
+      !autoFitBounds ||
+      center ||
+      zoom !== undefined ||
+      (hash && typeof location !== 'undefined' && isValidMapHash(location.hash))
+    ) {
       return undefined;
     }
 
@@ -509,6 +514,13 @@
       event.on('click', handleMapClick);
       event.on('moveend', handleMoveEnd);
       event.on('move', handleMapMove);
+      if (hash && typeof location !== 'undefined' && !location.hash) {
+        event.once('idle', () => {
+          if (!location.hash) {
+            event.fire('moveend');
+          }
+        });
+      }
       // if (!simplified) {
       //   event.addControl(new GlobeControl(), 'top-left');
       // }

@@ -1,5 +1,5 @@
 import { AssetTypeEnum } from '@immich/sdk';
-import { getAssetUrl, isValidLatLng, IsValidLatLng, semverToName } from '$lib/utils';
+import { getAssetUrl, isValidLatLng, IsValidLatLng, isValidMapHash, semverToName } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -201,6 +201,25 @@ describe('utils', () => {
       expect(IsValidLatLng(37.7749, -122.4194)).toBe(true);
       expect(IsValidLatLng(null, 10)).toBe(false);
       expect(IsValidLatLng(10, NaN)).toBe(false);
+    });
+  });
+
+  describe('isValidMapHash', () => {
+    it('should return true for valid map hash strings', () => {
+      expect(isValidMapHash('#6.8/48.432/-0.373')).toBe(true);
+      expect(isValidMapHash('#15/37.75/-122.42')).toBe(true);
+      expect(isValidMapHash('#15/37.75/-122.42/20/30')).toBe(true);
+      expect(isValidMapHash('6.8/48.432/-0.373')).toBe(true);
+    });
+
+    it('should return false for invalid or missing map hashes', () => {
+      expect(isValidMapHash(undefined)).toBe(false);
+      expect(isValidMapHash(null)).toBe(false);
+      expect(isValidMapHash('')).toBe(false);
+      expect(isValidMapHash('#')).toBe(false);
+      expect(isValidMapHash('#some-anchor')).toBe(false);
+      expect(isValidMapHash('#6.8/48.432')).toBe(false);
+      expect(isValidMapHash('#a/b/c')).toBe(false);
     });
   });
 });
