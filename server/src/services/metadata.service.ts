@@ -900,7 +900,7 @@ export class MetadataService extends BaseService {
         //
         // this is especially important in the case of UTC+0 where exiftool-vendored does not return tz/zone fields
         // and as such the tags aren't overwritten when returning all tags.
-        for (const tag of ['zone', 'tz', 'tzSource'] as const) {
+        for (const tag of ['zone', 'tz', 'tzSource', 'zoneSource'] as const) {
           delete mediaTags[tag];
         }
       }
@@ -1322,8 +1322,10 @@ export class MetadataService extends BaseService {
       this.logger.verbose(`No exif date time information found for asset ${asset.id}: ${asset.originalPath}`);
     }
 
-    // timezone
-    let timeZone = exifTags.zone ?? null;
+    // timezone (do not infer timezone info based on GPS info)
+    const zoneSource = exifTags.zoneSource ?? exifTags.tzSource;
+    const isGpsZone = Boolean(zoneSource && /gps|geolocation/i.test(zoneSource));
+    let timeZone = isGpsZone ? null : (exifTags.zone ?? null);
     if (timeZone === null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
@@ -1331,9 +1333,7 @@ export class MetadataService extends BaseService {
     }
 
     if (timeZone) {
-      this.logger.verbose(
-        `Found timezone ${timeZone} via ${exifTags.zoneSource} for asset ${asset.id}: ${asset.originalPath}`,
-      );
+      this.logger.verbose(`Found timezone ${timeZone} via ${zoneSource} for asset ${asset.id}: ${asset.originalPath}`);
     } else {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
     }
@@ -1341,7 +1341,7 @@ export class MetadataService extends BaseService {
     let dateTimeOriginal = dateTime?.toDateTime();
 
     // do not let JavaScript use local timezone
-    if (dateTimeOriginal && !dateTime?.hasZone) {
+    if (dateTimeOriginal && (!dateTime?.hasZone || isGpsZone)) {
       dateTimeOriginal = dateTimeOriginal.setZone('UTC', { keepLocalTime: true });
     }
 

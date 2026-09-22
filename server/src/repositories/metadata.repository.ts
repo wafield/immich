@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
-import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { mimeTypes } from 'src/utils/mime-types.js';
 
@@ -255,10 +254,10 @@ export class MetadataRepository {
     inferTimezoneFromTimeStamp: true,
     useMWG: true,
     numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize', 'Rotation'],
-    /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
-    // eslint-disable-next-line import-x/no-named-as-default-member
-    geoTz: (lat, lon) => geotz.find(lat, lon)[0],
-    geolocation: true,
+    // Do not infer timezone info based on GPS info
+    // eslint-disable-next-line unicorn/no-useless-undefined
+    geoTz: () => undefined,
+    geolocation: false,
     readArgs: [
       // Enable exiftool LFS to parse metadata for files larger than 2GB.
       '-api',

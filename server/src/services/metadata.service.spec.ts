@@ -1230,6 +1230,64 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should not infer timezone info based on GPS info', async () => {
+      const asset = AssetFactory.create();
+      const someDate = '2024-09-01T12:52:13.000';
+
+      const tags: ImmichTags = {
+        DateTimeOriginal: ExifDateTime.fromISO(someDate),
+        zone: 'Asia/Tokyo',
+        zoneSource: 'GPSLatitude/GPSLongitude',
+      };
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags(tags);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({
+            timeZone: null,
+          }),
+        }),
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: asset.id,
+          localDateTime: new Date('2024-09-01T12:52:13.000Z'),
+        }),
+      );
+    });
+
+    it('should not infer timezone info based on GeolocationTimeZone', async () => {
+      const asset = AssetFactory.create();
+      const someDate = '2024-09-01T12:52:13.000';
+
+      const tags: ImmichTags = {
+        DateTimeOriginal: ExifDateTime.fromISO(someDate),
+        zone: 'Asia/Tokyo',
+        tzSource: 'GeolocationTimeZone',
+      };
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags(tags);
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.assetJob.getForMetadataExtraction).toHaveBeenCalledWith(asset.id);
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          exif: expect.objectContaining({
+            timeZone: null,
+          }),
+        }),
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: asset.id,
+          localDateTime: new Date('2024-09-01T12:52:13.000Z'),
+        }),
+      );
+    });
+
     it('should extract duration', async () => {
       const asset = AssetFactory.create({ type: AssetType.Video });
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
