@@ -145,9 +145,8 @@
   const isInGeoSelectionMode = $derived(
     showAlbumMap &&
       viewMode === AlbumPageViewMode.VIEW &&
-      assetMultiSelectManager.selectionActive &&
       assetMultiSelectManager.assets.length > 0 &&
-      assetMultiSelectManager.assets.every((asset) => !isValidLatLng(asset.latitude, asset.longitude)),
+      assetMultiSelectManager.isAllMissingGPS,
   );
 
   const handleSetGpsFromMapPin = async () => {
@@ -173,7 +172,21 @@
         },
       });
 
+      for (const asset of assetMultiSelectManager.assets) {
+        if (!ids.includes(asset.id)) {
+          continue;
+        }
+        asset.latitude = lat;
+        asset.longitude = lng;
+      }
+      timelineManager?.upsertAssets(
+        assetMultiSelectManager.assets
+          .filter((asset) => ids.includes(asset.id))
+          .map((asset) => ({ ...asset, latitude: lat, longitude: lng })),
+      );
+
       mapMarkers = await loadMapMarkers();
+      assetMultiSelectManager.clear();
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_location'));
     } finally {

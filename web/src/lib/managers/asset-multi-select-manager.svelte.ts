@@ -3,6 +3,7 @@ import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { isValidLatLng } from '$lib/utils';
 
 export type AssetMultiSelectOptions = {
   resetOnNavigate?: boolean;
@@ -30,6 +31,7 @@ export class AssetMultiSelectManager {
   isAllUserOwned = $derived(
     authManager.authenticated && this.assets.every((asset) => asset.ownerId === authManager.user.id),
   );
+  isAllMissingGPS = $derived(this.assets.every((asset) => !isValidLatLng(asset.latitude, asset.longitude)));
 
   #unsubscribe?: () => void;
 
