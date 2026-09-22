@@ -1,5 +1,5 @@
 import { AssetTypeEnum } from '@immich/sdk';
-import { getAssetUrl, semverToName } from '$lib/utils';
+import { getAssetUrl, isValidLatLng, IsValidLatLng, semverToName } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -168,6 +168,39 @@ describe('utils', () => {
 
     it('should append release candidate if set', () => {
       expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0 })).toEqual('v3.0.0-rc.0');
+    });
+  });
+
+  describe(isValidLatLng.name, () => {
+    it('should return true for valid coordinates', () => {
+      expect(isValidLatLng(0, 0)).toBe(true);
+      expect(isValidLatLng(37.7749, -122.4194)).toBe(true);
+      expect(isValidLatLng(-90, 180)).toBe(true);
+    });
+
+    it('should return false if latitude or longitude is null', () => {
+      expect(isValidLatLng(null, 10)).toBe(false);
+      expect(isValidLatLng(10, null)).toBe(false);
+      expect(isValidLatLng(null, null)).toBe(false);
+    });
+
+    it('should return false if latitude or longitude is undefined', () => {
+      expect(isValidLatLng(undefined, 10)).toBe(false);
+      expect(isValidLatLng(10, undefined)).toBe(false);
+      expect(isValidLatLng(undefined, undefined)).toBe(false);
+      expect(isValidLatLng()).toBe(false);
+    });
+
+    it('should return false if latitude or longitude is NaN', () => {
+      expect(isValidLatLng(NaN, 10)).toBe(false);
+      expect(isValidLatLng(10, NaN)).toBe(false);
+      expect(isValidLatLng(NaN, NaN)).toBe(false);
+    });
+
+    it('should behave identically for IsValidLatLng alias', () => {
+      expect(IsValidLatLng(37.7749, -122.4194)).toBe(true);
+      expect(IsValidLatLng(null, 10)).toBe(false);
+      expect(IsValidLatLng(10, NaN)).toBe(false);
     });
   });
 });

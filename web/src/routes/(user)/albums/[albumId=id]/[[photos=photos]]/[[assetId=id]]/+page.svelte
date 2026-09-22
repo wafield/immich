@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { navigating } from '$app/state';
-  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import { timeToLoadTheMap } from '$lib/constants';
   import { LoadingSpinner } from '@immich/ui';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
@@ -28,7 +27,7 @@
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
   import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import { delay } from '$lib/utils/asset-utils';
+  import { delay, getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AlbumPageViewMode } from '$lib/constants';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
@@ -52,7 +51,7 @@
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { highlightMissingGps } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { handlePromiseError } from '$lib/utils';
+  import { handlePromiseError, isValidLatLng } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
   import {
@@ -60,12 +59,14 @@
     AssetVisibility,
     getAlbumInfo,
     updateAlbumInfo,
+    updateAssets,
     getAlbumMapMarkers,
     type AlbumResponseDto,
     type MapMarkerResponseDto,
   } from '@immich/sdk';
   import {
     ActionButton,
+    Button,
     CommandPaletteDefaultProvider,
     Icon,
     IconButton,
@@ -84,6 +85,7 @@
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
+    mdiMapMarker,
     mdiMapOutline,
     mdiPlus,
     mdiPresentationPlay,
@@ -122,10 +124,7 @@
     showAlbumMap &&
       viewMode === AlbumPageViewMode.VIEW &&
       hoveredAsset &&
-      hoveredAsset.latitude != null &&
-      hoveredAsset.longitude != null &&
-      !Number.isNaN(hoveredAsset.latitude) &&
-      !Number.isNaN(hoveredAsset.longitude)
+      isValidLatLng(hoveredAsset.latitude, hoveredAsset.longitude)
       ? { latitude: hoveredAsset.latitude, longitude: hoveredAsset.longitude }
       : null,
   );
@@ -138,6 +137,49 @@
   let albumContainer: HTMLDivElement | undefined = $state();
   let mapWidthRatio = $state(1 / 2);
   let isDragging = $state(false);
+  let mapCenter = $state<{ lat: number; lng: number }>();
+
+  /** Whether the user has kicked off setting GPS on selected assets. */
+  let isSettingGps = $state(false);
+
+  const isInGeoSelectionMode = $derived(
+    showAlbumMap &&
+      viewMode === AlbumPageViewMode.VIEW &&
+      assetMultiSelectManager.selectionActive &&
+      assetMultiSelectManager.assets.length > 0 &&
+      assetMultiSelectManager.assets.every((asset) => !isValidLatLng(asset.latitude, asset.longitude)),
+  );
+
+  const handleSetGpsFromMapPin = async () => {
+    if (!mapCenter) {
+      return;
+    }
+
+    const ids = getOwnedAssetsWithWarning(assetMultiSelectManager.assets, authManager.user);
+    if (ids.length === 0) {
+      return;
+    }
+
+    isSettingGps = true;
+    try {
+      const lat = Number(mapCenter.lat.toFixed(7));
+      const lng = Number(mapCenter.lng.toFixed(7));
+
+      await updateAssets({
+        assetBulkUpdateDto: {
+          ids,
+          latitude: lat,
+          longitude: lng,
+        },
+      });
+
+      mapMarkers = await loadMapMarkers();
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_update_location'));
+    } finally {
+      isSettingGps = false;
+    }
+  };
 
   const MIN_MAP_RATIO = 0.25;
   const MAX_MAP_RATIO = 0.7;
@@ -167,7 +209,7 @@
     const rawRatio = languageManager.rtl ? (rect.right - currentX) / rect.width : (currentX - rect.left) / rect.width;
 
     mapWidthRatio = Math.min(MAX_MAP_RATIO, Math.max(MIN_MAP_RATIO, rawRatio));
-    window.dispatchEvent(new Event('resize'));
+    dispatchEvent(new Event('resize'));
   };
 
   const stopDragging = (event?: PointerEvent) => {
@@ -178,33 +220,44 @@
     if (event) {
       try {
         (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
-      } catch {}
+      } catch {
+        // Pointer capture may have already been released
+      }
     }
     document.body.style.removeProperty('cursor');
     document.body.style.removeProperty('user-select');
-    window.dispatchEvent(new Event('resize'));
+    dispatchEvent(new Event('resize'));
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
     const step = 0.02;
-    if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      const delta = languageManager.rtl ? step : -step;
-      mapWidthRatio = Math.min(MAX_MAP_RATIO, Math.max(MIN_MAP_RATIO, mapWidthRatio + delta));
-      window.dispatchEvent(new Event('resize'));
-    } else if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      const delta = languageManager.rtl ? -step : step;
-      mapWidthRatio = Math.min(MAX_MAP_RATIO, Math.max(MIN_MAP_RATIO, mapWidthRatio + delta));
-      window.dispatchEvent(new Event('resize'));
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      mapWidthRatio = MIN_MAP_RATIO;
-      window.dispatchEvent(new Event('resize'));
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      mapWidthRatio = MAX_MAP_RATIO;
-      window.dispatchEvent(new Event('resize'));
+    switch (event.key) {
+      case 'ArrowLeft': {
+        event.preventDefault();
+        const delta = languageManager.rtl ? step : -step;
+        mapWidthRatio = Math.min(MAX_MAP_RATIO, Math.max(MIN_MAP_RATIO, mapWidthRatio + delta));
+        dispatchEvent(new Event('resize'));
+        break;
+      }
+      case 'ArrowRight': {
+        event.preventDefault();
+        const delta = languageManager.rtl ? -step : step;
+        mapWidthRatio = Math.min(MAX_MAP_RATIO, Math.max(MIN_MAP_RATIO, mapWidthRatio + delta));
+        dispatchEvent(new Event('resize'));
+        break;
+      }
+      case 'Home': {
+        event.preventDefault();
+        mapWidthRatio = MIN_MAP_RATIO;
+        dispatchEvent(new Event('resize'));
+        break;
+      }
+      case 'End': {
+        event.preventDefault();
+        mapWidthRatio = MAX_MAP_RATIO;
+        dispatchEvent(new Event('resize'));
+        break;
+      }
     }
   };
 
@@ -515,7 +568,14 @@
             </div>
           {/await}
         {:then { default: Map }}
-          <Map {mapMarkers} showSettings={false} onSelect={handleMapSelect} {hoverCoordinate} />
+          <Map
+            {mapMarkers}
+            showSettings={false}
+            onSelect={handleMapSelect}
+            {hoverCoordinate}
+            showCenterPin={isInGeoSelectionMode}
+            onCenterChange={(coords) => (mapCenter = coords)}
+          />
         {/await}
       </div>
 
@@ -528,7 +588,7 @@
         aria-valuemax={70}
         aria-label="Resize map"
         class={[
-          'group relative flex w-3 shrink-0 cursor-col-resize items-center justify-center border-none bg-transparent p-0 select-none touch-none transition-colors sm:w-2',
+          'group relative flex w-3 shrink-0 cursor-col-resize touch-none items-center justify-center border-none bg-transparent p-0 transition-colors select-none sm:w-2',
           isDragging ? 'bg-primary/20 dark:bg-primary/30' : 'hover:bg-gray-200/60 dark:hover:bg-gray-700/60',
         ]}
         onpointerdown={handlePointerDown}
@@ -689,6 +749,19 @@
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       <ActionButton action={Actions.AddToAlbum} />
+      {#if showAlbumMap && isInGeoSelectionMode && mapCenter}
+        <Button
+          color="primary"
+          shape="round"
+          size="medium"
+          leadingIcon={mdiMapMarker}
+          onclick={handleSetGpsFromMapPin}
+          loading={isSettingGps}
+          disabled={isSettingGps}
+        >
+          Set GPS ({mapCenter.lat.toFixed(4)}, {mapCenter.lng.toFixed(4)})
+        </Button>
+      {/if}
       {#if assetMultiSelectManager.isAllUserOwned}
         <MoveToLibraryAction
           onAssetChange={(assets, selectedLibraryId) => {
@@ -698,7 +771,7 @@
                 asset.libraryId = selectedLibraryId;
               },
             );
-            timelineManager.upsertAssets(assets.map(toTimelineAsset));
+            timelineManager.upsertAssets(assets.map((a) => toTimelineAsset(a)));
           }}
         />
         <FavoriteAction

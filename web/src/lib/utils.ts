@@ -467,3 +467,19 @@ export const transformToTitleCase = (text: string) => {
   }
   return result.trim();
 };
+
+/**
+ * Returns whether latitude and longitude are valid coordinates (neither is null, undefined, or NaN).
+ */
+export const isValidLatLng = (latitude?: number | null, longitude?: number | null): boolean => {
+  return (
+    latitude !== null &&
+    latitude !== undefined &&
+    longitude !== null &&
+    longitude !== undefined &&
+    !Number.isNaN(latitude) &&
+    !Number.isNaN(longitude)
+  );
+};
+
+export const IsValidLatLng = isValidLatLng;

@@ -17,7 +17,7 @@
   import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetMediaUrl, handlePromiseError, isValidLatLng } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
   import {
@@ -86,6 +86,8 @@
     showSimpleControls?: boolean;
     autoFitBounds?: boolean;
     hoverCoordinate?: HoverCoordinate | null;
+    showCenterPin?: boolean;
+    onCenterChange?: (coords: { lat: number; lng: number }) => void;
   }
 
   let {
@@ -109,6 +111,8 @@
     showSimpleControls = true,
     autoFitBounds = true,
     hoverCoordinate = null,
+    showCenterPin = false,
+    onCenterChange = undefined,
   }: Props = $props();
 
   function getMarkersBounds() {
@@ -150,6 +154,9 @@
   let hoverMarker: Marker | null = null;
   let abortController: AbortController;
 
+  /**
+   * Place an icon on the map where the user is hovering over an asset with a coordinate.
+   */
   function updateHoverMarker() {
     if (!map) {
       return;
@@ -158,7 +165,7 @@
     const lat = hoverCoordinate?.latitude ?? hoverCoordinate?.lat;
     const lng = hoverCoordinate?.longitude ?? hoverCoordinate?.lng;
 
-    if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) {
+    if (!isValidLatLng(lat, lng)) {
       if (hoverMarker) {
         hoverMarker.remove();
         hoverMarker = null;
@@ -178,9 +185,7 @@
     const west = bounds.getWest();
     const east = bounds.getEast();
     const showAll = east - west >= 360;
-    const inBounds = showAll
-      ? lat >= bounds.getSouth() && lat <= bounds.getNorth()
-      : bounds.contains([lng, lat]);
+    const inBounds = showAll ? lat >= bounds.getSouth() && lat <= bounds.getNorth() : bounds.contains([lng, lat]);
 
     if (!inBounds) {
       if (hoverMarker) {
@@ -190,13 +195,13 @@
       return;
     }
 
-    if (!hoverMarker) {
+    if (hoverMarker) {
+      hoverMarker.setLngLat([lng, lat]);
+    } else {
       const el = document.createElement('div');
       el.className = 'pointer-events-none z-30 flex items-center justify-center text-red-500';
       el.innerHTML = `<svg viewBox="0 0 24 24" width="36" height="36" style="color: #ef4444; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.6)); display: block;"><path fill="currentColor" d="${mdiCrosshairsGps}" /></svg>`;
       hoverMarker = new Marker({ element: el, anchor: 'center' }).setLngLat([lng, lat]).addTo(map);
-    } else {
-      hoverMarker.setLngLat([lng, lat]);
     }
   }
 
@@ -204,6 +209,14 @@
     void hoverCoordinate;
     void map;
     updateHoverMarker();
+  });
+
+  $effect(() => {
+    if (!showCenterPin || !map || !onCenterChange) {
+      return;
+    }
+    const c = map.getCenter();
+    onCenterChange({ lat: c.lat, lng: c.lng });
   });
 
   let isDarkStyle = $state(($mapSettings.allowDarkMode ? themeManager.value : Theme.Light) === Theme.Dark);
@@ -264,6 +277,10 @@
   }
 
   function handleMapClick(event: MapMouseEvent) {
+    if (showCenterPin && map) {
+      map.easeTo({ center: event.lngLat });
+    }
+
     if (!clickable) {
       return;
     }
@@ -465,6 +482,13 @@
   const onAssetsChanged = async () => {
     mapMarkers = await loadMapMarkers();
   };
+  function handleMapMove() {
+    updateHoverMarker();
+    if (showCenterPin && map && onCenterChange) {
+      const c = map.getCenter();
+      onCenterChange({ lat: c.lat, lng: c.lng });
+    }
+  }
 </script>
 
 <OnEvents onAssetsDelete={onAssetsChanged} onAssetsArchive={onAssetsChanged} onAssetsUnarchive={onAssetsChanged} />
@@ -484,7 +508,7 @@
       event.setMaxZoom(18);
       event.on('click', handleMapClick);
       event.on('moveend', handleMoveEnd);
-      event.on('move', updateHoverMarker);
+      event.on('move', handleMapMove);
       // if (!simplified) {
       //   event.addControl(new GlobeControl(), 'top-left');
       // }
@@ -492,6 +516,18 @@
     bind:map
   >
     {#snippet children({ map }: { map: Map })}
+      {#if showCenterPin}
+        <div class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+          <div class="relative flex flex-col items-center">
+            <div class="-translate-y-1/2 drop-shadow-[0_4px_8px_rgba(0,0,0,0.5)]">
+              <Icon icon={mdiMapMarker} size="48px" class="text-primary" />
+            </div>
+            <div
+              class="absolute top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-primary shadow-sm ring-2 ring-white"
+            ></div>
+          </div>
+        </div>
+      {/if}
       {#if showSimpleControls}
         <NavigationControl position="top-left" showCompass={false} />
 
