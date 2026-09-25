@@ -88,6 +88,7 @@
     mdiImagePlusOutline,
     mdiLink,
     mdiMapMarker,
+    mdiMapMarkerDistance,
     mdiMapOutline,
     mdiPlus,
     mdiPresentationPlay,
@@ -167,6 +168,123 @@
       assetMultiSelectManager.assets.length > 0 &&
       assetMultiSelectManager.isAllMissingGPS,
   );
+
+  const getAssetTimestamp = (asset: TimelineAsset): number | null => {
+    const dt = asset.localDateTime;
+    if (!dt) {
+      return null;
+    }
+    return Date.UTC(
+      dt.year,
+      (dt.month ?? 1) - 1,
+      dt.day ?? 1,
+      dt.hour ?? 0,
+      dt.minute ?? 0,
+      dt.second ?? 0,
+      dt.millisecond ?? 0,
+    );
+  };
+
+  const getAssetCoordinates = (asset: TimelineAsset): { lat: number; lng: number } | null => {
+    const lat = asset.latitude ?? (asset as any).exifInfo?.latitude;
+    const lng = asset.longitude ?? (asset as any).exifInfo?.longitude;
+    if (isValidLatLng(lat, lng)) {
+      return { lat: Number(lat), lng: Number(lng) };
+    }
+    return null;
+  };
+
+  const calculateCentroid = (points: { lat: number; lng: number }[]): { lat: number; lng: number } | null => {
+    if (points.length === 0) {
+      return null;
+    }
+    if (points.length === 1) {
+      return { lat: points[0].lat, lng: points[0].lng };
+    }
+
+    let x = 0;
+    let y = 0;
+    let z = 0;
+
+    for (const p of points) {
+      const latRad = (p.lat * Math.PI) / 180;
+      const lngRad = (p.lng * Math.PI) / 180;
+      x += Math.cos(latRad) * Math.cos(lngRad);
+      y += Math.cos(latRad) * Math.sin(lngRad);
+      z += Math.sin(latRad);
+    }
+
+    const total = points.length;
+    x /= total;
+    y /= total;
+    z /= total;
+
+    const centralLng = Math.atan2(y, x);
+    const centralSquareRoot = Math.sqrt(x * x + y * y);
+    const centralLat = Math.atan2(z, centralSquareRoot);
+
+    return {
+      lat: Number(((centralLat * 180) / Math.PI).toFixed(7)),
+      lng: Number(((centralLng * 180) / Math.PI).toFixed(7)),
+    };
+  };
+
+  const suggestedGps = $derived.by(() => {
+    if (!isInGeoSelectionMode || !timelineManager) {
+      return null;
+    }
+
+    const selected = assetMultiSelectManager.assets;
+    if (selected.length === 0) {
+      return null;
+    }
+
+    const selectedTimes = selected.map((element) => getAssetTimestamp(element)).filter((t): t is number => t !== null);
+
+    if (selectedTimes.length === 0) {
+      return null;
+    }
+
+    const minSelectedTime = Math.min(...selectedTimes);
+    const maxSelectedTime = Math.max(...selectedTimes);
+
+    const FIVE_MINUTES_MS = 5 * 60 * 1000;
+    const windowStart = minSelectedTime - FIVE_MINUTES_MS;
+    const windowEnd = maxSelectedTime + FIVE_MINUTES_MS;
+
+    const selectedIds = new Set(selected.map((a) => a.id));
+    const allTimelineAssets = timelineManager.months?.flatMap((m) => m.getAssets()) ?? [];
+
+    const markerMap = new Map(mapMarkers.map((m) => [m.id, { lat: m.lat, lng: m.lon }]));
+    const seenAssetIds = new Set<string>(selectedIds);
+    const surroundingGpsPoints: { lat: number; lng: number }[] = [];
+
+    for (const asset of allTimelineAssets) {
+      if (seenAssetIds.has(asset.id)) {
+        continue;
+      }
+      seenAssetIds.add(asset.id);
+
+      const time = getAssetTimestamp(asset);
+      if (time === null || time < windowStart || time > windowEnd) {
+        continue;
+      }
+
+      const markerCoord = markerMap.get(asset.id);
+      const coords =
+        getAssetCoordinates(asset) ??
+        (markerCoord && isValidLatLng(markerCoord.lat, markerCoord.lng) ? markerCoord : null);
+      if (coords) {
+        surroundingGpsPoints.push(coords);
+      }
+    }
+
+    if (surroundingGpsPoints.length === 0) {
+      return null;
+    }
+
+    return calculateCentroid(surroundingGpsPoints);
+  });
 
   const handleSetGpsFromMapPin = async () => {
     if (!mapCenter) {
@@ -794,6 +912,18 @@
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       <ActionButton action={Actions.AddToAlbum} />
+      {#if showAlbumMap && isInGeoSelectionMode && suggestedGps}
+        <Button
+          color="primary"
+          shape="round"
+          size="medium"
+          leadingIcon={mdiMapMarkerDistance}
+          onclick={() => mapComponent?.easeTo(suggestedGps)}
+          disabled={isSettingGps}
+        >
+          Suggested
+        </Button>
+      {/if}
       {#if showAlbumMap && isInGeoSelectionMode && mapCenter}
         <Button
           color="primary"
