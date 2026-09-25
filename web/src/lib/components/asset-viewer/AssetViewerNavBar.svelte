@@ -1,17 +1,11 @@
 <script lang="ts">
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
-  import AddToStackAction from '$lib/components/asset-viewer/actions/AddToStackAction.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/ArchiveAction.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/DeleteAction.svelte';
-  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/KeepThisDeleteOthers.svelte';
   import RatingAction from '$lib/components/asset-viewer/actions/RatingAction.svelte';
-  import RemoveAssetFromStack from '$lib/components/asset-viewer/actions/RemoveAssetFromStack.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
-  import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/SetPersonFeaturedAction.svelte';
-  import SetStackPrimaryAsset from '$lib/components/asset-viewer/actions/SetStackPrimaryAsset.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
-  import UnstackAction from '$lib/components/asset-viewer/actions/UnstackAction.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -19,6 +13,8 @@
   import { getAlbumAssetActions } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetActions } from '$lib/services/asset.service';
+  import { getPersonAssetActions } from '$lib/services/person.service';
+  import { getStackActions } from '$lib/services/stack.service';
   import { getSharedLink, withoutIcons } from '$lib/utils';
   import type { ViewerKind } from '$lib/components/asset-viewer/AssetViewer.svelte';
   import type { OnUndoDelete } from '$lib/utils/actions';
@@ -47,7 +43,7 @@
     asset: AssetResponseDto;
     album?: AlbumResponseDto;
     person?: PersonResponseDto | null;
-    stack?: StackResponseDto | null;
+    stack?: StackResponseDto;
     preAction: PreAction;
     onAction: OnAction;
     onUndoDelete?: OnUndoDelete;
@@ -61,7 +57,7 @@
     asset,
     album,
     person = null,
-    stack = null,
+    stack,
     preAction,
     onAction,
     onUndoDelete = undefined,
@@ -120,6 +116,7 @@
   });
 
   const Actions = $derived(getAssetActions($t, { ...asset, stackPrimaryAssetId: stack?.primaryAssetId }, album));
+  const StackActions = $derived(getStackActions($t, stack, asset));
   const sharedLink = getSharedLink();
 </script>
 
@@ -230,25 +227,19 @@
           <RestoreAction {asset} {onAction} />
         {/if}
 
-        {#if isOwner}
-          <AddToStackAction {asset} {stack} {onAction} />
-          {#if stack}
-            <UnstackAction {stack} {onAction} />
-            <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
-            {#if stack?.primaryAssetId !== asset.id}
-              <SetStackPrimaryAsset {stack} {asset} {onAction} />
-              {#if stack?.assets?.length > 2}
-                <RemoveAssetFromStack {asset} {stack} {onAction} />
-              {/if}
-            {/if}
-          {/if}
-        {/if}
+        <ActionMenuItem action={StackActions.AddUploads} />
+        <ActionMenuItem action={StackActions.Unstack} />
+        <ActionMenuItem action={StackActions.KeepThisDeleteOthers} />
+        <ActionMenuItem action={StackActions.SetPrimaryAsset} />
+        <ActionMenuItem action={StackActions.RemoveAsset} />
+
         {#if album}
           {@const { SetCover } = getAlbumAssetActions($t, album, asset)}
           <ActionMenuItem action={SetCover} />
         {/if}
         {#if person}
-          <SetFeaturedPhotoAction {asset} {person} {onAction} />
+          {@const { SetFeaturedPhoto } = getPersonAssetActions($t, person, asset)}
+          <ActionMenuItem action={SetFeaturedPhoto} />
         {/if}
 
         <ActionMenuItem action={Actions.SetProfilePicture} />

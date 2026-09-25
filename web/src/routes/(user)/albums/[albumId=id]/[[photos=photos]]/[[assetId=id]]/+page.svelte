@@ -31,6 +31,7 @@
   import { delay, getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AlbumPageViewMode } from '$lib/constants';
+  import { getStackBulkActions } from '$lib/services/stack.service';
   import { activityManager } from '$lib/managers/activity-manager.svelte';
   import { assetMultiSelectManager, AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
@@ -498,12 +499,13 @@
     viewMode = AlbumPageViewMode.VIEW;
   };
 
-  const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {
+  const onAlbumAddAssets = async ({ albumIds, assetIds }: { albumIds: string[]; assetIds: string[] }) => {
     if (!albumIds.includes(album.id)) {
       return;
     }
 
-    await refreshAlbum();
+    album = { ...album, assetCount: album.assetCount + assetIds.length };
+
     timelineMultiSelectManager.clear();
     await setModeToView();
   };
@@ -775,6 +777,7 @@
   {#if assetMultiSelectManager.selectionActive}
     <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t, album)}
+      {@const StackActions = getStackBulkActions($t)}
       <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
       <CreateSharedLink />
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
@@ -811,6 +814,8 @@
       {/if}
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')} direction="up" offset={{ x: 175, y: 0 }}>
         <DownloadAction menuItem filename={album.albumName} />
+        <ActionMenuItem action={StackActions.Stack} />
+        <ActionMenuItem action={StackActions.Unstack} />
         {#if assetMultiSelectManager.isAllUserOwned}
           <ChangeDate menuItem />
           <ChangeDescription menuItem />

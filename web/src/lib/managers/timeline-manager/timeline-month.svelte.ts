@@ -162,10 +162,13 @@ export class TimelineMonth {
         idsProcessed.add(id);
       }
       combinedChangedGeometry ||= changedGeometry;
-      if (group.viewerAssets.length === 0) {
-        timelineDays.splice(index, 1);
-        combinedChangedGeometry = true;
+
+      if (group.viewerAssets.length > 0) {
+        continue;
       }
+
+      timelineDays.splice(index, 1);
+      combinedChangedGeometry = true;
     }
     return {
       moveAssets: combinedMoveAssets.flat(),
@@ -411,10 +414,13 @@ export class TimelineMonth {
     for (const current of this.assetsIterator()) {
       const currentAssetDate = fromTimelinePlainDateTime(getOrderingDate(current, this.#orderBy));
       const diff = Math.abs(targetDate.diff(currentAssetDate).as('milliseconds'));
-      if (diff < smallestDiff) {
-        smallestDiff = diff;
-        closest = current;
+
+      if (diff >= smallestDiff) {
+        continue;
       }
+
+      smallestDiff = diff;
+      closest = current;
     }
     return closest;
   }

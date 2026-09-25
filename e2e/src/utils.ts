@@ -473,7 +473,7 @@ export const utils = {
     updateMyPreferences({ userPreferencesUpdateDto }, { headers: asBearerAuth(accessToken) }),
 
   createStack: (accessToken: string, assetIds: string[]) =>
-    createStack({ stackCreateDto: { assetIds } }, { headers: asBearerAuth(accessToken) }),
+    createStack({ stackCreateDto: { assetIds, stackType: 'manual' } }, { headers: asBearerAuth(accessToken) }),
 
   setAssetDuplicateId: (accessToken: string, assetId: string, duplicateId: string | null) =>
     updateAssets({ assetBulkUpdateDto: { ids: [assetId], duplicateId } }, { headers: asBearerAuth(accessToken) }),
