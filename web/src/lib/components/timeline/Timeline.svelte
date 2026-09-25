@@ -58,6 +58,7 @@
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     onAssetHover?: (asset: TimelineAsset | null) => void;
+    onAssetGpsClick?: (asset: TimelineAsset) => void;
     children?: Snippet;
     empty?: Snippet;
     customThumbnailLayout?: Snippet<[TimelineAsset]>;
@@ -92,6 +93,7 @@
     onSelect = () => {},
     onEscape = () => {},
     onAssetHover,
+    onAssetGpsClick,
     children,
     empty,
     customThumbnailLayout,
@@ -731,6 +733,7 @@
                 showStackedIcon={withStacked}
                 {showArchiveIcon}
                 {showMissingGpsIcon}
+                onGpsClick={onAssetGpsClick}
                 {asset}
                 {albumUsers}
                 {groupIndex}

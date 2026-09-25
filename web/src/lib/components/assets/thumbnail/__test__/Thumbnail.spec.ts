@@ -1,4 +1,4 @@
-import { render } from '@testing-library/svelte';
+import { fireEvent, render } from '@testing-library/svelte';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
 import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
 import { highlightMissingGps, highlightMissingTimezone } from '$lib/stores/preferences.store';
@@ -246,5 +246,51 @@ describe('Thumbnail component', () => {
     container.dispatchEvent(event);
 
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: asset.id }));
+  });
+
+  it('renders GPS button on hover when showMissingGpsIcon is true and asset has GPS', async () => {
+    const asset = {
+      ...assetFactory.build({
+        originalPath: 'image.jpg',
+        originalMimeType: 'image/jpeg',
+      }),
+      latitude: 40.7128,
+      longitude: -74.006,
+    } as unknown as TimelineAsset;
+    const onGpsClick = vi.fn();
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      showMissingGpsIcon: true,
+      onGpsClick,
+    });
+
+    const container = baseElement.querySelector('[data-thumbnail-focus-container]') as HTMLElement;
+    expect(baseElement.querySelector('[data-icon-gps]')).toBeNull();
+
+    await fireEvent.mouseEnter(container);
+    const gpsButton = baseElement.querySelector('[data-icon-gps]') as HTMLButtonElement;
+    expect(gpsButton).not.toBeNull();
+
+    await fireEvent.click(gpsButton);
+    expect(onGpsClick).toHaveBeenCalledWith(expect.objectContaining({ id: asset.id }));
+  });
+
+  it('does not render GPS button when showMissingGpsIcon is false', async () => {
+    const asset = {
+      ...assetFactory.build({
+        originalPath: 'image.jpg',
+        originalMimeType: 'image/jpeg',
+      }),
+      latitude: 40.7128,
+      longitude: -74.006,
+    } as unknown as TimelineAsset;
+    const { baseElement } = render(Thumbnail, {
+      asset,
+      showMissingGpsIcon: false,
+    });
+
+    const container = baseElement.querySelector('[data-thumbnail-focus-container]') as HTMLElement;
+    await fireEvent.mouseEnter(container);
+    expect(baseElement.querySelector('[data-icon-gps]')).toBeNull();
   });
 });

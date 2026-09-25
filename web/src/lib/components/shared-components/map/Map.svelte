@@ -154,6 +154,17 @@
     map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
   }
 
+  export function easeTo(target: { lat: number; lng: number }, zoom = 13) {
+    if (!map || !isValidLatLng(target.lat, target.lng)) {
+      return;
+    }
+
+    map.easeTo({
+      center: [target.lng, target.lat],
+      zoom: Math.max(map.getZoom(), zoom),
+    });
+  }
+
   let map: Map | undefined = $state();
   let marker: Marker | null = null;
   let hoverMarker: Marker | null = null;

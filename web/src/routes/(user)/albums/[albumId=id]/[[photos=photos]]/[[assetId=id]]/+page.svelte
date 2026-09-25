@@ -99,6 +99,7 @@
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import type MapComponent from '$lib/components/shared-components/map/Map.svelte';
 
   interface Props {
     data: PageData;
@@ -110,6 +111,15 @@
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   let timelineComponent = $state<Timeline>();
+  let mapComponent = $state<MapComponent>();
+
+  const handleAssetGpsClick = (asset: TimelineAsset) => {
+    const lat = asset.latitude ?? (asset as any).exifInfo?.latitude;
+    const lng = asset.longitude ?? (asset as any).exifInfo?.longitude;
+    if (isValidLatLng(lat, lng)) {
+      mapComponent?.easeTo({ lat, lng });
+    }
+  };
 
   const handleMapSelect = async (assetIds: string[]) => {
     if (!assetIds || assetIds.length === 0) {
@@ -600,6 +610,7 @@
           {/await}
         {:then { default: Map }}
           <Map
+            bind:this={mapComponent}
             hash
             {mapMarkers}
             showSettings={false}
@@ -660,6 +671,7 @@
         {singleSelect}
         {showArchiveIcon}
         showMissingGpsIcon={showMissingGps}
+        onAssetGpsClick={handleAssetGpsClick}
         {onSelect}
         onEscape={handleEscape}
         withStacked={true}

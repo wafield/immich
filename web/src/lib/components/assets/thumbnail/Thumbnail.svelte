@@ -33,6 +33,7 @@
     mdiContentDuplicate,
     mdiMapClock,
     mdiMapMarkerOff,
+    mdiCrosshairsGps,
   } from '@mdi/js';
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
@@ -60,6 +61,7 @@
     onClick?: (asset: TimelineAsset) => void;
     onPreview?: (asset: TimelineAsset) => void;
     onSelect?: (asset: TimelineAsset) => void;
+    onGpsClick?: (asset: TimelineAsset) => void;
     onMouseEvent?: (event: { isMouseOver: boolean; selectedGroupIndex: number }) => void;
   }
 
@@ -81,6 +83,7 @@
     onClick = undefined,
     onPreview = undefined,
     onSelect = undefined,
+    onGpsClick = undefined,
     onMouseEvent = undefined,
     imageClass = '',
     brokenAssetClass = '',
@@ -100,6 +103,8 @@
       lat !== null && lat !== undefined && !Number.isNaN(lat) && lon !== null && lon !== undefined && !Number.isNaN(lon)
     );
   };
+
+  let showGpsButton = $derived(mouseOver && showMissingGpsIcon && hasGpsData(asset));
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -350,7 +355,12 @@
         {/if}
 
         <!-- Bottom-left asset properties -->
-        <div class="absolute inset-s-2 bottom-2 z-2 flex gap-1 max-md:inset-s-1 max-md:bottom-1 max-md:scale-75">
+        <div
+          class={[
+            'absolute bottom-2 z-2 flex gap-1 transition-all max-md:bottom-1 max-md:scale-75',
+            showGpsButton ? 'inset-s-10' : 'inset-s-2 max-md:inset-s-1',
+          ]}
+        >
           {#if $showLibraryIndicator}
             {@const targetLibrary = asset.libraryId ? $librariesMap.get(asset.libraryId) : null}
             {@const libraryColor = asset.libraryId === null ? '#ffffff' : targetLibrary?.uiColor}
@@ -486,11 +496,30 @@
       </button>
     {/if}
 
+    <!-- GPS button (visible on hover in album timeline when map is open and asset has GPS) -->
+    {#if showGpsButton}
+      <button
+        type="button"
+        onclick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onGpsClick?.($state.snapshot(asset));
+        }}
+        class="absolute inset-s-1 bottom-1 z-2 rounded-full bg-black/25 p-1.5 transition-colors hover:bg-black/50 focus:outline-none"
+        in:fade={{ duration: 100 }}
+        tabindex={-1}
+        aria-label="Show on map"
+        data-icon-gps
+      >
+        <Icon icon={mdiCrosshairsGps} size="20" class="text-primary" />
+      </button>
+    {/if}
+
     <!-- Outline on focus -->
     <div
       class={[
         'pointer-events-none absolute z-1 size-full outline-immich-primary group-focus-visible:outline-4 group-focus-visible:-outline-offset-4 dark:outline-immich-dark-primary',
-        'group-data-[focused]:outline-4 group-data-[focused]:-outline-offset-4 group-data-[focused]:rounded-lg',
+        'group-data-focused:rounded-lg group-data-focused:outline-4 group-data-focused:-outline-offset-4',
       ]}
       data-outline
     ></div>
@@ -499,7 +528,7 @@
     {#if selected}
       <div
         class={[
-          'border-5 border-indigo-400 dark:border-indigo-600 pointer-events-none absolute z-1 size-full rounded-xl',
+          'pointer-events-none absolute z-1 size-full rounded-xl border-5 border-indigo-400 dark:border-indigo-600',
         ]}
         data-outline
       ></div>
