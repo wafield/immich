@@ -650,7 +650,11 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <section
   id="asset-grid"
-  class={['h-full scrollbar-hidden overflow-y-auto outline-none', { 'm-0': isEmpty }, { 'ms-0': !isEmpty }]}
+  class={[
+    'h-full scrollbar-hidden overflow-y-auto outline-none bg-white dark:bg-immich-dark-bg rounded-t-lg',
+    { 'm-0': isEmpty },
+    { 'ms-0': !isEmpty },
+  ]}
   style:margin-inline-end={(usingMobileDevice ? 0 : scrubberWidth) + 'px'}
   tabindex="-1"
   bind:clientHeight={timelineManager.viewportHeight}

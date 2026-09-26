@@ -71,7 +71,7 @@
     <UserSidebar />
   {/if}
 
-  <main class="relative rounded-lg bg-white dark:bg-immich-dark-bg">
+  <main class="relative bg-immich-bg dark:bg-immich-dark-gray">
     <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto md:px-2" use:useActions={use}>
       {@render children?.()}
     </div>
