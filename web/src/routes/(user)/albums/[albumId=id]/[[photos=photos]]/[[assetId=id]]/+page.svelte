@@ -53,6 +53,7 @@
   import { highlightMissingGps } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError, isValidLatLng, isValidMapHash } from '$lib/utils';
+  import { calculateCentroid, getAssetCoordinates } from '$lib/utils/geo-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
   import {
@@ -89,7 +90,7 @@
     mdiLink,
     mdiMap,
     mdiMapMarker,
-    mdiMapMarkerDistance,
+    mdiMapMarkerStarOutline,
     mdiMapOutline,
     mdiPlus,
     mdiPresentationPlay,
@@ -184,50 +185,6 @@
       dt.second ?? 0,
       dt.millisecond ?? 0,
     );
-  };
-
-  const getAssetCoordinates = (asset: TimelineAsset): { lat: number; lng: number } | null => {
-    const lat = asset.latitude ?? (asset as any).exifInfo?.latitude;
-    const lng = asset.longitude ?? (asset as any).exifInfo?.longitude;
-    if (isValidLatLng(lat, lng)) {
-      return { lat: Number(lat), lng: Number(lng) };
-    }
-    return null;
-  };
-
-  const calculateCentroid = (points: { lat: number; lng: number }[]): { lat: number; lng: number } | null => {
-    if (points.length === 0) {
-      return null;
-    }
-    if (points.length === 1) {
-      return { lat: points[0].lat, lng: points[0].lng };
-    }
-
-    let x = 0;
-    let y = 0;
-    let z = 0;
-
-    for (const p of points) {
-      const latRad = (p.lat * Math.PI) / 180;
-      const lngRad = (p.lng * Math.PI) / 180;
-      x += Math.cos(latRad) * Math.cos(lngRad);
-      y += Math.cos(latRad) * Math.sin(lngRad);
-      z += Math.sin(latRad);
-    }
-
-    const total = points.length;
-    x /= total;
-    y /= total;
-    z /= total;
-
-    const centralLng = Math.atan2(y, x);
-    const centralSquareRoot = Math.sqrt(x * x + y * y);
-    const centralLat = Math.atan2(z, centralSquareRoot);
-
-    return {
-      lat: Number(((centralLat * 180) / Math.PI).toFixed(7)),
-      lng: Number(((centralLng * 180) / Math.PI).toFixed(7)),
-    };
   };
 
   const suggestedGps = $derived.by(() => {
@@ -779,10 +736,15 @@
     >
       <header
         id="album-menu-bar"
-        class="flex h-12 shrink-0 items-center justify-between rounded-t-lg bg-primary-200 dark:bg-primary-100 px-4"
+        class="flex h-12 shrink-0 items-center justify-between gap-4 overflow-x-auto overflow-y-hidden rounded-t-lg bg-primary-200 px-4 scrollbar-hidden dark:bg-primary-100"
+        onwheel={(e) => {
+          if (e.deltaY !== 0 && e.deltaX === 0) {
+            e.currentTarget.scrollLeft += e.deltaY;
+          }
+        }}
       >
         {#if viewMode === AlbumPageViewMode.VIEW}
-          <div class="flex items-center gap-1">
+          <div class="flex shrink-0 items-center gap-1 [&>*]:shrink-0">
             <IconButton
               icon={mdiArrowLeft}
               color="secondary"
@@ -792,7 +754,7 @@
               onclick={() => goto(Route.albums())}
             />
 
-            <div class="mx-1 h-5 w-px bg-gray-300 dark:bg-gray-700"></div>
+            <div class="mx-1 h-5 w-px shrink-0 bg-gray-300 dark:bg-gray-700"></div>
 
             {#if isEditor}
               <IconButton
@@ -827,7 +789,7 @@
             <ActionButton action={Cast} />
 
             {#if isOwned || containsEditors}
-              <div class="mx-1 h-5 w-px bg-gray-300 dark:bg-gray-700"></div>
+              <div class="mx-1 h-5 w-px shrink-0 bg-gray-300 dark:bg-gray-700"></div>
 
               {#if containsEditors}
                 <IconButton
@@ -859,16 +821,15 @@
               {/if}
 
               {#if showAlbumMap && isInGeoSelectionMode && suggestedGps}
-                <Button
+                <IconButton
                   color="primary"
                   shape="round"
                   size="small"
-                  leadingIcon={mdiMapMarkerDistance}
+                  aria-label="Suggested GPS"
+                  icon={mdiMapMarkerStarOutline}
                   onclick={() => mapComponent?.easeTo(suggestedGps)}
                   disabled={isSettingGps}
-                >
-                  Suggested
-                </Button>
+                />
               {/if}
               {#if showAlbumMap && isInGeoSelectionMode && mapCenter}
                 <Button
@@ -918,12 +879,14 @@
           </div>
 
           {#if album.assetCount > 0}
-            <div class="flex items-center pe-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <div
+              class="flex shrink-0 items-center pe-2 text-xs font-medium text-gray-500 whitespace-nowrap dark:text-gray-400"
+            >
               <span>{$t('items_count', { values: { count: album.assetCount } })}</span>
             </div>
           {/if}
         {:else if viewMode === AlbumPageViewMode.SELECT_ASSETS}
-          <div class="flex items-center gap-1">
+          <div class="flex shrink-0 items-center gap-1 [&>*]:shrink-0">
             <IconButton
               icon={mdiClose}
               shape="round"
@@ -933,9 +896,9 @@
               onclick={handleCloseSelectAssets}
             />
 
-            <div class="mx-1 h-5 w-px bg-gray-300 dark:bg-gray-700"></div>
+            <div class="mx-1 h-5 w-px shrink-0 bg-gray-300 dark:bg-gray-700"></div>
 
-            <p class="text-sm font-semibold dark:text-immich-dark-fg">
+            <p class="shrink-0 text-sm font-semibold whitespace-nowrap dark:text-immich-dark-fg">
               {#if !timelineMultiSelectManager.selectionActive}
                 {$t('add_to_album')}
               {:else}
@@ -946,12 +909,12 @@
             </p>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex shrink-0 items-center gap-2 [&>*]:shrink-0">
             <HeaderActionButton action={Upload} />
             <HeaderActionButton action={AddAssets} />
           </div>
         {:else if viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
-          <div class="flex items-center gap-1">
+          <div class="flex shrink-0 items-center gap-1 [&>*]:shrink-0">
             <IconButton
               icon={mdiClose}
               shape="round"
@@ -961,9 +924,9 @@
               onclick={() => (viewMode = AlbumPageViewMode.VIEW)}
             />
 
-            <div class="mx-1 h-5 w-px bg-gray-300 dark:bg-gray-700"></div>
+            <div class="mx-1 h-5 w-px shrink-0 bg-gray-300 dark:bg-gray-700"></div>
 
-            <p class="text-sm font-semibold dark:text-immich-dark-fg">
+            <p class="shrink-0 text-sm font-semibold whitespace-nowrap dark:text-immich-dark-fg">
               {$t('select_album_cover')}
             </p>
           </div>
