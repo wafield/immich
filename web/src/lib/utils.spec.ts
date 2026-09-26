@@ -1,5 +1,8 @@
-import { AssetTypeEnum } from '@immich/sdk';
-import { getAssetUrl, isValidLatLng, IsValidLatLng, isValidMapHash, semverToName } from '$lib/utils';
+import { AssetTypeEnum, MemoryType, type MemoryResponseDto } from '@immich/sdk';
+import { addMessages, init } from 'svelte-i18n';
+import { get } from 'svelte/store';
+import en from '$i18n/en.json';
+import { getAssetUrl, memoryLaneTitle, semverToName, isValidLatLng, isValidMapHash } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -171,6 +174,33 @@ describe('utils', () => {
     });
   });
 
+  describe('memoryLaneTitle', () => {
+    beforeAll(async () => {
+      addMessages('en', en);
+      await init({ fallbackLocale: 'en', initialLocale: 'en' });
+    });
+
+    const birthday = (data: Partial<MemoryResponseDto['data']>, memoryAt = '2026-09-22T00:00:00.000Z') =>
+      get(memoryLaneTitle)({
+        type: MemoryType.Birthday,
+        memoryAt,
+        data: { year: 1990, personName: 'Alex', ...data },
+      } as MemoryResponseDto);
+
+    it('should name the person whose birthday it is', () => {
+      expect(birthday({ year: 1990 })).toBe("Alex's birthday");
+    });
+
+    it('should not depend on the age, which the viewer shows per photo', () => {
+      expect(birthday({ year: 2025 })).toBe("Alex's birthday");
+      expect(birthday({ year: 2026 }, '2027-01-04T00:00:00.000Z')).toBe("Alex's birthday");
+    });
+
+    it('should fall back when the person has no name', () => {
+      expect(birthday({ personName: undefined })).toBe('Unknown');
+    });
+  });
+
   describe(isValidLatLng.name, () => {
     it('should return true for valid coordinates', () => {
       expect(isValidLatLng(0, 0)).toBe(true);
@@ -197,11 +227,6 @@ describe('utils', () => {
       expect(isValidLatLng(NaN, NaN)).toBe(false);
     });
 
-    it('should behave identically for IsValidLatLng alias', () => {
-      expect(IsValidLatLng(37.7749, -122.4194)).toBe(true);
-      expect(IsValidLatLng(null, 10)).toBe(false);
-      expect(IsValidLatLng(10, NaN)).toBe(false);
-    });
   });
 
   describe('isValidMapHash', () => {

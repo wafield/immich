@@ -34,6 +34,7 @@
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility } from '@immich/sdk';
+  import MemoryCard from '$lib/components/memories/MemoryCard.svelte';
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -92,6 +93,7 @@
       href: Route.viewMemory({ id: memory.id, assetId: memory.assets[0].id }),
       alt: $t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } }),
       src: getAssetMediaUrl({ id: memory.assets[0].id }),
+      type: memory.type,
     })),
   );
 
@@ -109,7 +111,11 @@
     withStacked
   >
     {#if authManager.preferences.memories.enabled}
-      <ImageCarousel {items} />
+      <ImageCarousel {items}>
+        {#snippet child(item)}
+          <MemoryCard {item} />
+        {/snippet}
+      </ImageCarousel>
     {/if}
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mx-auto mt-10" />

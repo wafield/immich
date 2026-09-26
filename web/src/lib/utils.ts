@@ -397,7 +397,7 @@ export const memoryLaneTitle = derived(t, ($t) => {
         : memoryDate.toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
     }
 
-    if (memory.type === MemoryType.Birthday && 'personName' in memory.data) {
+    if (memory.type === MemoryType.Birthday && memory.data.personName) {
       return $t('birthday_memory_title', { values: { name: memory.data.personName } });
     }
 
@@ -486,7 +486,6 @@ export const isValidLatLng = (latitude?: number | null, longitude?: number | nul
   );
 };
 
-export const IsValidLatLng = isValidLatLng;
 
 /**
  * Returns whether a hash string represents a valid MapLibre map coordinate anchor (#zoom/lat/lng).

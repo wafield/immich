@@ -10,6 +10,10 @@
   }
 
   let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
+
+  const setType = (type: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr') => {
+    searchManager.setQueryType(type);
+  };
 </script>
 
 <section>
