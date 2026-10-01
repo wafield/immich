@@ -161,6 +161,8 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   DeviceModelName?: string;
 
   // Extra & Brand-Specific EXIF fields
+  SamsungModel?: string;
+  Author?: string;
   ActionsDescription?: string | number;
   ActionsSoftwareAgentName?: string | number;
   AFAreaMode?: string | number;
@@ -269,6 +271,7 @@ export class MetadataRepository {
       '--MWG:Orientation',
       '--IFD1:ImageWidth',
       '--IFD1:ImageHeight',
+      '--Samsung:Rotation',
     ],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     taskTimeoutMillis: 2 * 60 * 1000,

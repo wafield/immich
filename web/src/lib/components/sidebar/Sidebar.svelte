@@ -37,7 +37,7 @@
   tabindex="-1"
   class={[
     'relative z-1 w-0 immich-scrollbar overflow-x-hidden overflow-y-auto bg-immich-bg pt-8 transition-all duration-200 dark:bg-immich-dark-gray',
-    sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar ? 'collapsed sidebar:w-18' : 'sidebar:w-64',
+    sidebarStore.isCollapsed && mediaQueryManager.isFullSidebar ? 'collapsed sidebar:w-16' : 'sidebar:w-64',
   ]}
   class:shadow-2xl={isExpanded}
   class:w-[min(100vw,16rem)]={sidebarStore.isVisible}

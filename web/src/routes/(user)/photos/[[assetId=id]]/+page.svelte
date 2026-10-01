@@ -101,26 +101,28 @@
 </script>
 
 <UserPageLayout scrollbar={false}>
-  <Timeline
-    enableRouting={true}
-    bind:timelineManager
-    {options}
-    assetInteraction={assetMultiSelectManager}
-    removeAction={AssetAction.ARCHIVE}
-    onEscape={handleEscape}
-    withStacked
-  >
-    {#if authManager.preferences.memories.enabled}
-      <ImageCarousel {items}>
-        {#snippet child(item)}
-          <MemoryCard {item} />
-        {/snippet}
-      </ImageCarousel>
-    {/if}
-    {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mx-auto mt-10" />
-    {/snippet}
-  </Timeline>
+  <div class="rounded-t-lg h-full w-full bg-white dark:bg-immich-dark-bg ps-2">
+    <Timeline
+      enableRouting={true}
+      bind:timelineManager
+      {options}
+      assetInteraction={assetMultiSelectManager}
+      removeAction={AssetAction.ARCHIVE}
+      onEscape={handleEscape}
+      withStacked
+    >
+      {#if authManager.preferences.memories.enabled}
+        <ImageCarousel {items}>
+          {#snippet child(item)}
+            <MemoryCard {item} />
+          {/snippet}
+        </ImageCarousel>
+      {/if}
+      {#snippet empty()}
+        <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} class="mx-auto mt-10" />
+      {/snippet}
+    </Timeline>
+  </div>
 </UserPageLayout>
 
 {#if assetMultiSelectManager.selectionActive}

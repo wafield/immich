@@ -3,7 +3,6 @@
   import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import ArchiveAction from '$lib/components/asset-viewer/actions/ArchiveAction.svelte';
   import DeleteAction from '$lib/components/asset-viewer/actions/DeleteAction.svelte';
-  import RatingAction from '$lib/components/asset-viewer/actions/RatingAction.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/RestoreAction.svelte';
   import SetVisibilityAction from '$lib/components/asset-viewer/actions/SetVisibilityAction.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
@@ -202,10 +201,7 @@
     <ActionButton action={Actions.Favorite} />
     <ActionButton action={Actions.Unfavorite} />
     <ActionButton action={Actions.AddToAlbum} />
-
-    {#if isOwner}
-      <RatingAction {asset} {onAction} />
-    {/if}
+    <ActionButton action={Actions.Edit} />
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} {preAction} {onUndoDelete} />
