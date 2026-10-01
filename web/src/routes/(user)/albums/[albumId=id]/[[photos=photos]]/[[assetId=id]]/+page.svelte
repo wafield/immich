@@ -79,14 +79,14 @@
   } from '@immich/ui';
   import {
     mdiAccountEye,
+    mdiAccountEyeOutline,
+    mdiArrowLeft,
+    mdiClose,
     mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsHorizontal,
     mdiDotsVertical,
     mdiDownload,
-    mdiAccountEyeOutline,
-    mdiArrowLeft,
-    mdiClose,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
