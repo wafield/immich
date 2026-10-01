@@ -32,7 +32,7 @@ class SidebarStore {
    * Make sure the sidebar visibility toggles only when full sidebar is visible (screen width >= 1023px).
    */
   toggle() {
-    this.isVisible = mediaQueryManager.isFullSidebar ? true : !this.isVisible;
+    this.isVisible = mediaQueryManager.isFullSidebar || !this.isVisible;
   }
 }
 

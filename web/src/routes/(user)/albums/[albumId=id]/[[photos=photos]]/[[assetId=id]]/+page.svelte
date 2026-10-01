@@ -46,7 +46,9 @@
     getAlbumActions,
     getAlbumAssetsActions,
     handleDeleteAlbum,
+    isAlbumEditor,
     handleDownloadAlbum,
+    isAlbumOwner,
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -61,30 +63,32 @@
     AssetVisibility,
     getAlbumInfo,
     updateAlbumInfo,
+    type AlbumResponseDto,
     updateAssets,
     getAlbumMapMarkers,
-    type AlbumResponseDto,
     type MapMarkerResponseDto,
   } from '@immich/sdk';
   import {
     ActionButton,
-    Button,
     CommandPaletteDefaultProvider,
     Icon,
     IconButton,
-    modalManager,
     toastManager,
+    Button,
+    modalManager,
   } from '@immich/ui';
   import {
     mdiAccountEye,
-    mdiAccountEyeOutline,
-    mdiArrowLeft,
-    mdiClose,
     mdiCogOutline,
     mdiDeleteOutline,
     mdiDotsHorizontal,
     mdiDotsVertical,
     mdiDownload,
+    mdiAccountEyeOutline,
+    mdiArrowLeft,
+    mdiClose,
+    mdiDotsHorizontal,
+    mdiDotsVertical,
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
@@ -509,6 +513,7 @@
   let album = $state(data.album);
   let albumId = $derived(album.id);
 
+  const albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
   const albumUsers = $derived(showAlbumUsers && containsEditors ? album.albumUsers.map(({ user }) => user) : []);
 
@@ -532,7 +537,7 @@
     return { albumId, order: album.order };
   });
 
-  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 1);
+  const isShared = $derived(viewMode !== AlbumPageViewMode.SELECT_ASSETS && album.albumUsers.length > 1);
 
   $effect(() => {
     if (assetViewerManager.isViewing || !isShared) {
@@ -544,23 +549,20 @@
 
   onDestroy(() => activityManager.reset());
 
-  const isOwned = $derived(album.albumUsers[0].user.id === authManager.user.id);
+  const isOwned = $derived(isAlbumOwner(album));
 
   let showActivityStatus = $derived(
     album.albumUsers.length > 1 &&
       !assetViewerManager.isViewing &&
       (album.isActivityEnabled || activityManager.commentCount > 0),
   );
-  const isEditor = $derived(
-    album.albumUsers.find(({ user: { id } }) => id === authManager.user.id)?.role === AlbumUserRole.Editor || isOwned,
-  );
+  const isEditor = $derived(isAlbumEditor(album));
 
-  let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   const isSelectionMode = $derived(
-    viewMode === AlbumPageViewMode.SELECT_ASSETS ? true : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
+    viewMode === AlbumPageViewMode.SELECT_ASSETS || viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
   );
   const singleSelect = $derived(
-    viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
+    viewMode !== AlbumPageViewMode.SELECT_ASSETS && viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
   );
   const showArchiveIcon = $derived(viewMode !== AlbumPageViewMode.SELECT_ASSETS);
   const onSelect = ({ id }: { id: string }) => {
@@ -571,10 +573,6 @@
   const currentAssetIntersection = $derived(
     viewMode === AlbumPageViewMode.SELECT_ASSETS ? timelineMultiSelectManager : assetMultiSelectManager,
   );
-
-  const onSharedLinkCreate = async () => {
-    await refreshAlbum();
-  };
 
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
     if (id !== album.id) {
@@ -622,7 +620,7 @@
   };
 
   const { Cast } = $derived(getGlobalActions($t));
-  const { Share, Leave } = $derived(getAlbumActions($t, album));
+  const Actions = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
 
   const Close = $derived({
@@ -648,7 +646,7 @@
 </script>
 
 <OnEvents
-  {onSharedLinkCreate}
+  onSharedLinkCreate={refreshAlbum}
   onSharedLinkDelete={refreshAlbum}
   {onAlbumDelete}
   {onAlbumAddAssets}
@@ -658,7 +656,7 @@
   onAlbumUserDelete={refreshAlbum}
   {onAlbumUpdate}
 />
-<CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close]} />
+<CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
 
 <svelte:window
   onpointerup={() => stopDragging()}
@@ -851,7 +849,7 @@
                 color="secondary"
                 offset={{ x: 175, y: 25 }}
               >
-                <ActionMenuItem action={Share} />
+                <ActionMenuItem action={Actions.Share} />
 
                 {#if containsEditors}
                   <MenuOption
@@ -872,7 +870,7 @@
                     onClick={() => handleDeleteAlbum(album)}
                   />
                 {:else}
-                  <ActionMenuItem action={Leave} />
+                  <ActionMenuItem action={Actions.Leave} />
                 {/if}
               </ButtonContextMenu>
             {/if}
@@ -974,7 +972,7 @@
                     <button
                       class="flex gap-x-1"
                       type="button"
-                      onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
+                      onclick={(event) => Actions.Options.onAction({ event, action: Actions.Options })}
                     >
                       <!-- owner & users with write access (collaborators) -->
                       {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
@@ -1003,9 +1001,7 @@
                       {/if}
                     </button>
 
-                    {#if isOwned}
-                      <ActionButton action={Share} />
-                    {/if}
+                    <ActionButton action={Actions.Share} />
                   </div>
                 {/if}
                 <AlbumDescription

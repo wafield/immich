@@ -246,9 +246,7 @@ export class MetadataService extends BaseService {
 
       await this.eventRepository.emit('StackCreate', { stackId: stack.id, userId: asset.ownerId });
     } catch (error) {
-      this.logger.debug(
-        `Failed to create RAW stack for asset ${asset.id} (${asset.originalPath}): ${error}`,
-      );
+      this.logger.debug(`Failed to create RAW stack for asset ${asset.id} (${asset.originalPath}): ${error}`);
     }
   }
 
@@ -513,9 +511,19 @@ export class MetadataService extends BaseService {
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
       // camera
-      make,
+      make:
+        exifTags.Make ??
+        exifTags.Device?.Manufacturer ??
+        exifTags.AndroidMake ??
+        exifTags.DeviceManufacturer ??
+        (exifTags.SamsungModel ? 'Samsung' : null),
       model:
-        exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
+        exifTags.Model ??
+        exifTags.Device?.ModelName ??
+        exifTags.AndroidModel ??
+        exifTags.DeviceModelName ??
+        exifTags.Author ??
+        null,
       fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
@@ -563,7 +571,7 @@ export class MetadataService extends BaseService {
       driveMode,
       dynamicRange,
       electronicFrontCurtainShutter,
-      exifVersion: exifTags.ExifVersion ? String(exifTags.ExifVersion) : null,
+      exifVersion: exifTags.ExifVersion ? exifTags.ExifVersion : null,
       exposureCompensation: exifTags.ExposureCompensation ? String(exifTags.ExposureCompensation) : null,
       exposureMode: exifTags.ExposureMode ? String(exifTags.ExposureMode) : null,
       exposureProgram: exifTags.ExposureProgram ? String(exifTags.ExposureProgram) : null,
@@ -755,7 +763,7 @@ export class MetadataService extends BaseService {
 
     const { sidecarFile } = getAssetFiles(asset.files);
 
-    const isChanged = sidecarPath !== sidecarFile?.path;
+    const isChanged = sidecarPath !== (sidecarFile?.path ?? null);
 
     if (sidecarFile?.path || sidecarPath) {
       this.logger.debug(

@@ -140,6 +140,7 @@ export class LibraryService extends BaseService {
       {
         usePolling: false,
         ignoreInitial: true,
+        ignored: library.exclusionPatterns,
         awaitWriteFinish: {
           stabilityThreshold: 5000,
           pollInterval: 1000,
