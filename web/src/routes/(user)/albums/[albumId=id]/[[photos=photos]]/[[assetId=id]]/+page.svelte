@@ -4,7 +4,6 @@
   import { navigating } from '$app/state';
   import { timeToLoadTheMap } from '$lib/constants';
   import { LoadingSpinner } from '@immich/ui';
-  import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
@@ -770,6 +769,7 @@
 
             {#if featureFlagsManager.value.map}
               <IconButton
+                class="hidden md:flex"
                 variant="ghost"
                 color={showAlbumMap ? 'primary' : 'secondary'}
                 shape="round"
