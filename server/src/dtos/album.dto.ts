@@ -207,7 +207,6 @@ export const AlbumResponseSchema = z
     order: AssetOrderSchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
     albumDays: z.array(AlbumDayResponseSchema).default([]).describe('Per-day descriptions in the album'),
-    days: z.array(AlbumDayResponseSchema).default([]).describe('Per-day descriptions in the album'),
   })
   .meta({ id: 'AlbumResponseDto' });
 
@@ -301,6 +300,5 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
     albumDays,
-    days: albumDays,
   };
 };

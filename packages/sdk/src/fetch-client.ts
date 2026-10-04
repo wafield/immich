@@ -876,8 +876,6 @@ export type AlbumResponseDto = {
     contributorCounts?: ContributorCountResponseDto[];
     /** Creation date */
     createdAt: string;
-    /** Per-day descriptions in the album */
-    days?: AlbumDayResponseDto[];
     /** Album description */
     description: string;
     /** UTC representation of (local) end date (latest asset) */

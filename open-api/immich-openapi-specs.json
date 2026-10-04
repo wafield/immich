@@ -20033,14 +20033,6 @@
             "format": "date-time",
             "type": "string"
           },
-          "days": {
-            "default": [],
-            "description": "Per-day descriptions in the album",
-            "items": {
-              "$ref": "#/components/schemas/AlbumDayResponseDto"
-            },
-            "type": "array"
-          },
           "description": {
             "description": "Album description",
             "type": "string",

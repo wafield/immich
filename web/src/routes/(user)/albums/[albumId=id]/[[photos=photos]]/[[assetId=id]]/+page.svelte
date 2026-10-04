@@ -59,6 +59,7 @@
   import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
   import {
     AlbumUserRole,
+    AssetOrder,
     AssetVisibility,
     getAlbumInfo,
     updateAlbumInfo,
@@ -102,6 +103,7 @@
   import type { PageData } from './$types';
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
+  import JumpToMenu from './JumpToMenu.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type MapComponent from '$lib/components/shared-components/map/Map.svelte';
 
@@ -568,6 +570,75 @@
     viewMode === AlbumPageViewMode.SELECT_ASSETS ? timelineMultiSelectManager : assetMultiSelectManager,
   );
 
+  $effect(() => {
+    if (viewMode === AlbumPageViewMode.VIEW && timelineManager?.isInitialized && timelineManager.months.length > 0) {
+      for (const month of timelineManager.months) {
+        if (!month.isLoaded && !month.loader?.executed) {
+          void timelineManager.loadTimelineMonth(month.yearMonth, { cancelable: false });
+        }
+      }
+    }
+  });
+
+  const distinctAlbumDates = $derived.by(() => {
+    if (!timelineManager?.months || timelineManager.months.length === 0) {
+      return [];
+    }
+
+    const seen = new Set<string>();
+    const dates: string[] = [];
+
+    for (const month of timelineManager.months) {
+      if (month.isLoaded) {
+        const days = [...month.timelineDays];
+        if (album.order === AssetOrder.Asc) {
+          days.sort((a, b) => a.day - b.day);
+        } else {
+          days.sort((a, b) => b.day - a.day);
+        }
+
+        for (const day of days) {
+          const y = String(month.yearMonth.year).padStart(4, '0');
+          const m = String(month.yearMonth.month).padStart(2, '0');
+          const d = String(day.day).padStart(2, '0');
+          const dateStr = `${y}-${m}-${d}`;
+          if (!seen.has(dateStr)) {
+            seen.add(dateStr);
+            dates.push(dateStr);
+          }
+        }
+      }
+    }
+
+    return dates;
+  });
+
+  const dayDescriptions = $derived.by(() => {
+    const map: Record<string, string> = {};
+    const list = album?.albumDays ?? [];
+    for (const item of list) {
+      if (item.date) {
+        const key = item.date.split('T')[0];
+        if (item.description) {
+          map[key] = item.description;
+        }
+      }
+    }
+    return map;
+  });
+
+  const jumpToOptions = $derived.by(() => {
+    return distinctAlbumDates.map((date) => {
+      const description = dayDescriptions[date]?.trim();
+      const label = description ? `${date} - ${description}` : date;
+      return { date, label };
+    });
+  });
+
+  const handleJumpToDate = async (date: string) => {
+    await timelineComponent?.scrollToDate(date);
+  };
+
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
     if (id !== album.id) {
       return;
@@ -781,6 +852,10 @@
 
             <ActionButton action={Cast} />
 
+            {#if album.assetCount > 0}
+              <JumpToMenu options={jumpToOptions} onSelect={handleJumpToDate} />
+            {/if}
+
             {#if isOwned || containsEditors}
               <div class="mx-1 h-5 w-px shrink-0 bg-gray-300 dark:bg-gray-700"></div>
 
@@ -931,6 +1006,7 @@
           bind:this={timelineComponent}
           enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
           bind:album
+          onAlbumDayUpdate={() => (album = { ...album })}
           {albumUsers}
           bind:timelineManager
           {options}

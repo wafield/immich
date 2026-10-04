@@ -228,6 +228,38 @@
     return scrolled;
   };
 
+  export const scrollToDate = async (dateStr: string) => {
+    const [yearStr, monthStr, dayStr] = dateStr.split('-');
+    const year = Number.parseInt(yearStr, 10);
+    const month = Number.parseInt(monthStr, 10);
+    const dayNum = Number.parseInt(dayStr, 10);
+
+    const timelineMonth = timelineManager.months.find((m) => m.yearMonth.year === year && m.yearMonth.month === month);
+    if (!timelineMonth) {
+      return false;
+    }
+
+    timelineManager.isScrollingOnLoad = true;
+    try {
+      if (!timelineMonth.isLoaded) {
+        await timelineManager.loadTimelineMonth(timelineMonth.yearMonth, { cancelable: false });
+        await tick();
+      }
+
+      const timelineDay = timelineMonth.findTimelineDayByDay(dayNum);
+      const targetScrollTop = timelineDay ? timelineMonth.top + timelineDay.top : timelineMonth.top;
+
+      if (scrollableElement) {
+        scrollableElement.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+      } else {
+        timelineManager.scrollTo(targetScrollTop);
+      }
+      return true;
+    } finally {
+      timelineManager.isScrollingOnLoad = false;
+    }
+  };
+
   export const scrollAfterNavigate = async () => {
     if (timelineManager.viewportHeight === 0 || timelineManager.viewportWidth === 0) {
       // this can happen if you do the following navigation order
@@ -345,7 +377,7 @@
 
   $effect(() => {
     const map: Record<string, string> = {};
-    const list = albumDays ?? album?.albumDays ?? album?.days ?? [];
+    const list = albumDays ?? album?.albumDays ?? [];
     for (const item of list) {
       if (item.date) {
         const key = item.date.split('T')[0];
@@ -383,14 +415,6 @@
           existing.description = newDescription;
         } else {
           album.albumDays.push({ date: currentDate, description: newDescription });
-        }
-      }
-      if (album.days) {
-        const existing = album.days.find((d) => d.date?.split('T')[0] === currentDate);
-        if (existing) {
-          existing.description = newDescription;
-        } else {
-          album.days.push({ date: currentDate, description: newDescription });
         }
       }
 
@@ -465,7 +489,7 @@
               (m) => m.yearMonth.year === currentMonth.year && m.yearMonth.month === currentMonth.month,
             );
             if (currentMonthObj && currentMonthObj.isLoaded) {
-              const monthTop = timelineManager.topSectionHeight + currentMonthObj.top;
+              const monthTop = currentMonthObj.top;
               const viewportScrollY = scrollableElement.scrollTop - monthTop;
               const day = currentMonthObj.getDayAtOffset(viewportScrollY);
               if (day) {
