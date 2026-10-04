@@ -4,6 +4,7 @@
   import { navigating } from '$app/state';
   import { timeToLoadTheMap } from '$lib/constants';
   import { LoadingSpinner } from '@immich/ui';
+  import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
@@ -11,6 +12,7 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
