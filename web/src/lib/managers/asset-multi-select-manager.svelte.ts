@@ -31,7 +31,6 @@ export class AssetMultiSelectManager {
   isAllUserOwned = $derived(
     authManager.authenticated && this.assets.every((asset) => asset.ownerId === authManager.user.id),
   );
-  isAllMissingGPS = $derived(this.assets.every((asset) => !isValidLatLng(asset.latitude, asset.longitude)));
 
   #unsubscribe?: () => void;
 
