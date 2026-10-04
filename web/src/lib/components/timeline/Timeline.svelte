@@ -29,9 +29,16 @@
     getTimes,
     type ScrubberListener,
   } from '$lib/utils/timeline-util';
-  import { type AlbumResponseDto, type PersonResponseDto, type UserResponseDto } from '@immich/sdk';
-  import { Icon } from '@immich/ui';
-  import { mdiCalendar } from '@mdi/js';
+  import {
+    type AlbumDayResponseDto,
+    type AlbumResponseDto,
+    type PersonResponseDto,
+    type UserResponseDto,
+  } from '@immich/sdk';
+  import { Icon, modalManager } from '@immich/ui';
+  import { mdiCalendar, mdiNoteEditOutline } from '@mdi/js';
+  import AlbumDayDescriptionModal from '$lib/modals/AlbumDayDescriptionModal.svelte';
+  import { handleUpdateAlbumDay } from '$lib/services/album.service';
   import { DateTime } from 'luxon';
   import { onDestroy, onMount, tick, type Snippet } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -53,8 +60,10 @@
     showMissingGpsIcon?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto;
+    albumDays?: AlbumDayResponseDto[];
     albumUsers?: UserResponseDto[];
     person?: PersonResponseDto;
+    onAlbumDayUpdate?: (day: AlbumDayResponseDto) => void;
     onSelect?: (asset: TimelineAsset) => void;
     onEscape?: () => void;
     onAssetHover?: (asset: TimelineAsset | null) => void;
@@ -87,9 +96,11 @@
     showArchiveIcon = false,
     showMissingGpsIcon = false,
     isShared = false,
-    album,
+    album = $bindable(),
+    albumDays,
     albumUsers = [],
     person,
+    onAlbumDayUpdate,
     onSelect = () => {},
     onEscape = () => {},
     onAssetHover,
@@ -329,6 +340,66 @@
   };
 
   let viewportTopDayTitle = $state<string | undefined>();
+  let viewportTopDayDate = $state<string | undefined>();
+  let dayDescriptions = $state<Record<string, string>>({});
+
+  $effect(() => {
+    const map: Record<string, string> = {};
+    const list = albumDays ?? album?.albumDays ?? album?.days ?? [];
+    for (const item of list) {
+      if (item.date) {
+        const key = item.date.split('T')[0];
+        map[key] = item.description ?? '';
+      }
+    }
+    dayDescriptions = map;
+  });
+
+  const currentDayDescription = $derived(
+    viewportTopDayDate && album ? (dayDescriptions[viewportTopDayDate.split('T')[0]] ?? '') : '',
+  );
+
+  const handleEditDayDescription = async () => {
+    if (!album || !viewportTopDayDate) {
+      return;
+    }
+
+    const currentDate = viewportTopDayDate.split('T')[0];
+    const currentTitle = viewportTopDayTitle;
+    const initialDesc = dayDescriptions[currentDate] ?? '';
+
+    const newDescription = await modalManager.show(AlbumDayDescriptionModal, {
+      date: currentDate,
+      dateTitle: currentTitle,
+      initialDescription: initialDesc,
+    });
+
+    if (newDescription !== undefined) {
+      dayDescriptions[currentDate] = newDescription;
+
+      if (album.albumDays) {
+        const existing = album.albumDays.find((d) => d.date?.split('T')[0] === currentDate);
+        if (existing) {
+          existing.description = newDescription;
+        } else {
+          album.albumDays.push({ date: currentDate, description: newDescription });
+        }
+      }
+      if (album.days) {
+        const existing = album.days.find((d) => d.date?.split('T')[0] === currentDate);
+        if (existing) {
+          existing.description = newDescription;
+        } else {
+          album.days.push({ date: currentDate, description: newDescription });
+        }
+      }
+
+      const updated = await handleUpdateAlbumDay(album.id, currentDate, newDescription);
+      if (updated) {
+        onAlbumDayUpdate?.(updated);
+      }
+    }
+  };
 
   // note: don't throttle, debounce, or otherwise make this function async - it causes flicker
   const handleTimelineScroll = () => {
@@ -347,6 +418,7 @@
       viewportTopMonth = undefined;
       viewportTopMonthScrollPercent = 0;
       viewportTopDayTitle = undefined;
+      viewportTopDayDate = undefined;
     } else {
       timelineScrollPercent = 0;
 
@@ -355,6 +427,7 @@
 
       const monthsLength = timelineManager.months.length;
       viewportTopDayTitle = undefined;
+      viewportTopDayDate = undefined;
 
       for (let i = -1; i < monthsLength + 1; i++) {
         let timelineMonth: ViewportTopMonth;
@@ -386,9 +459,10 @@
             viewportTopMonthScrollPercent = 0;
           }
 
-          if (scrollableElement.scrollTop > 10 && typeof viewportTopMonth === 'object' && viewportTopMonth !== null) {
+          const currentMonth = viewportTopMonth;
+          if (scrollableElement.scrollTop > 10 && typeof currentMonth === 'object' && currentMonth !== null) {
             const currentMonthObj = timelineManager.months.find(
-              (m) => m.yearMonth.year === viewportTopMonth.year && m.yearMonth.month === viewportTopMonth.month,
+              (m) => m.yearMonth.year === currentMonth.year && m.yearMonth.month === currentMonth.month,
             );
             if (currentMonthObj && currentMonthObj.isLoaded) {
               const monthTop = timelineManager.topSectionHeight + currentMonthObj.top;
@@ -401,6 +475,9 @@
                   day: day.day,
                 });
                 viewportTopDayTitle = getDateLocaleString(date);
+                viewportTopDayDate =
+                  date.toISODate() ??
+                  `${String(currentMonthObj.yearMonth.year).padStart(4, '0')}-${String(currentMonthObj.yearMonth.month).padStart(2, '0')}-${String(day.day).padStart(2, '0')}`;
               }
             }
           }
@@ -669,10 +746,30 @@
       out:fade={{ duration: 150 }}
     >
       <div
-        class="flex items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-md backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/90 dark:text-gray-100"
+        class="pointer-events-auto flex items-center gap-1.5 rounded-full border border-gray-200/80 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-md backdrop-blur-md dark:border-gray-700/80 dark:bg-gray-900/90 dark:text-gray-100"
       >
-        <Icon icon={mdiCalendar} size="16" class="text-primary" />
+        <Icon icon={mdiCalendar} size="16" class="text-primary shrink-0" />
         <span class="truncate">{viewportTopDayTitle}</span>
+        {#if album}
+          {#if currentDayDescription}
+            <span class="text-gray-400 dark:text-gray-500 shrink-0">·</span>
+            <span
+              class="max-w-xs md:max-w-md truncate font-normal text-gray-600 dark:text-gray-300"
+              title={currentDayDescription}
+            >
+              {currentDayDescription}
+            </span>
+          {/if}
+          <button
+            type="button"
+            class="ms-0.5 inline-flex shrink-0 items-center justify-center rounded-full p-0.5 text-gray-500 transition-colors hover:bg-gray-200/70 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700/70 dark:hover:text-gray-100 focus:outline-none"
+            title="Edit day description"
+            aria-label="Edit day description"
+            onclick={handleEditDayDescription}
+          >
+            <Icon icon={mdiNoteEditOutline} size="15" />
+          </button>
+        {/if}
       </div>
     </div>
   {/if}

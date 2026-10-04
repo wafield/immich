@@ -930,7 +930,7 @@
         <Timeline
           bind:this={timelineComponent}
           enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
-          {album}
+          bind:album
           {albumUsers}
           bind:timelineManager
           {options}

@@ -152,7 +152,7 @@ export const UpdateAlbumDaySchema = z
 
 export const AlbumDayParamSchema = z.object({
   id: z.uuidv4().describe('Album ID'),
-  date: z.string().optional().describe('Day date (YYYY-MM-DD)'),
+  date: z.string().describe('Day date (YYYY-MM-DD)'),
 });
 
 export const AlbumResponseSchema = z

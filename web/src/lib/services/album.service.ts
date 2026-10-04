@@ -6,8 +6,10 @@ import {
   BulkIdErrorReason,
   deleteAlbum,
   removeUserFromAlbum,
+  updateAlbumDay,
   updateAlbumInfo,
   updateAlbumUser,
+  type AlbumDayResponseDto,
   type AlbumResponseDto,
   type AlbumsAddAssetsResponseDto,
   type AssetResponseDto,
@@ -374,4 +376,23 @@ export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { pro
 
 export const handleDownloadAlbum = async (album: AlbumResponseDto) => {
   await downloadArchive(album.albumName, { albumId: album.id });
+};
+
+export const handleUpdateAlbumDay = async (
+  albumId: string,
+  date: string,
+  description: string,
+): Promise<AlbumDayResponseDto | null> => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updateAlbumDay({
+      id: albumId,
+      updateAlbumDayDto: { date, description },
+    });
+    return response;
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_album_info'));
+    return null;
+  }
 };

@@ -2837,7 +2837,7 @@
         "parameters": [
           {
             "name": "date",
-            "required": false,
+            "required": true,
             "in": "path",
             "description": "Day date (YYYY-MM-DD)",
             "schema": {
@@ -3040,7 +3040,7 @@
         "parameters": [
           {
             "name": "date",
-            "required": false,
+            "required": true,
             "in": "path",
             "description": "Day date (YYYY-MM-DD)",
             "schema": {

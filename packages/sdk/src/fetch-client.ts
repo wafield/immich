@@ -846,6 +846,12 @@ export type AssetStatsResponseDto = {
     /** Number of videos */
     videos: number;
 };
+export type AlbumDayResponseDto = {
+    /** Day date (YYYY-MM-DD) */
+    date: string;
+    /** Day description */
+    description: string;
+};
 export type AlbumUserResponseDto = {
     role: AlbumUserRole;
     user: UserResponseDto;
@@ -857,6 +863,8 @@ export type ContributorCountResponseDto = {
     userId: string;
 };
 export type AlbumResponseDto = {
+    /** Per-day descriptions in the album */
+    albumDays?: AlbumDayResponseDto[];
     /** Album name */
     albumName: string;
     /** Thumbnail asset ID */
@@ -868,6 +876,8 @@ export type AlbumResponseDto = {
     contributorCounts?: ContributorCountResponseDto[];
     /** Creation date */
     createdAt: string;
+    /** Per-day descriptions in the album */
+    days?: AlbumDayResponseDto[];
     /** Album description */
     description: string;
     /** UTC representation of (local) end date (latest asset) */
@@ -944,6 +954,12 @@ export type BulkIdResponseDto = {
     id: string;
     /** Whether operation succeeded */
     success: boolean;
+};
+export type UpdateAlbumDayDto = {
+    /** Day date (YYYY-MM-DD) */
+    date?: string;
+    /** Day description */
+    description: string;
 };
 export type MapMarkerResponseDto = {
     /** City name */
@@ -1173,6 +1189,20 @@ export type AssetMetadataBulkResponseDto = {
     value: {
         [key: string]: any;
     };
+};
+export type MoveAssetLibraryDto = {
+    /** Asset IDs to move */
+    assetIds: string[];
+    /** Target library ID (UUID or null for default upload library) */
+    targetLibraryId?: string | null;
+};
+export type AssetMoveResponseDto = {
+    /** Error message if move operation failed */
+    error?: string;
+    /** Asset ID */
+    id: string;
+    /** Whether move operation succeeded */
+    success: boolean;
 };
 export type ExifResponseDto = {
     /** Actions description */
@@ -1443,7 +1473,7 @@ export type AssetStackResponseDto = {
     id: string;
     /** Primary asset ID */
     primaryAssetId: string;
-    /** Stack type */
+    /** Type of stack */
     stackType?: string | null;
 };
 export type TagResponseDto = {
@@ -1543,14 +1573,14 @@ export type AssetResponseDto = {
     originalMimeType?: string;
     /** Original file path */
     originalPath: string;
-    /** Sidecar file path */
-    sidecarPath?: string | null;
     owner?: UserResponseDto;
     /** Owner user ID */
     ownerId: string;
     people?: PersonResponseDto[];
     /** Is resized */
     resized?: boolean;
+    /** Sidecar file path */
+    sidecarPath?: string | null;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
     /** Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting. */
@@ -1965,6 +1995,42 @@ export type FaceDto = {
     /** Face ID */
     id: string;
 };
+export type GeminiImageInputDto = {
+    /** Base64-encoded image bytes */
+    data: string;
+    /** MIME type of the image, e.g. image/jpeg, image/png, image/webp */
+    mimeType: string;
+};
+export type GeminiRequestDto = {
+    /** Optional Immich asset ID to use as image input */
+    assetId?: string;
+    /** Optional inline base64-encoded image data with MIME type */
+    image?: GeminiImageInputDto;
+    /** Text prompt or question for Gemini */
+    prompt?: string;
+    /** Alternative alias for prompt */
+    text?: string;
+};
+export type GeminiResponseDto = {
+    /** Generated response text from Gemini */
+    text: string;
+};
+export type AssetGenAiResponseDto = {
+    /** Asset ID associated with the response */
+    assetId: string;
+    /** Timestamp when the response was generated */
+    createdAt: string;
+    /** Deletion timestamp, or null if active */
+    deletedAt: string | null;
+    /** ID of the GenAI response entry */
+    id: string;
+    /** Model name used for generation */
+    modelName: string;
+    /** Prompt sent to Gemini */
+    prompt: string;
+    /** Generated response from Gemini */
+    response: string;
+};
 export type QueueStatisticsDto = {
     /** Number of active jobs */
     active: number;
@@ -1992,6 +2058,7 @@ export type QueueResponseLegacyDto = {
 export type QueuesResponseLegacyDto = {
     backgroundTask: QueueResponseLegacyDto;
     backupDatabase: QueueResponseLegacyDto;
+    dailyAssetMove: QueueResponseLegacyDto;
     duplicateDetection: QueueResponseLegacyDto;
     editor: QueueResponseLegacyDto;
     faceDetection: QueueResponseLegacyDto;
@@ -2009,7 +2076,6 @@ export type QueuesResponseLegacyDto = {
     thumbnailGeneration: QueueResponseLegacyDto;
     videoConversion: QueueResponseLegacyDto;
     workflow: QueueResponseLegacyDto;
-    dailyAssetMove: QueueResponseLegacyDto;
 };
 export type JobCreateDto = {
     name: ManualJobName;
@@ -2022,6 +2088,8 @@ export type QueueCommandDto = {
 export type LibraryResponseDto = {
     /** Number of assets */
     assetCount: number;
+    /** Automated daily move status */
+    automatedDailyMove: boolean;
     /** Creation date */
     createdAt: string;
     /** Exclusion patterns */
@@ -2036,18 +2104,18 @@ export type LibraryResponseDto = {
     ownerId: string;
     /** Last refresh date */
     refreshedAt: string | null;
+    /** Shared status */
+    shared: boolean;
+    /** UI color */
+    uiColor: string | null;
     /** Last update date */
     updatedAt: string;
     /** Upload path */
     uploadPath: string | null;
-    /** UI color */
-    uiColor: string | null;
-    /** Shared status */
-    shared: boolean;
-    /** Automated daily move status */
-    automatedDailyMove: boolean;
 };
 export type CreateLibraryDto = {
+    /** Automated daily move status */
+    automatedDailyMove?: boolean;
     /** Exclusion patterns (max 128) */
     exclusionPatterns?: string[];
     /** Import paths (max 128) */
@@ -2056,30 +2124,28 @@ export type CreateLibraryDto = {
     name?: string;
     /** Owner user ID */
     ownerId: string;
-    /** Upload path (max 128) */
-    uploadPath?: string;
-    /** UI color */
-    uiColor?: string | null;
     /** Shared status */
     shared?: boolean;
-    /** Automated daily move status */
-    automatedDailyMove?: boolean;
+    /** UI color (RGBA in hex format) */
+    uiColor?: string | null;
+    /** Upload path (max 128) */
+    uploadPath?: string;
 };
 export type UpdateLibraryDto = {
+    /** Automated daily move status */
+    automatedDailyMove?: boolean;
     /** Exclusion patterns (max 128) */
     exclusionPatterns?: string[];
     /** Import paths (max 128) */
     importPaths?: string[];
     /** Library name */
     name?: string;
-    /** Upload path (max 128) */
-    uploadPath?: string | null;
-    /** UI color */
-    uiColor?: string | null;
     /** Shared status */
     shared?: boolean;
-    /** Automated daily move status */
-    automatedDailyMove?: boolean;
+    /** UI color (RGBA in hex format) */
+    uiColor?: string | null;
+    /** Upload path (max 128) */
+    uploadPath?: string | null;
 };
 export type LibraryStatsResponseDto = {
     /** Number of photos */
@@ -2665,7 +2731,7 @@ export type MetadataSearchDto = {
     /** Filter by archive status */
     isArchive?: boolean | null;
     /** Filter by encoded status */
-    isEncoded?: boolean | null;
+    isEncoded?: boolean;
     /** Filter by favorite status */
     isFavorite?: boolean | null;
     /** Filter by motion photo status */
@@ -2676,8 +2742,6 @@ export type MetadataSearchDto = {
     isOffline?: boolean | null;
     /** Filter by screenshot status */
     isScreenshot?: boolean | null;
-    /** Filter by stacked status */
-    isStacked?: boolean | null;
     /** Filter by trashed status */
     isTrashed?: boolean | null;
     /** Filter by lens model */
@@ -2727,14 +2791,12 @@ export type MetadataSearchDto = {
     /** Filter by update date (before) */
     updatedBefore?: string;
     visibility?: AssetVisibility;
-    /** Include deleted assets */
-    withDeleted?: boolean | null;
     /** Include EXIF data in response */
     withExif?: boolean;
     /** Include people data in response */
     withPeople?: boolean;
     /** Include stacked assets */
-    withStacked?: boolean | null;
+    withStacked?: boolean;
 };
 export type SearchFacetCountResponseDto = {
     /** Number of assets with this facet value */
@@ -2783,16 +2845,6 @@ export type PlacesResponseDto = {
     /** Place name */
     name: string;
 };
-export type SuggestionResponseDto = {
-    /** Total number of matching assets */
-    assetCount: number;
-    /** Latest photo taken time */
-    endTime: string | null;
-    /** Earliest photo taken time */
-    startTime: string | null;
-    /** Suggestion text */
-    suggestion: string | null;
-};
 export type RandomSearchDto = {
     /** Filter by album IDs */
     albumIds?: string[];
@@ -2805,16 +2857,22 @@ export type RandomSearchDto = {
     /** Filter by creation date (before) */
     createdBefore?: string;
     filter?: SearchFilter;
+    /** Filter by archive status */
+    isArchive?: boolean | null;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
-    isFavorite?: boolean;
+    isFavorite?: boolean | null;
     /** Filter by motion photo status */
-    isMotion?: boolean;
+    isMotion?: boolean | null;
     /** Filter assets not in any album */
-    isNotInAlbum?: boolean;
+    isNotInAlbum?: boolean | null;
     /** Filter by offline status */
-    isOffline?: boolean;
+    isOffline?: boolean | null;
+    /** Filter by screenshot status */
+    isScreenshot?: boolean | null;
+    /** Filter by trashed status */
+    isTrashed?: boolean | null;
     /** Filter by lens model */
     lensModel?: string | null;
     /** Library ID to filter by */
@@ -2849,8 +2907,6 @@ export type RandomSearchDto = {
     /** Filter by update date (before) */
     updatedBefore?: string;
     visibility?: AssetVisibility;
-    /** Include deleted assets */
-    withDeleted?: boolean;
     /** Include EXIF data in response */
     withExif?: boolean;
     /** Include people data in response */
@@ -2870,16 +2926,22 @@ export type SmartSearchDto = {
     /** Filter by creation date (before) */
     createdBefore?: string;
     filter?: SearchFilter;
+    /** Filter by archive status */
+    isArchive?: boolean | null;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
-    isFavorite?: boolean;
+    isFavorite?: boolean | null;
     /** Filter by motion photo status */
-    isMotion?: boolean;
+    isMotion?: boolean | null;
     /** Filter assets not in any album */
-    isNotInAlbum?: boolean;
+    isNotInAlbum?: boolean | null;
     /** Filter by offline status */
-    isOffline?: boolean;
+    isOffline?: boolean | null;
+    /** Filter by screenshot status */
+    isScreenshot?: boolean | null;
+    /** Filter by trashed status */
+    isTrashed?: boolean | null;
     /** Search language code */
     language?: string;
     /** Filter by lens model */
@@ -2922,8 +2984,6 @@ export type SmartSearchDto = {
     /** Filter by update date (before) */
     updatedBefore?: string;
     visibility?: AssetVisibility;
-    /** Include deleted assets */
-    withDeleted?: boolean;
     /** Include EXIF data in response */
     withExif?: boolean;
 };
@@ -2941,16 +3001,20 @@ export type StatisticsSearchDto = {
     /** Filter by description text */
     description?: string;
     filter?: SearchFilter;
+    /** Filter by archive status */
+    isArchive?: boolean | null;
     /** Filter by encoded status */
     isEncoded?: boolean;
     /** Filter by favorite status */
-    isFavorite?: boolean;
+    isFavorite?: boolean | null;
     /** Filter by motion photo status */
-    isMotion?: boolean;
+    isMotion?: boolean | null;
     /** Filter assets not in any album */
-    isNotInAlbum?: boolean;
+    isNotInAlbum?: boolean | null;
     /** Filter by offline status */
-    isOffline?: boolean;
+    isOffline?: boolean | null;
+    /** Filter by screenshot status */
+    isScreenshot?: boolean | null;
     /** Filter by lens model */
     lensModel?: string | null;
     /** Library ID to filter by */
@@ -2987,6 +3051,16 @@ export type StatisticsSearchDto = {
 export type SearchStatisticsResponseDto = {
     /** Total number of matching assets */
     total: number;
+};
+export type SuggestionResponseDto = {
+    /** Total number of matching assets */
+    assetCount: number;
+    /** Latest photo taken time */
+    endTime: string | null;
+    /** Earliest photo taken time */
+    startTime: string | null;
+    /** Suggestion text */
+    suggestion: string | null;
 };
 export type ServerAboutResponseDto = {
     /** Build identifier */
@@ -3312,13 +3386,13 @@ export type StackResponseDto = {
     id: string;
     /** Primary asset ID */
     primaryAssetId: string;
-    /** Stack type */
+    /** Type of stack (e.g., raw) */
     stackType?: string | null;
 };
 export type StackCreateDto = {
     /** Asset IDs (first becomes primary, min 2) */
     assetIds: string[];
-    /** Stack type */
+    /** Type of stack (e.g., manual, duplicate, raw) */
     stackType?: string | null;
 };
 export type StackUpdateDto = {
@@ -3401,52 +3475,52 @@ export type TagUpdateDto = {
     name?: string;
 };
 export type TimeBucketAssetResponseDto = {
-    /** Array of camera model strings extracted from EXIF data */
-    model?: (string | null)[];
     /** Array of city names extracted from EXIF GPS data */
     city?: (string | null)[];
     /** Array of country names extracted from EXIF GPS data */
     country?: (string | null)[];
     /** Array of UTC timestamps when each asset was originally uploaded to Immich */
     createdAt: string[];
+    /** Array of original date taken timestamps extracted from EXIF data */
+    dateTimeOriginal?: (string | null)[];
     /** Array of UTC timestamps when each asset was moved to trash */
     deletedAt?: (string | null)[];
-    /** Array of original date taken timestamps in UTC extracted from EXIF data */
-    dateTimeOriginal?: (string | null)[];
     /** Array of asset descriptions extracted from EXIF data */
     description?: (string | null)[];
     /** Array of video/gif durations in milliseconds (null for static images) */
     duration: (number | null)[];
     /** Array of file creation timestamps in UTC */
     fileCreatedAt: string[];
-    /** Array of asset IDs in the time bucket */
-    id: string[];
-    /** Array indicating whether each asset is favorited */
-    isFavorite: boolean[];
-    /** Array indicating whether each asset has been edited within Immich */
-    isEdited: boolean[];
     /** Array indicating whether each asset has an XMP sidecar file */
     hasSidecar: boolean[];
-    /** Array of library IDs for each asset (null for assets not in an external library) */
-    libraryId: (string | null)[];
+    /** Array of asset IDs in the time bucket */
+    id: string[];
+    /** Array indicating whether each asset has been edited within Immich */
+    isEdited: boolean[];
+    /** Array indicating whether each asset is favorited */
+    isFavorite: boolean[];
     /** Array indicating whether each asset is an image (false for videos) */
     isImage: boolean[];
-    /** Array indicating whether each asset is in the trash */
-    isTrashed: boolean[];
     /** Array indicating whether each asset is not part of any album */
     isNotInAnyAlbum: boolean[];
+    /** Array indicating whether each asset is in the trash */
+    isTrashed: boolean[];
     /** Array of latitude coordinates extracted from EXIF GPS data */
     latitude: (number | null)[];
+    /** Array of library IDs for each asset (null for assets not in an external library) */
+    libraryId: (string | null)[];
     /** Array of live photo video asset IDs (null for non-live photos) */
     livePhotoVideoId: (string | null)[];
     /** Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective. */
     localOffsetHours: number[];
     /** Array of longitude coordinates extracted from EXIF GPS data */
     longitude: (number | null)[];
-    /** Array of owner IDs for each asset */
-    ownerId: string[];
+    /** Array of camera model strings extracted from EXIF data */
+    model?: (string | null)[];
     /** Array of original file names for each asset */
     originalFileName: string[];
+    /** Array of owner IDs for each asset */
+    ownerId: string[];
     /** Array of projection types for 360° content (e.g., "EQUIRECTANGULAR", "CUBEFACE", "CYLINDRICAL") */
     projectionType: (string | null)[];
     /** Array of aspect ratios (width/height) for each asset */
@@ -4931,6 +5005,90 @@ export function addAssetsToAlbum({ id, bulkIdsDto }: {
     })));
 }
 /**
+ * Update or create album day description
+ */
+export function updateAlbumDay({ id, updateAlbumDayDto }: {
+    id: string;
+    updateAlbumDayDto: UpdateAlbumDayDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumDayResponseDto;
+    }>(`/albums/${encodeURIComponent(id)}/day`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateAlbumDayDto
+    })));
+}
+/**
+ * Update or create album day description
+ */
+export function updateAlbumDayWithParam({ date, id, updateAlbumDayDto }: {
+    date: string;
+    id: string;
+    updateAlbumDayDto: UpdateAlbumDayDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumDayResponseDto;
+    }>(`/albums/${encodeURIComponent(id)}/day/${encodeURIComponent(date)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateAlbumDayDto
+    })));
+}
+/**
+ * Retrieve album day descriptions
+ */
+export function getAlbumDays({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumDayResponseDto[];
+    }>(`/albums/${encodeURIComponent(id)}/days${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Update or create album day description
+ */
+export function updateAlbumDays({ id, updateAlbumDayDto }: {
+    id: string;
+    updateAlbumDayDto: UpdateAlbumDayDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumDayResponseDto;
+    }>(`/albums/${encodeURIComponent(id)}/days`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateAlbumDayDto
+    })));
+}
+/**
+ * Update or create album day description
+ */
+export function updateAlbumDaysWithParam({ date, id, updateAlbumDayDto }: {
+    date: string;
+    id: string;
+    updateAlbumDayDto: UpdateAlbumDayDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AlbumDayResponseDto;
+    }>(`/albums/${encodeURIComponent(id)}/days/${encodeURIComponent(date)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateAlbumDayDto
+    })));
+}
+/**
  * Retrieve album map markers
  */
 export function getAlbumMapMarkers({ id, key, slug }: {
@@ -5256,6 +5414,21 @@ export function updateBulkAssetMetadata({ assetMetadataBulkUpsertDto }: {
         ...opts,
         method: "PUT",
         body: assetMetadataBulkUpsertDto
+    })));
+}
+/**
+ * Move assets to another library
+ */
+export function moveLibrary({ moveAssetLibraryDto }: {
+    moveAssetLibraryDto: MoveAssetLibraryDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AssetMoveResponseDto[];
+    }>("/assets/move-library", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: moveAssetLibraryDto
     })));
 }
 /**
@@ -5962,6 +6135,49 @@ export function reassignFacesById({ id, faceDto }: {
         ...opts,
         method: "PUT",
         body: faceDto
+    })));
+}
+/**
+ * Generate content using Google Gemini
+ */
+export function generateContent({ geminiRequestDto }: {
+    geminiRequestDto: GeminiRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GeminiResponseDto;
+    }>("/gemini", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: geminiRequestDto
+    })));
+}
+/**
+ * Retrieve GenAI responses for an asset
+ */
+export function getGenAiHistory({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetGenAiResponseDto[];
+    }>(`/gemini/asset/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
+ * Generate content using Google Gemini (alias)
+ */
+export function generateContentAlias({ geminiRequestDto }: {
+    geminiRequestDto: GeminiRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: GeminiResponseDto;
+    }>("/gemini/generate", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: geminiRequestDto
     })));
 }
 /**
@@ -6964,17 +7180,20 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
 /**
  * Search large assets
  */
-export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withDeleted, withExif }: {
+export function searchLargeAssets({ albumIds, city, country, createdAfter, createdBefore, isArchive, isEncoded, isFavorite, isMotion, isNotInAlbum, isOffline, isScreenshot, isTrashed, lensModel, libraryId, make, minFileSize, model, ocr, personIds, rating, size, state, tagIds, takenAfter, takenBefore, trashedAfter, trashedBefore, $type, updatedAfter, updatedBefore, visibility, withExif }: {
     albumIds?: string[];
     city?: string | null;
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
+    isArchive?: boolean | null;
     isEncoded?: boolean;
-    isFavorite?: boolean;
-    isMotion?: boolean;
-    isNotInAlbum?: boolean;
-    isOffline?: boolean;
+    isFavorite?: boolean | null;
+    isMotion?: boolean | null;
+    isNotInAlbum?: boolean | null;
+    isOffline?: boolean | null;
+    isScreenshot?: boolean | null;
+    isTrashed?: boolean | null;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string | null;
@@ -6994,7 +7213,6 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
     updatedAfter?: string;
     updatedBefore?: string;
     visibility?: AssetVisibility;
-    withDeleted?: boolean;
     withExif?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -7006,11 +7224,14 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         country,
         createdAfter,
         createdBefore,
+        isArchive,
         isEncoded,
         isFavorite,
         isMotion,
         isNotInAlbum,
         isOffline,
+        isScreenshot,
+        isTrashed,
         lensModel,
         libraryId,
         make,
@@ -7030,7 +7251,6 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
         updatedAfter,
         updatedBefore,
         visibility,
-        withDeleted,
         withExif
     }))}`, {
         ...opts,
@@ -7911,7 +8131,7 @@ export function getTimeBucket({ albumId, bbox, isFavorite, isScreenshot, isTrash
     isScreenshot?: boolean;
     isTrashed?: boolean;
     key?: string;
-    libraryIds?: string[];
+    libraryIds?: (string | "null")[];
     order?: AssetOrder;
     orderBy?: AssetOrderBy;
     personId?: string;
@@ -7960,7 +8180,7 @@ export function getTimeBuckets({ albumId, bbox, isFavorite, isScreenshot, isTras
     isScreenshot?: boolean;
     isTrashed?: boolean;
     key?: string;
-    libraryIds?: string[];
+    libraryIds?: (string | "null")[];
     order?: AssetOrder;
     orderBy?: AssetOrderBy;
     personId?: string;
@@ -8889,6 +9109,7 @@ export enum JobName {
     LibrarySyncFilesQueueAll = "LibrarySyncFilesQueueAll",
     LibrarySyncFiles = "LibrarySyncFiles",
     LibraryScanQueueAll = "LibraryScanQueueAll",
+    DailyAssetMove = "DailyAssetMove",
     HlsSessionCleanup = "HlsSessionCleanup",
     MemoryCleanup = "MemoryCleanup",
     MemoryGenerate = "MemoryGenerate",
@@ -8935,13 +9156,13 @@ export enum SearchOrderField {
 }
 export enum SearchSuggestionType {
     Library = "library",
+    PresetTimeRange = "preset-time-range",
     Country = "country",
     State = "state",
     City = "city",
     CameraMake = "camera-make",
     CameraModel = "camera-model",
-    CameraLensModel = "camera-lens-model",
-    PresetTimeRange = "preset-time-range"
+    CameraLensModel = "camera-lens-model"
 }
 export enum SharedLinkType {
     Album = "ALBUM",
@@ -9070,28 +9291,5 @@ export enum UserMetadataKey {
     License = "license",
     Onboarding = "onboarding"
 }
-
-export type MoveAssetLibraryDto = {
-    assetIds: string[];
-    targetLibraryId?: string | null;
-};
-
-export type AssetMoveResponseDto = {
-    error?: string;
-    id: string;
-    success: boolean;
-};
-
-export function moveAssetsToLibrary({ moveAssetLibraryDto }: {
-    moveAssetLibraryDto: MoveAssetLibraryDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetMoveResponseDto[];
-    }>("/assets/move-library", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: moveAssetLibraryDto
-    })));
-}
+export const moveAssetsToLibrary = moveLibrary;
 
