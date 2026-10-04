@@ -1426,4 +1426,86 @@ describe(AlbumService.name, () => {
 
   //   await expect(sut.removeAssets(auth, albumId, { ids: ['1'] })).rejects.toBeInstanceOf(ForbiddenException);
   // });
+
+  describe('updateDay', () => {
+    it('creates or updates album day description', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.album.upsertDay.mockResolvedValue({
+        albumId: album.id,
+        date: '2026-10-04',
+        description: 'Great day',
+        updatedAt: new Date(),
+      });
+
+      const result = await sut.updateDay(AuthFactory.create(owner), album.id, {
+        date: '2026-10-04',
+        description: 'Great day',
+      });
+
+      expect(result).toEqual({
+        date: '2026-10-04',
+        description: 'Great day',
+      });
+      expect(mocks.album.upsertDay).toHaveBeenCalledWith(album.id, '2026-10-04', 'Great day');
+    });
+
+    it('updates album day description to empty string', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.album.upsertDay.mockResolvedValue({
+        albumId: album.id,
+        date: '2026-10-04',
+        description: '',
+        updatedAt: new Date(),
+      });
+
+      const result = await sut.updateDay(AuthFactory.create(owner), album.id, {
+        date: '2026-10-04',
+        description: '',
+      });
+
+      expect(result).toEqual({
+        date: '2026-10-04',
+        description: '',
+      });
+      expect(mocks.album.upsertDay).toHaveBeenCalledWith(album.id, '2026-10-04', '');
+    });
+
+    it('throws BadRequestException if date is missing', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+
+      await expect(
+        sut.updateDay(AuthFactory.create(owner), album.id, {
+          description: 'No date',
+        }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+  });
+
+  describe('getDays', () => {
+    it('returns album day descriptions', async () => {
+      const album = AlbumFactory.create();
+      const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
+      mocks.album.getDays.mockResolvedValue([
+        { date: '2026-10-04', description: 'Day 1' },
+        { date: '2026-10-05', description: 'Day 2' },
+      ]);
+
+      const result = await sut.getDays(AuthFactory.create(owner), album.id);
+      expect(result).toEqual([
+        { date: '2026-10-04', description: 'Day 1' },
+        { date: '2026-10-05', description: 'Day 2' },
+      ]);
+      expect(mocks.album.getDays).toHaveBeenCalledWith(album.id);
+    });
+  });
 });

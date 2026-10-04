@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   AddUsersDto,
+  AlbumDayResponseDto,
   AlbumResponseDto,
   AlbumStatisticsResponseDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
+  UpdateAlbumDayDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
   mapAlbum,
@@ -18,7 +20,7 @@ import { AlbumUserRole, Permission } from 'src/enum.js';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { addAssets, removeAssets } from 'src/utils/asset.util.js';
-import { asDateTimeString } from 'src/utils/date.js';
+import { asDateString, asDateTimeString } from 'src/utils/date.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { getPreferences } from 'src/utils/preferences.js';
 
@@ -350,6 +352,43 @@ export class AlbumService extends BaseService {
     }
 
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
+  }
+
+  async updateDay(
+    auth: AuthDto,
+    id: string,
+    dto: UpdateAlbumDayDto,
+    paramDate?: string,
+  ): Promise<AlbumDayResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AlbumUpdate, ids: [id] });
+
+    const rawDate = paramDate || dto.date;
+    if (!rawDate) {
+      throw new BadRequestException('Date is required');
+    }
+
+    const date = (asDateString(rawDate) ?? rawDate).split('T')[0];
+    const description = dto.description ?? '';
+
+    await this.findOrFail(id, auth.user.id, { withAssets: false });
+
+    const result = await this.albumRepository.upsertDay(id, date, description);
+
+    return {
+      date: (asDateString(result.date) ?? String(result.date)).split('T')[0],
+      description: result.description,
+    };
+  }
+
+  async getDays(auth: AuthDto, id: string): Promise<AlbumDayResponseDto[]> {
+    await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
+    await this.findOrFail(id, auth.user.id, { withAssets: false });
+
+    const results = await this.albumRepository.getDays(id);
+    return results.map((result) => ({
+      date: (asDateString(result.date) ?? String(result.date)).split('T')[0],
+      description: result.description,
+    }));
   }
 
   private findOrFail(id: string, authUserId: string, options: AlbumInfoOptions) {

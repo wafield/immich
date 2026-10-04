@@ -4,6 +4,8 @@ import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
   AddUsersDto,
+  AlbumDayParamDto,
+  AlbumDayResponseDto,
   AlbumResponseDto,
   AlbumStatisticsResponseDto,
   AlbumUserParamDto,
@@ -11,6 +13,7 @@ import {
   AlbumsAddAssetsResponseDto,
   CreateAlbumDto,
   GetAlbumsDto,
+  UpdateAlbumDayDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
 } from 'src/dtos/album.dto.js';
@@ -192,5 +195,76 @@ export class AlbumController {
   })
   removeUserFromAlbum(@Auth() auth: AuthDto, @Param() { id, userId }: AlbumUserParamDto): Promise<void> {
     return this.service.removeUser(auth, id, userId);
+  }
+
+  @Put(':id/day')
+  @Authenticated({ permission: Permission.AlbumUpdate })
+  @Endpoint({
+    summary: 'Update or create album day description',
+    description: 'Create or modify the description for a specific day in an album.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  updateAlbumDay(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateAlbumDayDto,
+  ): Promise<AlbumDayResponseDto> {
+    return this.service.updateDay(auth, id, dto);
+  }
+
+  @Put(':id/days')
+  @Authenticated({ permission: Permission.AlbumUpdate })
+  @Endpoint({
+    summary: 'Update or create album day description',
+    description: 'Create or modify the description for a specific day in an album.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  updateAlbumDays(
+    @Auth() auth: AuthDto,
+    @Param() { id }: UUIDParamDto,
+    @Body() dto: UpdateAlbumDayDto,
+  ): Promise<AlbumDayResponseDto> {
+    return this.service.updateDay(auth, id, dto);
+  }
+
+  @Put(':id/day/:date')
+  @Authenticated({ permission: Permission.AlbumUpdate })
+  @Endpoint({
+    summary: 'Update or create album day description',
+    description: 'Create or modify the description for a specific day in an album.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  updateAlbumDayWithParam(
+    @Auth() auth: AuthDto,
+    @Param() { id, date }: AlbumDayParamDto,
+    @Body() dto: UpdateAlbumDayDto,
+  ): Promise<AlbumDayResponseDto> {
+    return this.service.updateDay(auth, id, dto, date);
+  }
+
+  @Put(':id/days/:date')
+  @Authenticated({ permission: Permission.AlbumUpdate })
+  @Endpoint({
+    summary: 'Update or create album day description',
+    description: 'Create or modify the description for a specific day in an album.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  updateAlbumDaysWithParam(
+    @Auth() auth: AuthDto,
+    @Param() { id, date }: AlbumDayParamDto,
+    @Body() dto: UpdateAlbumDayDto,
+  ): Promise<AlbumDayResponseDto> {
+    return this.service.updateDay(auth, id, dto, date);
+  }
+
+  @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
+  @Get(':id/days')
+  @Endpoint({
+    summary: 'Retrieve album day descriptions',
+    description: 'Retrieve per-day descriptions for a specific album by its ID.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  getAlbumDays(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumDayResponseDto[]> {
+    return this.service.getDays(auth, id);
   }
 }

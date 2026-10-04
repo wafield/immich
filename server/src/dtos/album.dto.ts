@@ -8,7 +8,7 @@ import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum.js';
-import { asDateTimeString } from 'src/utils/date.js';
+import { asDateString, asDateTimeString } from 'src/utils/date.js';
 import { stringToBool } from 'src/validation.js';
 
 const AlbumUserAddSchema = z
@@ -136,6 +136,25 @@ const ContributorCountResponseSchema = z
   })
   .meta({ id: 'ContributorCountResponseDto' });
 
+export const AlbumDayResponseSchema = z
+  .object({
+    date: z.string().describe('Day date (YYYY-MM-DD)'),
+    description: z.string().describe('Day description'),
+  })
+  .meta({ id: 'AlbumDayResponseDto' });
+
+export const UpdateAlbumDaySchema = z
+  .object({
+    date: z.string().optional().describe('Day date (YYYY-MM-DD)'),
+    description: z.string().describe('Day description'),
+  })
+  .meta({ id: 'UpdateAlbumDayDto' });
+
+export const AlbumDayParamSchema = z.object({
+  id: z.uuidv4().describe('Album ID'),
+  date: z.string().optional().describe('Day date (YYYY-MM-DD)'),
+});
+
 export const AlbumResponseSchema = z
   .object({
     id: z.uuidv4().describe('Album ID'),
@@ -187,6 +206,8 @@ export const AlbumResponseSchema = z
     isActivityEnabled: z.boolean().describe('Activity feed enabled'),
     order: AssetOrderSchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
+    albumDays: z.array(AlbumDayResponseSchema).default([]).describe('Per-day descriptions in the album'),
+    days: z.array(AlbumDayResponseSchema).default([]).describe('Per-day descriptions in the album'),
   })
   .meta({ id: 'AlbumResponseDto' });
 
@@ -213,12 +234,16 @@ export class GetAlbumsDto extends createZodDto(GetAlbumsSchema) {}
 export class AlbumStatisticsResponseDto extends createZodDto(AlbumStatisticsResponseSchema) {}
 export class UpdateAlbumUserDto extends createZodDto(UpdateAlbumUserSchema) {}
 export class AlbumResponseDto extends createZodDto(AlbumResponseSchema) {}
+export class AlbumDayResponseDto extends createZodDto(AlbumDayResponseSchema) {}
+export class UpdateAlbumDayDto extends createZodDto(UpdateAlbumDaySchema) {}
+export class AlbumDayParamDto extends createZodDto(AlbumDayParamSchema) {}
 class AlbumUserResponseDto extends createZodDto(AlbumUserResponseSchema) {}
 
 export type MapAlbumDto = {
   albumUsers?: AlbumUser[];
   assets?: ShallowDehydrateObject<MapAsset>[];
   sharedLinks?: ShallowDehydrateObject<AuthSharedLink>[];
+  albumDays?: ShallowDehydrateObject<{ date: string | Date; description: string }>[];
   albumName: string;
   description: string | null;
   albumThumbnailAssetId: string | null;
@@ -254,6 +279,11 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     [startDate, endDate] = [endDate, startDate];
   }
 
+  const albumDays: AlbumDayResponseDto[] = (entity.albumDays || []).map((d) => ({
+    date: (asDateString(d.date) ?? String(d.date)).split('T')[0],
+    description: d.description,
+  }));
+
   return {
     albumName: entity.albumName,
     // TODO: return null instead of '' in v4
@@ -270,5 +300,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,
+    albumDays,
+    days: albumDays,
   };
 };

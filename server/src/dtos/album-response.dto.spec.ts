@@ -19,5 +19,26 @@ describe('mapAlbum', () => {
     const dto = mapAlbum(getForAlbum(AlbumFactory.create()));
     expect(dto.startDate).toBeUndefined();
     expect(dto.endDate).toBeUndefined();
+    expect(dto.days).toEqual([]);
+    expect(dto.albumDays).toEqual([]);
+  });
+
+  it('should map album days and days correctly', () => {
+    const album = AlbumFactory.from().build();
+    const dto = mapAlbum({
+      ...getForAlbum(album),
+      albumDays: [
+        { date: '2026-10-04', description: 'Day 1 in Tokyo' },
+        { date: '2026-10-05', description: 'Day 2 in Kyoto' },
+      ],
+    });
+    expect(dto.albumDays).toEqual([
+      { date: '2026-10-04', description: 'Day 1 in Tokyo' },
+      { date: '2026-10-05', description: 'Day 2 in Kyoto' },
+    ]);
+    expect(dto.days).toEqual([
+      { date: '2026-10-04', description: 'Day 1 in Tokyo' },
+      { date: '2026-10-05', description: 'Day 2 in Kyoto' },
+    ]);
   });
 });

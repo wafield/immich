@@ -35,4 +35,69 @@ describe(AlbumController.name, () => {
       expect(body).toEqual(factory.responses.validationError([{ path: ['assetId'], message: 'Invalid UUID' }]));
     });
   });
+
+  describe('Album Day endpoints', () => {
+    it('should update album day description via PUT /albums/:id/day', async () => {
+      const albumId = factory.uuid();
+      service.updateDay.mockResolvedValue({ date: '2026-10-04', description: 'Fun day' });
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/albums/${albumId}/day`)
+        .send({ date: '2026-10-04', description: 'Fun day' });
+
+      expect(status).toEqual(200);
+      expect(body).toEqual({ date: '2026-10-04', description: 'Fun day' });
+      expect(service.updateDay).toHaveBeenCalledWith(
+        undefined,
+        albumId,
+        { date: '2026-10-04', description: 'Fun day' },
+      );
+    });
+
+    it('should update album day description via PUT /albums/:id/days', async () => {
+      const albumId = factory.uuid();
+      service.updateDay.mockResolvedValue({ date: '2026-10-04', description: 'Fun day' });
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/albums/${albumId}/days`)
+        .send({ date: '2026-10-04', description: 'Fun day' });
+
+      expect(status).toEqual(200);
+      expect(body).toEqual({ date: '2026-10-04', description: 'Fun day' });
+      expect(service.updateDay).toHaveBeenCalledWith(
+        undefined,
+        albumId,
+        { date: '2026-10-04', description: 'Fun day' },
+      );
+    });
+
+    it('should update album day description via PUT /albums/:id/day/:date', async () => {
+      const albumId = factory.uuid();
+      service.updateDay.mockResolvedValue({ date: '2026-10-04', description: 'Trip day' });
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/albums/${albumId}/day/2026-10-04`)
+        .send({ description: 'Trip day' });
+
+      expect(status).toEqual(200);
+      expect(body).toEqual({ date: '2026-10-04', description: 'Trip day' });
+      expect(service.updateDay).toHaveBeenCalledWith(
+        undefined,
+        albumId,
+        { description: 'Trip day' },
+        '2026-10-04',
+      );
+    });
+
+    it('should get album day descriptions via GET /albums/:id/days', async () => {
+      const albumId = factory.uuid();
+      service.getDays.mockResolvedValue([{ date: '2026-10-04', description: 'Day 1' }]);
+
+      const { status, body } = await request(ctx.getHttpServer()).get(`/albums/${albumId}/days`);
+
+      expect(status).toEqual(200);
+      expect(body).toEqual([{ date: '2026-10-04', description: 'Day 1' }]);
+      expect(service.getDays).toHaveBeenCalledWith(undefined, albumId);
+    });
+  });
 });

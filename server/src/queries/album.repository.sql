@@ -64,6 +64,22 @@ select
   ) as "sharedLinks",
   (
     select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "album_day"."date",
+          "album_day"."description"
+        from
+          "album_day"
+        where
+          "album_day"."albumId" = "album"."id"
+        order by
+          "album_day"."date" asc
+      ) as agg
+  ) as "albumDays",
+  (
+    select
       json_agg("asset") as "assets"
     from
       (
@@ -445,4 +461,30 @@ from
   "album_asset"
 where
   "album_asset"."assetId" = $2
-on conflict do nothing
+on conflict do nothing;
+
+-- AlbumRepository.upsertDay
+insert into
+  "album_day" ("albumId", "date", "description")
+values
+  ($1, $2, $3)
+on conflict ("albumId", "date") do update
+set
+  "description" = excluded."description",
+  "updatedAt" = now()
+returning
+  "albumId",
+  "date",
+  "description",
+  "updatedAt";
+
+-- AlbumRepository.getDays
+select
+  "date",
+  "description"
+from
+  "album_day"
+where
+  "albumId" = $1
+order by
+  "date" asc;

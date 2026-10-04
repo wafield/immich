@@ -52,6 +52,15 @@ const withSharedLink = (eb: ExpressionBuilder<DB, 'album'>) =>
     eb.selectFrom('shared_link').selectAll('shared_link').whereRef('shared_link.albumId', '=', 'album.id'),
   ).as('sharedLinks');
 
+const withAlbumDays = (eb: ExpressionBuilder<DB, 'album'>) =>
+  jsonArrayFrom(
+    eb
+      .selectFrom('album_day')
+      .select(['album_day.date', 'album_day.description'])
+      .whereRef('album_day.albumId', '=', 'album.id')
+      .orderBy('album_day.date', 'asc'),
+  ).as('albumDays');
+
 const withAssets = (eb: ExpressionBuilder<DB, 'album'>) => {
   return eb
     .selectFrom((eb) =>
@@ -96,6 +105,7 @@ export class AlbumRepository {
       .where('album.deletedAt', 'is', null)
       .select(withAlbumUsers(authUserId))
       .select(withSharedLink)
+      .select(withAlbumDays)
       .$if(options.withAssets, (eb) => eb.select(withAssets))
       .$narrowType<{ assets: NotNull }>()
       .executeTakeFirst();
@@ -466,6 +476,35 @@ export class AlbumRepository {
           .where('album_asset.assetId', '=', sourceAssetId),
       )
       .onConflict((oc) => oc.doNothing())
+      .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, '2026-10-04', DummyValue.STRING] })
+  async upsertDay(albumId: string, date: string, description: string) {
+    return this.db
+      .insertInto('album_day')
+      .values({
+        albumId,
+        date,
+        description,
+      })
+      .onConflict((oc) =>
+        oc.columns(['albumId', 'date']).doUpdateSet((eb) => ({
+          description: eb.ref('excluded.description'),
+          updatedAt: sql`now()`,
+        })),
+      )
+      .returning(['albumId', 'date', 'description', 'updatedAt'])
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getDays(albumId: string) {
+    return this.db
+      .selectFrom('album_day')
+      .select(['date', 'description'])
+      .where('albumId', '=', albumId)
+      .orderBy('date', 'asc')
       .execute();
   }
 }

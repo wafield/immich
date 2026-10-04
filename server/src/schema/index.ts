@@ -34,6 +34,7 @@ import { AlbumAssetTable } from 'src/schema/tables/album-asset.table.js';
 import { AlbumAuditTable } from 'src/schema/tables/album-audit.table.js';
 import { AlbumUserAuditTable } from 'src/schema/tables/album-user-audit.table.js';
 import { AlbumUserTable } from 'src/schema/tables/album-user.table.js';
+import { AlbumDayTable } from 'src/schema/tables/album-day.table.js';
 import { AlbumTable } from 'src/schema/tables/album.table.js';
 import { ApiKeyTable } from 'src/schema/tables/api-key.table.js';
 import { AssetAuditTable } from 'src/schema/tables/asset-audit.table.js';
@@ -109,6 +110,7 @@ export class ImmichDatabase {
     AlbumAuditTable,
     AlbumUserAuditTable,
     AlbumUserTable,
+    AlbumDayTable,
     AlbumTable,
     ApiKeyTable,
     AssetAuditTable,
@@ -220,6 +222,7 @@ export interface DB {
   album_asset_audit: AlbumAssetAuditTable;
   album_user: AlbumUserTable;
   album_user_audit: AlbumUserAuditTable;
+  album_day: AlbumDayTable;
 
   api_key: ApiKeyTable;
 
