@@ -61,7 +61,6 @@
     AlbumUserRole,
     AssetOrder,
     AssetVisibility,
-    getAlbumInfo,
     updateAlbumInfo,
     type AlbumResponseDto,
     updateAssets,
@@ -424,8 +423,17 @@
     await goto(Route.albums());
   };
 
-  const refreshAlbum = async () => {
-    album = await getAlbumInfo({ id: album.id });
+  const refreshAlbum = async (updated?: AlbumResponseDto) => {
+    if (updated) {
+      if (updated.id !== album.id) {
+        return;
+      }
+      album = updated;
+    }
+
+    // invalidating during navigation causes an infinite page load
+    await navigating.complete;
+    await invalidate('album:data');
   };
 
   const setModeToView = async () => {
@@ -448,9 +456,10 @@
     assetMultiSelectManager.clear();
   };
 
-  const onAlbumRemoveAssets = async ({ assetIds, albumIds }: { assetIds: string[]; albumIds: string[] }) => {
+  const onAlbumRemoveAssets = async ({ albumIds }: { assetIds: string[]; albumIds: string[] }) => {
     if (albumIds.includes(album.id)) {
-      await handleRemoveAssets(assetIds);
+      await delay(1000);
+      await refreshAlbum();
     }
   };
 
@@ -506,8 +515,8 @@
     }
   });
 
-  let album = $state(data.album);
-  let albumId = $derived(album.id);
+  let album = $derived(data.album);
+  const albumId = $derived(album.id);
 
   const albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
   const containsEditors = $derived(album?.shared && album.albumUsers.some(({ role }) => role === AlbumUserRole.Editor));
@@ -675,15 +684,6 @@
     album = { ...album, albumUsers };
   };
 
-  const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
-    album = newAlbum;
-
-    // invalidating during navigation causes an infinite page load
-    await navigating.complete;
-
-    await invalidate('album:data');
-  };
-
   const { Cast } = $derived(getGlobalActions($t));
   const Actions = $derived(getAlbumActions($t, album));
   const { AddAssets, Upload } = $derived(getAlbumAssetsActions($t, album, timelineMultiSelectManager.assets));
@@ -711,15 +711,16 @@
 </script>
 
 <OnEvents
-  onSharedLinkCreate={refreshAlbum}
-  onSharedLinkDelete={refreshAlbum}
+  onSharedLinkCreate={(link) => refreshAlbum(link.album)}
+  onSharedLinkDelete={() => refreshAlbum()}
   {onAlbumDelete}
   {onAlbumAddAssets}
   {onAlbumRemoveAssets}
   {onAlbumShare}
   {onAlbumUserUpdate}
-  onAlbumUserDelete={refreshAlbum}
-  {onAlbumUpdate}
+  onAlbumUserDelete={() => refreshAlbum()}
+  onAlbumUpdate={(album) => refreshAlbum(album)}
+  onAssetsDelete={() => refreshAlbum()}
 />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
 

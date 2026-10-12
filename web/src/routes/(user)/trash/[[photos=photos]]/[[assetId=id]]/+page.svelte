@@ -71,7 +71,7 @@
     onAction: handleAddToAlbum,
   });
 
-  const { Empty, RestoreAll } = $derived(getTrashActions($t));
+  const { Empty, RestoreAll } = $derived(getTrashActions($t, timelineManager?.assetCount ?? 0));
 </script>
 
 {#if featureFlagsManager.value.trash}
