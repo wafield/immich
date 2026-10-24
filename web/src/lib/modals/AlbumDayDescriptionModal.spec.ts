@@ -18,7 +18,7 @@ describe('AlbumDayDescriptionModal', () => {
       onClose,
     });
 
-    expect(screen.getByText('Sunday, Oct 4, 2026')).toBeInTheDocument();
+    expect(screen.getByText('Sunday, Oct 4, 2026')).toBeDefined();
     const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
     expect(textarea.value).toBe('Day 1 in Paris');
   });

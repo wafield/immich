@@ -82,6 +82,12 @@
   $effect(() => {
     const asset = assetViewerManager.asset;
     if (asset) {
+      if (asset.id !== assetCursor.current?.id) {
+        assetCursor = {
+          ...assetCursor,
+          current: asset,
+        };
+      }
       handlePromiseError(loadCloseAssets(asset));
     }
   });
@@ -185,23 +191,25 @@
 
 <OnEvents {onAlbumRemoveAssets} />
 
-{#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
-  <AssetViewer
-    {withStacked}
-    cursor={assetCursor}
-    {isShared}
-    {album}
-    {person}
-    onAssetChange={(asset) => {
-      timelineManager?.upsertAssets([toTimelineAsset(asset)]);
-    }}
-    preAction={handlePreAction}
-    onAction={(action) => {
-      handleAction(action);
-      assetCacheManager.invalidate();
-    }}
-    onUndoDelete={handleUndoDelete}
-    onRandom={handleRandom}
-    onClose={handleClose}
-  />
-{/await}
+{#if assetCursor.current}
+  {#await import('$lib/components/asset-viewer/AssetViewer.svelte') then { default: AssetViewer }}
+    <AssetViewer
+      {withStacked}
+      cursor={assetCursor}
+      {isShared}
+      {album}
+      {person}
+      onAssetChange={(asset) => {
+        timelineManager?.upsertAssets([toTimelineAsset(asset)]);
+      }}
+      preAction={handlePreAction}
+      onAction={(action) => {
+        handleAction(action);
+        assetCacheManager.invalidate();
+      }}
+      onUndoDelete={handleUndoDelete}
+      onRandom={handleRandom}
+      onClose={handleClose}
+    />
+  {/await}
+{/if}

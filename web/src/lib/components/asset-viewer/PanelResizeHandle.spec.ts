@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 import { fireEvent, render } from '@testing-library/svelte';
 import { languageManager } from '$lib/managers/language-manager.svelte';
 import PanelResizeHandle from './PanelResizeHandle.svelte';
@@ -33,10 +34,15 @@ describe('PanelResizeHandle', () => {
     });
 
     const slider = getByRole('slider');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(slider).toBeInTheDocument();
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(slider).toHaveAttribute('aria-valuenow', '360');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(slider).toHaveAttribute('aria-valuemin', '280');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(slider).toHaveAttribute('aria-label', 'Resize details panel');
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(slider).toHaveAttribute('aria-orientation', 'vertical');
   });
 

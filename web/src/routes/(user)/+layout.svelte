@@ -12,7 +12,7 @@
   // $page.data.asset is loaded by route specific +page.ts loaders if that
   // route contains the assetId path.
   $effect.pre(() => {
-    if (page.data.asset) {
+    if (page.params.assetId && page.data.asset) {
       assetViewerManager.setAsset(page.data.asset);
     } else {
       assetViewerManager.showAssetViewer(false);

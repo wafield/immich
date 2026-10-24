@@ -12,9 +12,11 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { getGlobalActions } from '$lib/services/app.service';
-  import { notificationManager } from '$lib/stores/notification-manager.svelte';
+  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { ActionButton, Button, IconButton } from '@immich/ui';
+  import { getNotificationsQuery } from '$lib/queries/notification.query';
+  import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
+  import { createQuery } from '@tanstack/svelte-query';
   import {
     mdiBellBadge,
     mdiBellOutline,
@@ -41,15 +43,9 @@
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowNotificationPanel = $state(false);
   let innerWidth: number = $state(0);
-  const hasUnreadNotifications = $derived(notificationManager.notifications.length > 0);
-
-  onMount(async () => {
-    try {
-      await notificationManager.refresh();
-    } catch (error) {
-      console.error('Failed to load notifications on mount', error);
-    }
-  });
+  const query = createQuery(getNotificationsQuery);
+  const unreadCount = $derived(query.data?.length ?? 0);
+  const hasUnreadNotifications = $derived(unreadCount > 0);
 
   const { Cast } = $derived(getGlobalActions($t));
 </script>
@@ -167,7 +163,7 @@
               <div
                 class="pointer-events-none absolute top-0 right-1 flex size-5 items-center justify-center rounded-full border bg-primary text-[10px] font-bold text-light"
               >
-                {notificationManager.notifications.length}
+                {unreadCount}
               </div>
             {/if}
           </div>

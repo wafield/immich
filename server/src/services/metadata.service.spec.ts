@@ -1945,7 +1945,7 @@ describe(MetadataService.name, () => {
         const rawAsset = AssetFactory.create({ originalPath: '/path/to/photo.CR2' });
 
         mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(rawAsset));
-        mocks.asset.findRawPhotoMatch.mockResolvedValue(null);
+        mocks.asset.findRawPhotoMatch.mockResolvedValue(undefined);
 
         await sut.handleMetadataExtraction({ id: rawAsset.id });
 

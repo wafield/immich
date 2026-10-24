@@ -1114,7 +1114,7 @@ describe(LibraryService.name, () => {
 
       mocks.library.get.mockResolvedValue(library);
       mocks.storage.existsSync.mockReturnValue(true);
-      mocks.library.clearDailyMoveForOwner.mockResolvedValue();
+      mocks.library.clearDailyMoveForOwner.mockResolvedValue([]);
       mocks.library.update.mockResolvedValue(updatedLibrary);
 
       await expect(sut.update('library-id', { automatedDailyMove: true })).resolves.toEqual(
@@ -1166,7 +1166,7 @@ describe(LibraryService.name, () => {
       });
 
       mocks.storage.existsSync.mockReturnValue(true);
-      mocks.library.clearDailyMoveForOwner.mockResolvedValue();
+      mocks.library.clearDailyMoveForOwner.mockResolvedValue([]);
       mocks.library.create.mockResolvedValue(library);
 
       await expect(

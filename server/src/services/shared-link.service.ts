@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PostgresError } from 'postgres';
+import { SharedLink } from 'src/database.js';
 import { AssetIdErrorReason, AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto.js';
 import { AssetIdsDto } from 'src/dtos/asset.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
@@ -13,6 +14,7 @@ import {
 } from 'src/dtos/shared-link.dto.js';
 import { Permission, SharedLinkType } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
+import { asDateTimeString } from 'src/utils/date.js';
 import { OpenGraphTags, findOrFail, getExternalDomain } from 'src/utils/misc.js';
 
 @Injectable()
@@ -21,7 +23,7 @@ export class SharedLinkService extends BaseService {
     return this.sharedLinkRepository
       .getAll({ userId: auth.user.id, id, albumId })
 
-      .then((links) => links.map((link) => mapSharedLink(link, { stripAssetMetadata: false })));
+      .then((links) => links.map((link) => mapSharedLink(link, { auth })));
   }
 
   async login(auth: AuthDto, dto: SharedLinkLoginDto) {
@@ -41,7 +43,7 @@ export class SharedLinkService extends BaseService {
     }
 
     return {
-      sharedLink: mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif }),
+      sharedLink: await this.mapWithAlbumMetadata(sharedLink, { auth }),
       token: this.asToken({ id, password }),
     };
   }
@@ -58,12 +60,12 @@ export class SharedLinkService extends BaseService {
       throw new UnauthorizedException('Password required');
     }
 
-    return mapSharedLink(sharedLink, { stripAssetMetadata: !sharedLink.showExif });
+    return this.mapWithAlbumMetadata(sharedLink, { auth });
   }
 
   async get(auth: AuthDto, id: string): Promise<SharedLinkResponseDto> {
     const sharedLink = await this.findOrFail(auth.user.id, id);
-    return mapSharedLink(sharedLink, { stripAssetMetadata: false });
+    return this.mapWithAlbumMetadata(sharedLink, { auth });
   }
 
   async create(auth: AuthDto, dto: SharedLinkCreateDto): Promise<SharedLinkResponseDto> {
@@ -103,7 +105,7 @@ export class SharedLinkService extends BaseService {
         slug: dto.slug || null,
       });
 
-      return mapSharedLink(sharedLink, { stripAssetMetadata: false });
+      return mapSharedLink(sharedLink, { auth });
     } catch (error) {
       this.handleError(error);
     }
@@ -131,7 +133,7 @@ export class SharedLinkService extends BaseService {
         showExif: dto.showMetadata,
         slug: dto.slug || null,
       });
-      return mapSharedLink(sharedLink, { stripAssetMetadata: false });
+      return mapSharedLink(sharedLink, { auth });
     } catch (error) {
       this.handleError(error);
     }
@@ -232,6 +234,17 @@ export class SharedLinkService extends BaseService {
     };
   }
 
+  private async mapWithAlbumMetadata(sharedLink: SharedLink, { auth }: { auth: AuthDto }) {
+    const response = mapSharedLink(sharedLink, { auth });
+    if (response.album) {
+      const [metadata] = await this.albumRepository.getMetadataForIds([response.album.id]);
+      response.album.startDate = asDateTimeString(metadata?.startDate ?? undefined);
+      response.album.endDate = asDateTimeString(metadata?.endDate ?? undefined);
+      response.album.assetCount = metadata?.assetCount ?? 0;
+    }
+
+    return response;
+  }
   private asToken(sharedLink: { id: string; password: string }) {
     return this.cryptoRepository.hashSha256(`${sharedLink.id}-${sharedLink.password}`).toString('base64');
   }

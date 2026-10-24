@@ -11,10 +11,11 @@ import {
   UpdateAlbumDayDto,
   UpdateAlbumDto,
   UpdateAlbumUserDto,
+  MapAlbumDto,
   mapAlbum,
 } from 'src/dtos/album.dto.js';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto.js';
-import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import { MapMarkerResponseDto } from 'src/dtos/map.dto.js';
 import { AlbumUserRole, Permission } from 'src/enum.js';
 import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository.js';
@@ -23,6 +24,14 @@ import { addAssets, removeAssets } from 'src/utils/asset.util.js';
 import { asDateString, asDateTimeString } from 'src/utils/date.js';
 import { findOrFail } from 'src/utils/misc.js';
 import { getPreferences } from 'src/utils/preferences.js';
+
+const mapAlbumMetadata = (metadata?: AlbumAssetCount) => ({
+  startDate: asDateTimeString(metadata?.startDate ?? undefined),
+  endDate: asDateTimeString(metadata?.endDate ?? undefined),
+  assetCount: metadata?.assetCount ?? 0,
+  // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
+  lastModifiedAssetTimestamp: asDateTimeString(metadata?.lastModifiedAssetTimestamp ?? undefined),
+});
 
 @Injectable()
 export class AlbumService extends BaseService {
@@ -81,19 +90,16 @@ export class AlbumService extends BaseService {
     const isShared = hasSharedUsers || hasSharedLink;
 
     return {
-      ...mapAlbum(album),
-      startDate: asDateTimeString(albumMetadataForIds?.startDate ?? undefined),
-      endDate: asDateTimeString(albumMetadataForIds?.endDate ?? undefined),
-      assetCount: albumMetadataForIds?.assetCount ?? 0,
-      lastModifiedAssetTimestamp: asDateTimeString(albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined),
-      contributorCounts: isShared ? await this.albumRepository.getContributorCounts(album.id) : undefined,
+      ...(await this.mapWithMetadata(album, auth)),
+      contributorCounts:
+        isShared && !auth.sharedLink ? await this.albumRepository.getContributorCounts(album.id) : undefined,
     };
   }
 
   async getMapMarkers(auth: AuthDto, id: string): Promise<MapMarkerResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
 
-    if (auth.sharedLink && !auth.sharedLink.showExif) {
+    if (isMetadataHidden(auth)) {
       return [];
     }
 
@@ -370,7 +376,7 @@ export class AlbumService extends BaseService {
     const date = (asDateString(rawDate) ?? rawDate).split('T')[0];
     const description = dto.description ?? '';
 
-    await this.findOrFail(id, auth.user.id, { withAssets: false });
+    await this.findOrFail(id, auth.user.id);
 
     const result = await this.albumRepository.upsertDay(id, date, description);
 
@@ -382,7 +388,7 @@ export class AlbumService extends BaseService {
 
   async getDays(auth: AuthDto, id: string): Promise<AlbumDayResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [id] });
-    await this.findOrFail(id, auth.user.id, { withAssets: false });
+    await this.findOrFail(id, auth.user.id);
 
     const results = await this.albumRepository.getDays(id);
     return results.map((result) => ({
@@ -391,7 +397,12 @@ export class AlbumService extends BaseService {
     }));
   }
 
-  private findOrFail(id: string, authUserId: string, options: AlbumInfoOptions) {
+  private findOrFail(id: string, authUserId: string, options: AlbumInfoOptions = { withAssets: true }) {
     return findOrFail(() => this.albumRepository.getById(id, options, authUserId), 'Album');
+  }
+
+  private async mapWithMetadata(album: MapAlbumDto, auth?: AuthDto): Promise<AlbumResponseDto> {
+    const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
+    return { ...mapAlbum(album, { auth }), ...mapAlbumMetadata(metadata) };
   }
 }

@@ -10,14 +10,16 @@
   import VersionAnnouncement from './VersionAnnouncement.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import ServerRestartingModal from '$lib/modals/ServerRestartingModal.svelte';
   import { Route } from '$lib/route';
   import { lang, locale } from '$lib/stores/preferences.store';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import { closeWebsocketConnection, openWebsocketConnection, websocketStore } from '$lib/stores/websocket';
+  import { queryClient, readPreloadedQuery } from '$lib/queries/client';
+  import { getServerConfigQuery } from '$lib/queries/server.query';
   import { maintenanceShouldRedirect } from '$lib/utils/maintenance';
   import { getServerConfig } from '@immich/sdk';
+  import { QueryClientProvider } from '@tanstack/svelte-query';
   import {
     CommandPaletteProvider,
     CORE_PAGE_COMMANDS,
@@ -250,36 +252,38 @@
     {#if page.data.meta.imageUrl}
       <meta
         property="og:image"
-        content={new URL(page.data.meta.imageUrl, serverConfigManager.value.externalDomain || location.origin).href}
+        content={new URL(page.data.meta.imageUrl, readPreloadedQuery(getServerConfigQuery()).externalDomain || location.origin).href}
       />
     {/if}
   {/if}
 </svelte:head>
 
-<TooltipProvider>
-  {#if page.data.error}
-    <ErrorLayout error={page.data.error}></ErrorLayout>
-  {:else}
-    {@render children?.()}
-  {/if}
+<QueryClientProvider client={queryClient}>
+  <TooltipProvider>
+    {#if page.data.error}
+      <ErrorLayout error={page.data.error}></ErrorLayout>
+    {:else}
+      {@render children?.()}
+    {/if}
 
-  {#if showNavigationLoadingBar}
-    <NavigationLoadingBar />
-  {/if}
+    {#if showNavigationLoadingBar}
+      <NavigationLoadingBar />
+    {/if}
 
-  <DownloadPanel />
-  <UploadPanel />
-  <ScreencastOverlay />
+    <DownloadPanel />
+    <UploadPanel />
+    <ScreencastOverlay />
 
-  <CommandPaletteProvider
-    providers={[
-      getPagesProvider($t),
-      getSettingsProvider($t),
-      defaultProvider({ name: $t('documentation'), types: ['doc', 'documentation'], actions: CORE_PAGE_COMMANDS }),
-      defaultProvider({ name: $t('support'), actions: PROJECT_SUPPORT_COMMANDS }),
-      defaultProvider({ name: 'Socials', types: ['social', 'socials'], actions: SOCIAL_COMMANDS }),
-      defaultProvider({ name: $t('mobile_app'), actions: MOBILE_APP_COMMANDS }),
-      defaultProvider({ name: 'Sites', types: ['site', 'sites'], actions: OTHER_SITE_COMMANDS }),
-    ]}
-  />
-</TooltipProvider>
+    <CommandPaletteProvider
+      providers={[
+        getPagesProvider($t),
+        getSettingsProvider($t),
+        defaultProvider({ name: $t('documentation'), types: ['doc', 'documentation'], actions: CORE_PAGE_COMMANDS }),
+        defaultProvider({ name: $t('support'), actions: PROJECT_SUPPORT_COMMANDS }),
+        defaultProvider({ name: 'Socials', types: ['social', 'socials'], actions: SOCIAL_COMMANDS }),
+        defaultProvider({ name: $t('mobile_app'), actions: MOBILE_APP_COMMANDS }),
+        defaultProvider({ name: 'Sites', types: ['site', 'sites'], actions: OTHER_SITE_COMMANDS }),
+      ]}
+    />
+  </TooltipProvider>
+</QueryClientProvider>

@@ -69,12 +69,12 @@ describe('DateSelectionModal component', () => {
       onClose,
     });
 
-    expect(screen.getByText('EXIF OriginalDateTime')).toBeInTheDocument();
-    expect(screen.getByText('2023-11-19T18:11:00.000Z')).toBeInTheDocument();
-    expect(screen.getByText('EXIF timezone')).toBeInTheDocument();
-    expect(screen.getByText('Europe/Berlin')).toBeInTheDocument();
-    expect(screen.getByText('Local date time')).toBeInTheDocument();
-    expect(screen.getByText('2023-11-19T19:11:00.000Z')).toBeInTheDocument();
+    expect(screen.getByText('EXIF OriginalDateTime')).toBeDefined();
+    expect(screen.getByText('2023-11-19T18:11:00.000Z')).toBeDefined();
+    expect(screen.getByText('EXIF timezone')).toBeDefined();
+    expect(screen.getByText('Europe/Berlin')).toBeDefined();
+    expect(screen.getByText('Local date time')).toBeDefined();
+    expect(screen.getByText('2023-11-19T19:11:00.000Z')).toBeDefined();
   });
 
   test('does not render raw info table when multiple assets are passed in', () => {
@@ -88,7 +88,7 @@ describe('DateSelectionModal component', () => {
       onClose,
     });
 
-    expect(screen.queryByText('Original date time')).not.toBeInTheDocument();
+    expect(screen.queryByText('Original date time')).toBeNull();
   });
 
   test('toggles on showRelative initially when more than 1 asset is passed in', () => {
@@ -102,7 +102,7 @@ describe('DateSelectionModal component', () => {
       onClose,
     });
 
-    expect(getRelativeInputToggle()).toBeChecked();
+    expect(getRelativeInputToggle().getAttribute('aria-checked')).toBe('true');
   });
 
   test('allows flipping the showRelative switch freely after initialization', async () => {
@@ -116,13 +116,13 @@ describe('DateSelectionModal component', () => {
       onClose,
     });
 
-    expect(getRelativeInputToggle()).toBeChecked();
+    expect(getRelativeInputToggle().getAttribute('aria-checked')).toBe('true');
 
     await fireEvent.click(getRelativeInputToggle());
-    expect(getRelativeInputToggle()).not.toBeChecked();
+    expect(getRelativeInputToggle().getAttribute('aria-checked')).toBe('false');
 
     await fireEvent.click(getRelativeInputToggle());
-    expect(getRelativeInputToggle()).toBeChecked();
+    expect(getRelativeInputToggle().getAttribute('aria-checked')).toBe('true');
   });
 
 
@@ -163,6 +163,7 @@ describe('DateSelectionModal component', () => {
     expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
 
     await fireEvent.focus(getTimeZoneInput());
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('no_results')).not.toBeInTheDocument();
   });
 
@@ -177,6 +178,7 @@ describe('DateSelectionModal component', () => {
     expect(getTimeZoneInput().value).toBe('Europe/Berlin (+01:00)');
 
     await fireEvent.focus(getTimeZoneInput());
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.queryByText('no_results')).not.toBeInTheDocument();
   });
 
@@ -292,13 +294,13 @@ describe('DateSelectionModal component', () => {
     await fireEvent.input(minutesInput, { target: { value: 30 } });
 
     // With 30 minutes added, the third cell updates to 12:30:00 UTC+1
-    expect(screen.getByText('01-01 12:00:00 UTC+1')).toBeInTheDocument();
-    expect(screen.getByText('01-01 12:30:00 UTC+1')).toBeInTheDocument();
+    expect(screen.getByText('01-01 12:00:00 UTC+1')).toBeDefined();
+    expect(screen.getByText('01-01 12:30:00 UTC+1')).toBeDefined();
 
     // When changing timezone to LA, the third cell updates to LA timezone (UTC-8)
     const laButton = screen.getByRole('button', { name: 'LA' });
     await fireEvent.click(laButton);
-    expect(screen.getByText('01-01 12:30:00 UTC-8')).toBeInTheDocument();
+    expect(screen.getByText('01-01 12:30:00 UTC-8')).toBeDefined();
   });
 
 
@@ -365,10 +367,10 @@ describe('DateSelectionModal component', () => {
         onClose,
       });
 
-      expect(screen.getByRole('button', { name: 'LA' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Tokyo' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Beijing' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Paris' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'LA' })).toBeDefined();
+      expect(screen.getByRole('button', { name: 'Tokyo' })).toBeDefined();
+      expect(screen.getByRole('button', { name: 'Beijing' })).toBeDefined();
+      expect(screen.getByRole('button', { name: 'Paris' })).toBeDefined();
     });
 
     test('updates combobox value when clicking a preset button', async () => {

@@ -3,7 +3,8 @@ import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observe
 import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
 import { highlightMissingGps, highlightMissingTimezone } from '$lib/stores/preferences.store';
 import { getTabbable } from '$lib/utils/focus-util';
-import { assetFactory } from '@test-data/factories/asset-factory';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { assetFactory, timelineAssetFactory } from '@test-data/factories/asset-factory';
 
 vi.mock('$lib/utils/navigation', () => ({
   currentUrlReplaceAssetId: vi.fn(),
@@ -68,7 +69,7 @@ describe('Thumbnail component', () => {
 
   it('renders missing timezone icon when highlightMissingTimezone is true and timezone is missing', () => {
     highlightMissingTimezone.set(true);
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', timeZone: null });
+    const asset = timelineAssetFactory.build({ timeZone: null });
     const { baseElement } = render(Thumbnail, {
       asset,
     });
@@ -79,9 +80,7 @@ describe('Thumbnail component', () => {
 
   it('does not render missing timezone icon when asset has timezone', () => {
     highlightMissingTimezone.set(true);
-    const asset = assetFactory.build({
-      originalPath: 'image.jpg',
-      originalMimeType: 'image/jpeg',
+    const asset = timelineAssetFactory.build({
       timeZone: 'America/New_York',
     });
     const { baseElement } = render(Thumbnail, {
@@ -94,7 +93,7 @@ describe('Thumbnail component', () => {
 
   it('does not render missing timezone icon when highlightMissingTimezone is false', () => {
     highlightMissingTimezone.set(false);
-    const asset = assetFactory.build({ originalPath: 'image.jpg', originalMimeType: 'image/jpeg', timeZone: null });
+    const asset = timelineAssetFactory.build({ timeZone: null });
     const { baseElement } = render(Thumbnail, {
       asset,
     });
@@ -104,9 +103,7 @@ describe('Thumbnail component', () => {
   });
 
   it('renders missing GPS icon when showMissingGpsIcon is true and GPS is missing', () => {
-    const asset = assetFactory.build({
-      originalPath: 'image.jpg',
-      originalMimeType: 'image/jpeg',
+    const asset = timelineAssetFactory.build({
       latitude: null,
       longitude: null,
     });
@@ -121,9 +118,7 @@ describe('Thumbnail component', () => {
 
   it('renders missing GPS icon when highlightMissingGps store is true and GPS is missing', () => {
     highlightMissingGps.set(true);
-    const asset = assetFactory.build({
-      originalPath: 'image.jpg',
-      originalMimeType: 'image/jpeg',
+    const asset = timelineAssetFactory.build({
       latitude: null,
       longitude: null,
     });
@@ -136,9 +131,7 @@ describe('Thumbnail component', () => {
   });
 
   it('does not render missing GPS icon when asset has GPS data', () => {
-    const asset = assetFactory.build({
-      originalPath: 'image.jpg',
-      originalMimeType: 'image/jpeg',
+    const asset = timelineAssetFactory.build({
       latitude: 40.7128,
       longitude: -74.006,
     });
@@ -155,8 +148,10 @@ describe('Thumbnail component', () => {
     const asset = assetFactory.build({
       originalPath: 'image.jpg',
       originalMimeType: 'image/jpeg',
-      latitude: null,
-      longitude: null,
+      exifInfo: {
+        latitude: null,
+        longitude: null,
+      },
     });
     const { baseElement } = render(Thumbnail, {
       asset,

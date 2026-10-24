@@ -1,5 +1,6 @@
 import { AssetVisibility } from '@immich/sdk';
 import { init, register, waitLocale } from 'svelte-i18n';
+import { locale } from '$lib/stores/preferences.store';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { getAltText } from '$lib/utils/thumbnail-util';
 
@@ -14,9 +15,14 @@ const fourPeople: Person[] = [{ name: 'person1' }, { name: 'person2' }, { name: 
 
 describe('getAltText', () => {
   beforeAll(async () => {
+    locale.set('en-US');
     await init({ fallbackLocale: 'en-US' });
     register('en-US', () => import('$i18n/en.json'));
     await waitLocale('en-US');
+  });
+
+  afterAll(() => {
+    locale.set('default');
   });
 
   it.each`

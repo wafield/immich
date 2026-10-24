@@ -7,17 +7,18 @@
   import type { SearchDateFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType, type SuggestionResponseDto } from '@immich/sdk';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { DatePicker, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    filters: SearchDateFilter;
+    filters?: SearchDateFilter;
     libraryId?: string;
   };
 
-  let { filters = $bindable(), libraryId }: Props = $props();
+  let { filters = $bindable(searchManager.filter.date), libraryId }: Props = $props();
 
   let presetTimeRanges: SuggestionResponseDto[] = $state([]);
 

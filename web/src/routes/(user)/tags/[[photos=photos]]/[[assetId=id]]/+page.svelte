@@ -137,9 +137,7 @@
           menuItem
           onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
         />
-        {#if authManager.preferences.tags.enabled}
-          <TagAction menuItem />
-        {/if}
+        <ActionMenuItem action={Actions.Tag} />
         <DeleteAssets
           menuItem
           onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}

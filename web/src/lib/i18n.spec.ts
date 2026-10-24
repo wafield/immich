@@ -20,7 +20,7 @@ describe('i18n', () => {
         // verify it loads the right file
         const module: { default?: unknown } = await item.loader();
         const translations = JSON.stringify(module.default, null, 2).trim();
-        const content = readFileSync(`../i18n/${filename}`).toString().trim();
+        const content = readFileSync(`../i18n/${filename}`).toString().replaceAll('\r\n', '\n').trim();
         expect(translations === content, `${item.name} did not load ${filename}`).toEqual(true);
       });
     }

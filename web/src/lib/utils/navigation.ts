@@ -18,10 +18,17 @@ export const isLockedFolderRoute = (route?: string | null) => !!route?.startsWit
 
 export const isAssetViewerRoute = (
   target?: { route?: { id?: RouteId | null }; params?: Record<string, string> | null } | null,
-) => !!(target?.route?.id?.endsWith('/[[assetId=id]]') && 'assetId' in (target?.params || {}));
+) => !!(target?.route?.id?.endsWith('/[[assetId=id]]') && target?.params?.assetId);
 
-export function getAssetInfoFromParam({ assetId, slug, key }: { assetId?: string; key?: string; slug?: string }) {
-  return assetId ? assetCacheManager.getAsset({ id: assetId, slug, key }, false) : undefined;
+export async function getAssetInfoFromParam({ assetId, slug, key }: { assetId?: string; key?: string; slug?: string }) {
+  if (!assetId) {
+    return undefined;
+  }
+  try {
+    return await assetCacheManager.getAsset({ id: assetId, slug, key }, false);
+  } catch {
+    return undefined;
+  }
 }
 
 function currentHash(): string {

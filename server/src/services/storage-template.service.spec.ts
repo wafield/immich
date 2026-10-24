@@ -238,6 +238,45 @@ describe(StorageTemplateService.name, () => {
       });
     });
 
+    it('should sanitize the make, model and lensModel variables', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from()
+        .owner(user)
+        .exif({ make: '../../sibling', model: 'a/b', lensModel: 'XF27mm F2.8' })
+        .build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{make}}/{{model}}/{{lensModel}}/{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: `/data/library/${user.id}/....sibling/ab/XF27mm F2.8/${asset.originalFileName}`,
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.Original,
+      });
+    });
+
+    it('should not move an asset to a sibling of the library folder', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from().owner(user).exif().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '../{{filename}}';
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
     it('should use handlebar else condition for album', async () => {
       const user = UserFactory.create();
       const asset = AssetFactory.from().owner(user).exif().build();
@@ -1071,13 +1110,13 @@ describe(StorageTemplateService.name, () => {
         checksum: Buffer.from('checksum-1'),
       }).build();
 
-      mocks.library.getDailyMoveLibraries.mockResolvedValue([library]);
+      mocks.library.getDailyMoveLibraries.mockResolvedValue([library as any]);
       mocks.storage.existsSync.mockReturnValue(true);
       mocks.user.get.mockResolvedValue(user);
       mocks.asset.streamDefaultLibraryAssetIds.mockReturnValue(makeStream([{ id: asset.id }]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(asset as any);
       mocks.asset.getByChecksum.mockResolvedValue(existingDuplicate);
-      mocks.notification.create.mockResolvedValue({ id: 'notif-1' });
+      mocks.notification.create.mockResolvedValue({ id: 'notif-1' } as any);
 
       const res = await sut.handleDailyAssetMove();
       expect(res).toBe(JobStatus.Success);
@@ -1112,11 +1151,11 @@ describe(StorageTemplateService.name, () => {
         .exif()
         .build();
 
-      mocks.library.getDailyMoveLibraries.mockResolvedValue([library]);
+      mocks.library.getDailyMoveLibraries.mockResolvedValue([library as any]);
       mocks.storage.existsSync.mockReturnValue(true);
       mocks.user.get.mockResolvedValue(user);
       mocks.asset.streamDefaultLibraryAssetIds.mockReturnValue(makeStream([{ id: asset.id }]));
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(asset as any);
       mocks.asset.getByChecksum.mockResolvedValue(undefined);
 
       const res = await sut.handleDailyAssetMove();
@@ -1165,17 +1204,17 @@ describe(StorageTemplateService.name, () => {
         .exif()
         .build();
 
-      mocks.library.getDailyMoveLibraries.mockResolvedValue([library]);
+      mocks.library.getDailyMoveLibraries.mockResolvedValue([library as any]);
       mocks.storage.existsSync.mockReturnValue(true);
       mocks.user.get.mockResolvedValue(user);
       mocks.asset.streamDefaultLibraryAssetIds.mockReturnValue(
         makeStream([{ id: hiddenAsset.id }, { id: deletedAsset.id }]),
       );
-      mocks.asset.getById.mockImplementation(async (id: string) => {
+      mocks.asset.getById.mockImplementation((async (id: string) => {
         if (id === hiddenAsset.id) return hiddenAsset;
         if (id === deletedAsset.id) return deletedAsset;
         return undefined;
-      });
+      }) as any);
       mocks.asset.getByChecksum.mockResolvedValue(undefined);
 
       const res = await sut.handleDailyAssetMove();
@@ -1215,7 +1254,7 @@ describe(StorageTemplateService.name, () => {
 
     it('should return success if asset is already in target library', async () => {
       const asset = AssetFactory.from({ libraryId: 'lib-1' }).build();
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(asset as any);
 
       const res = await sut.moveAssetToLibrary({
         assetId: asset.id,
@@ -1230,7 +1269,7 @@ describe(StorageTemplateService.name, () => {
       const asset = AssetFactory.from({ id: 'asset-1', libraryId: null, checksum: Buffer.from('abc') }).build();
       const duplicate = AssetFactory.from({ id: 'asset-2', libraryId: 'lib-1', checksum: Buffer.from('abc') }).build();
 
-      mocks.asset.getById.mockResolvedValue(asset);
+      mocks.asset.getById.mockResolvedValue(asset as any);
       mocks.asset.getByChecksum.mockResolvedValue(duplicate);
 
       const onDuplicate = vitest.fn();
@@ -1256,7 +1295,7 @@ describe(StorageTemplateService.name, () => {
         libraryId: null,
         originalPath: StorageCore.getBaseFolder(StorageFolder.EncodedVideo) + '/user-1/motion-1-MP.mp4',
       }).build();
-      mocks.asset.getById.mockResolvedValue(motionAsset);
+      mocks.asset.getById.mockResolvedValue(motionAsset as any);
 
       const res = await sut.moveAssetToLibrary({
         assetId: motionAsset.id,
@@ -1281,11 +1320,11 @@ describe(StorageTemplateService.name, () => {
         originalFileName: 'photo.jpg',
       }).build();
 
-      mocks.asset.getById.mockImplementation(async (id: string) => {
+      mocks.asset.getById.mockImplementation((async (id: string) => {
         if (id === stillAsset.id) return stillAsset;
         if (id === motionAsset.id) return motionAsset;
         return undefined;
-      });
+      }) as any);
       mocks.asset.getByChecksum.mockResolvedValue(undefined);
       mocks.user.get.mockResolvedValue({ id: stillAsset.ownerId, storageLabel: 'test-label' } as any);
 

@@ -3,7 +3,6 @@
   import RecentAlbums from '$lib/components/shared-components/side-bar/RecentAlbums.svelte';
   import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { AssetInfoDisplay } from '$lib/constants';
   import {
@@ -58,6 +57,12 @@
   } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+
+  const query = createPreloadedQuery(getUserConfigQuery);
+  const config = $derived(query.data);
 
   let libraries = $state<LibraryResponseDto[]>([]);
   let utilitiesExpanded = $state(false);
@@ -92,7 +97,7 @@
     <NavbarItem title={$t('explore')} href={Route.explore()} icon={mdiMagnify} />
   {/if}
 
-  {#if featureFlagsManager.value.map}
+  {#if config.map.enabled}
     <NavbarItem title={$t('map')} href={Route.map()} icon={mdiMapOutline} activeIcon={mdiMap} />
   {/if}
 
@@ -191,7 +196,7 @@
 
   <NavbarItem title={$t('locked_folder')} href={Route.locked()} icon={mdiLockOutline} activeIcon={mdiLock} />
 
-  {#if featureFlagsManager.value.trash}
+  {#if config.trash.enabled}
     <NavbarItem title={$t('trash')} href={Route.trash()} icon={mdiTrashCanOutline} activeIcon={mdiTrashCan} />
   {/if}
 

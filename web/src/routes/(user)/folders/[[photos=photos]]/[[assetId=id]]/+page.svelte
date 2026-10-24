@@ -24,8 +24,9 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
+  import { createPreloadedQuery, queryClient } from '$lib/queries/client';
+  import { getAssetsByOriginalPathQuery, getFolderTreeQuery } from '$lib/queries/view.query';
   import { getAssetBulkActions } from '$lib/services/asset.service';
-  import { foldersStore } from '$lib/stores/folders.svelte';
   import { FolderAssetsSortBy, folderViewSettings, SortOrder } from '$lib/stores/preferences.store';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { joinPaths } from '$lib/utils/tree-utils';
@@ -48,6 +49,9 @@
   }
 
   let { data }: Props = $props();
+
+  const query = createPreloadedQuery(getFolderTreeQuery);
+  const root = $derived(query.data);
 
   $effect(() => {
     if (data.tree) {
@@ -84,7 +88,7 @@
   const triggerAssetUpdate = async () => {
     assetMultiSelectManager.clear();
     if (data.tree.path) {
-      await foldersStore.refreshAssetsByPath(data.tree.path);
+      await queryClient.invalidateQueries({ queryKey: getAssetsByOriginalPathQuery(data.tree.path).queryKey });
     }
     await invalidateAll();
   };
@@ -192,7 +196,7 @@
         <div class="h-full">
           <TreeItems
             icons={{ default: mdiFolderOutline, active: mdiFolder }}
-            tree={foldersStore.folders!}
+            tree={root}
             active={data.tree.path}
             getLink={getLinkForPath}
           />
@@ -259,9 +263,7 @@
       <ChangeLocation menuItem />
       <ArchiveAction menuItem unarchive={assetMultiSelectManager.isAllArchived} onArchive={triggerAssetUpdate} />
       <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
-      {#if authManager.preferences.tags.enabled && assetMultiSelectManager.isAllUserOwned}
-        <TagAction menuItem />
-      {/if}
+      <ActionMenuItem action={Actions.Tag} />
       <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} onUndoDelete={triggerAssetUpdate} />
       <hr />
 

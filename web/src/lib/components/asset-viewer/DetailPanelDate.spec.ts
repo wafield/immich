@@ -20,7 +20,7 @@ describe('DetailPanelDate', () => {
     });
 
     // In 'en' locale, the time formatting might look like: "Sun, 6:11:00 PM America/Los_Angeles"
-    // We just assert that "America/Los_Angeles" is visible in the text.
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(screen.getByText(/America\/Los_Angeles/)).toBeInTheDocument();
   });
 

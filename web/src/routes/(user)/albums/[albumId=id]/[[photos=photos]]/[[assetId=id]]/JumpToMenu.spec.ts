@@ -21,8 +21,8 @@ describe('JumpToMenu', () => {
     });
 
     const button = screen.getByRole('button', { name: /jump to\.\.\./i });
-    expect(button).toBeInTheDocument();
-    expect(button).not.toBeDisabled();
+    expect(button).toBeDefined();
+    expect(button.hasAttribute('disabled')).toBe(false);
   });
 
   it('is disabled when options array is empty', () => {
@@ -32,7 +32,7 @@ describe('JumpToMenu', () => {
     });
 
     const button = screen.getByRole('button', { name: /jump to\.\.\./i });
-    expect(button).toBeDisabled();
+    expect(button.hasAttribute('disabled')).toBe(true);
   });
 
   it('opens menu with options when clicked', async () => {
@@ -47,8 +47,8 @@ describe('JumpToMenu', () => {
     const button = screen.getByRole('button', { name: /jump to\.\.\./i });
     await fireEvent.click(button);
 
-    expect(screen.getByText('2026-10-04 - Day in Paris')).toBeInTheDocument();
-    expect(screen.getByText('2026-10-03')).toBeInTheDocument();
+    expect(screen.getByText('2026-10-04 - Day in Paris')).toBeDefined();
+    expect(screen.getByText('2026-10-03')).toBeDefined();
   });
 
   it('calls onSelect with date and closes menu when option is clicked', async () => {
@@ -68,7 +68,7 @@ describe('JumpToMenu', () => {
 
     expect(onSelect).toHaveBeenCalledWith('2026-10-04');
     await waitFor(() => {
-      expect(screen.queryByText('2026-10-04 - Day in Paris')).not.toBeInTheDocument();
+      expect(screen.queryByText('2026-10-04 - Day in Paris')).toBeNull();
     });
   });
 });

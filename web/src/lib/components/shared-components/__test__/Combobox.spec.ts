@@ -34,9 +34,9 @@ describe('Combobox component', () => {
     await fireEvent.focus(input);
     await fireEvent.input(input, { target: { value: '-11' } });
 
-    expect(screen.getByText('Pacific/Midway (-11:00)')).toBeInTheDocument();
-    expect(screen.queryByText('Europe/Berlin (+01:00)')).not.toBeInTheDocument();
-    expect(screen.queryByText('America/New_York (-05:00)')).not.toBeInTheDocument();
+    expect(screen.getByText('Pacific/Midway (-11:00)')).toBeDefined();
+    expect(screen.queryByText('Europe/Berlin (+01:00)')).toBeNull();
+    expect(screen.queryByText('America/New_York (-05:00)')).toBeNull();
   });
 
   test('filters options when searching without sign', async () => {
@@ -51,8 +51,8 @@ describe('Combobox component', () => {
     await fireEvent.focus(input);
     await fireEvent.input(input, { target: { value: '11' } });
 
-    expect(screen.getByText('Pacific/Midway (-11:00)')).toBeInTheDocument();
-    expect(screen.queryByText('Europe/Berlin (+01:00)')).not.toBeInTheDocument();
+    expect(screen.getByText('Pacific/Midway (-11:00)')).toBeDefined();
+    expect(screen.queryByText('Europe/Berlin (+01:00)')).toBeNull();
   });
 
   test('matches option with unicode minus sign when searching with ASCII minus', async () => {
@@ -67,7 +67,7 @@ describe('Combobox component', () => {
     await fireEvent.focus(input);
     await fireEvent.input(input, { target: { value: '-03:30' } });
 
-    expect(screen.getByText('America/St_Johns (−03:30)')).toBeInTheDocument();
+    expect(screen.getByText('America/St_Johns (−03:30)')).toBeDefined();
   });
 
   test('matches option with ASCII minus sign when searching with Unicode minus', async () => {
@@ -82,7 +82,7 @@ describe('Combobox component', () => {
     await fireEvent.focus(input);
     await fireEvent.input(input, { target: { value: '−11' } });
 
-    expect(screen.getByText('Pacific/Midway (-11:00)')).toBeInTheDocument();
+    expect(screen.getByText('Pacific/Midway (-11:00)')).toBeDefined();
   });
 
   test('filters options with plus sign', async () => {
@@ -97,8 +97,8 @@ describe('Combobox component', () => {
     await fireEvent.focus(input);
     await fireEvent.input(input, { target: { value: '+01' } });
 
-    expect(screen.getByText('Europe/Berlin (+01:00)')).toBeInTheDocument();
-    expect(screen.queryByText('Pacific/Midway (-11:00)')).not.toBeInTheDocument();
+    expect(screen.getByText('Europe/Berlin (+01:00)')).toBeDefined();
+    expect(screen.queryByText('Pacific/Midway (-11:00)')).toBeNull();
   });
 
   test('filters options with fullwidth plus sign', async () => {
@@ -113,7 +113,7 @@ describe('Combobox component', () => {
     await fireEvent.focus(input);
     await fireEvent.input(input, { target: { value: '+09' } });
 
-    expect(screen.getByText('Asia/Tokyo (＋09:00)')).toBeInTheDocument();
+    expect(screen.getByText('Asia/Tokyo (＋09:00)')).toBeDefined();
   });
 
   test('filters options ignoring accents', async () => {
@@ -128,7 +128,7 @@ describe('Combobox component', () => {
     await fireEvent.focus(input);
     await fireEvent.input(input, { target: { value: 'sao' } });
 
-    expect(screen.getByText('São Paulo (-03:00)')).toBeInTheDocument();
+    expect(screen.getByText('São Paulo (-03:00)')).toBeDefined();
   });
 
   test('user typing with minus sign via userEvent', async () => {
@@ -145,7 +145,7 @@ describe('Combobox component', () => {
     await user.click(input);
     await user.type(input, '-11');
 
-    expect(screen.getByText('Pacific/Midway (-11:00)')).toBeInTheDocument();
-    expect(screen.queryByText('Europe/Berlin (+01:00)')).not.toBeInTheDocument();
+    expect(screen.getByText('Pacific/Midway (-11:00)')).toBeDefined();
+    expect(screen.queryByText('Europe/Berlin (+01:00)')).toBeNull();
   });
 });

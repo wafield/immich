@@ -96,7 +96,13 @@ export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, { withAssets: true }, DummyValue.UUID] })
-  getById(id: string, options: AlbumInfoOptions, authUserId?: string) {
+  getById(id: string, optionsOrAuthUserId?: AlbumInfoOptions | string, maybeAuthUserId?: string) {
+    const options: AlbumInfoOptions =
+      typeof optionsOrAuthUserId === 'object' && optionsOrAuthUserId !== null
+        ? optionsOrAuthUserId
+        : { withAssets: true };
+    const authUserId = typeof optionsOrAuthUserId === 'string' ? optionsOrAuthUserId : maybeAuthUserId;
+
     return this.db
       .with('album_user', (qb) => qb.selectFrom('album_user').selectAll().where('album_user.albumId', '=', id))
       .selectFrom('album')

@@ -15,9 +15,9 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash-es';
 import { InjectKysely } from 'nestjs-kysely';
 import path, { parse } from 'node:path';
-import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { LockableProperty, Stack } from 'src/database.js';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators.js';
+import { type AuthDto, isMetadataHidden } from 'src/dtos/auth.dto.js';
 import {
   AssetFileType,
   AssetOrder,
@@ -964,7 +964,7 @@ export class AssetRepository {
               const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
               const conds = [isOwner];
               if (options.personId) {
-                conds.push(inSharedAlbum(eb, auth.user.id));
+                conds.push(inSharedAlbum(auth.user.id, 'asset.id'));
               }
               if (options.libraryIds && options.libraryIds.length > 0) {
                 conds.push(inSharedLibrary(eb, options.libraryIds));
@@ -1012,6 +1012,7 @@ export class AssetRepository {
   })
   getTimeBucket(timeBucket: string, options: TimeBucketOptions, auth: AuthDto) {
     const order = options.order ?? 'desc';
+    const bucket = timeBucket.replace(/^[+-]/, '');
     const query = this.db
       .with('cte', (qb) =>
         qb
@@ -1067,7 +1068,7 @@ export class AssetRepository {
               )
               .as('ratio'),
           ])
-          .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
+          .$if(!isMetadataHidden(auth), (qb) =>
             qb.select([
               'asset_exif.model',
               'asset_exif.city',
@@ -1077,6 +1078,7 @@ export class AssetRepository {
               'asset_exif.timeZone',
             ]),
           )
+          .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
           .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
@@ -1092,7 +1094,14 @@ export class AssetRepository {
 
             return withBoundingBox(withBoundingCircle, bbox);
           })
-          .where(truncatedDate(options.orderBy), '=', timeBucket.replace(/^[+-]/, ''))
+          .$if(options.orderBy === AssetOrderBy.CreatedAt, (qb) =>
+            qb
+              .where('asset.createdAt', '>=', sql<Date>`${bucket}::timestamp AT TIME ZONE 'UTC'`)
+              .where('asset.createdAt', '<', sql<Date>`(${bucket}::timestamp + interval '1 month') AT TIME ZONE 'UTC'`),
+          )
+          .$if(options.orderBy !== AssetOrderBy.CreatedAt, (qb) =>
+            qb.where(truncatedDate(options.orderBy), '=', bucket),
+          )
           .$if(!!options.albumId, (qb) =>
             qb.where((eb) =>
               eb.exists(
@@ -1109,7 +1118,7 @@ export class AssetRepository {
               const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
               const conds = [isOwner];
               if (options.personId) {
-                conds.push(inSharedAlbum(eb, auth.user.id));
+                conds.push(inSharedAlbum(auth.user.id, 'asset.id'));
               }
               if (options.libraryIds && options.libraryIds.length > 0) {
                 conds.push(inSharedLibrary(eb, options.libraryIds));
@@ -1216,7 +1225,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['status']), sql.lit('{}')).as('status'),
             eb.fn.coalesce(eb.fn('array_agg', ['thumbhash']), sql.lit('{}')).as('thumbhash'),
           ])
-          .$if(!auth.sharedLink || auth.sharedLink.showExif, (qb) =>
+          .$if(!isMetadataHidden(auth), (qb) =>
             qb.select((eb) => [
               eb.fn.coalesce(eb.fn('array_agg', ['model']), sql.lit('{}')).as('model'),
               eb.fn.coalesce(eb.fn('array_agg', ['city']), sql.lit('{}')).as('city'),
