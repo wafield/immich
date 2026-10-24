@@ -100,6 +100,7 @@ export const getForAlbum = (album: ReturnType<AlbumFactory['build']>) => ({
     user: getDehydrated(albumUser.user),
   })),
   sharedLinks: album.sharedLinks.map((sharedLink) => getDehydrated(sharedLink)),
+  albumDays: [],
 });
 
 export const getForActivity = (activity: Selectable<ActivityTable> & { user: ReturnType<UserFactory['build']> }) => ({

@@ -2,25 +2,35 @@
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/Combobox.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { getAllTags, type TagResponseDto } from '@immich/sdk';
-  import { Checkbox, Label, Text } from '@immich/ui';
+  import { Button, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+  import { mdiClose } from '@mdi/js';
+  import SearchButton from './SearchButton.svelte';
+  import { getSearchTagsTitle } from './search-bar-utils';
   import { searchManager } from '$lib/managers/search-manager.svelte';
-  import TagPill from '../TagPill.svelte';
 
   interface Props {
-    selectedTags: SvelteSet<string> | null;
+    title: string | undefined;
+    parentPromise: Promise<TagResponseDto[]> | undefined;
   }
 
-  let { selectedTags = $bindable() }: Props = $props();
+  // eslint-disable-next-line no-useless-assignment
+  let { title = $bindable(), parentPromise }: Props = $props();
 
+  let container = $state<HTMLDivElement>();
+  let selectedTags = $derived(searchManager.filter.tagIds);
   let allTags: TagResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
   let selectedOption = $state(undefined);
 
-  onMount(async () => {
-    allTags = await getAllTags();
+  onMount(() => {
+    if (parentPromise) {
+      void parentPromise.then((res) => (allTags = res));
+    } else {
+      void getAllTags().then((res) => (allTags = res));
+    }
   });
 
   const handleSelect = (option?: ComboBoxOption) => {
@@ -30,6 +40,7 @@
 
     selectedTags.add(option.value);
     selectedOption = undefined;
+    title = getSearchTagsTitle(allTags, selectedTags);
   };
 
   const handleRemove = (tag: string) => {
@@ -40,13 +51,21 @@
     // Move focus back to the container so it doesn't fallback to the body and closes the search bar
     container?.focus();
     selectedTags.delete(tag);
+    title = getSearchTagsTitle(allTags, selectedTags);
+  };
+
+  const handleToggleUntagged = () => {
+    const isSearchUntagged = selectedTags === null;
+
+    searchManager.filter.tagIds = isSearchUntagged ? new SvelteSet() : null;
+    title = isSearchUntagged ? undefined : $t('untagged');
   };
 </script>
 
 {#if authManager.authenticated && authManager.preferences.tags.enabled}
-  <div class="flex flex-col gap-1">
-    <Text fontWeight="medium">{$t('tags')}</Text>
-    <form autocomplete="off" id="create-tag-form" class="flex flex-col gap-1">
+  <div id="location-selection" bind:this={container} tabindex="-1">
+    <form autocomplete="off" id="create-tag-form">
+      <Text class="pb-5">{$t('search_filter_tags_description')}</Text>
       <Combobox
         disabled={selectedTags === null}
         hideLabel
@@ -57,26 +76,30 @@
         bind:selectedOption
         placeholder={$t('search_tags')}
       />
-      <div class="flex items-center gap-2">
-        <Checkbox
-          id="untagged-checkbox"
-          size="tiny"
-          checked={selectedTags === null}
-          onCheckedChange={(checked) => {
-            selectedTags = checked ? null : new SvelteSet();
-          }}
-        />
-        <Label label={$t('untagged')} for="untagged-checkbox" class="text-sm font-normal" />
-      </div>
     </form>
 
-    <section class="flex flex-wrap gap-1 pt-2">
-      {#each selectedTags ?? [] as tagId (tagId)}
-        {@const tag = tagMap[tagId]}
-        {#if tag}
-          <TagPill label={tag.value} onRemove={() => handleRemove(tagId)} />
-        {/if}
-      {/each}
-    </section>
+    {#if selectedTags?.size}
+      <section class="flex flex-wrap gap-2 pt-5">
+        {#each selectedTags as tagId (tagId)}
+          {@const tag = tagMap[tagId]}
+          {#if tag}
+            <Button
+              size="small"
+              shape="round"
+              color="primary"
+              variant="outline"
+              onclick={() => handleRemove(tagId)}
+              trailingIcon={mdiClose}
+              >{tag.value}
+            </Button>
+          {/if}
+        {/each}
+      </section>
+    {/if}
+
+    <div class="flex flex-wrap gap-2 pt-5">
+      <SearchButton checked active={selectedTags === null} onclick={handleToggleUntagged}>{$t('untagged')}</SearchButton
+      >
+    </div>
   </div>
 {/if}

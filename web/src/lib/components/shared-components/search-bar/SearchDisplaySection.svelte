@@ -1,14 +1,15 @@
 <script lang="ts">
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import TriStateFilter from '$lib/components/shared-components/TriStateFilter.svelte';
   import type { SearchDisplayFilters } from '$lib/types';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    filters: SearchDisplayFilters;
+    filters?: SearchDisplayFilters;
   };
 
-  let { filters = $bindable() }: Props = $props();
+  let { filters = $bindable(searchManager.filter.display) }: Props = $props();
 </script>
 
 <div id="display-options-selection">

@@ -169,7 +169,8 @@ const assetEntity = Object.freeze({
     longitude: 10.703075,
   },
   livePhotoVideoId: null,
-} as MapAsset);
+  isScreenshot: false,
+} as unknown as MapAsset);
 
 describe(AssetMediaService.name, () => {
   let sut: AssetMediaService;
@@ -182,6 +183,14 @@ describe(AssetMediaService.name, () => {
   describe('getUploadAssetIdByChecksum', () => {
     it('should return if checksum is undefined', async () => {
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin)).resolves.toBe(undefined);
+    });
+
+    it('should reject a shared link without upload permission', async () => {
+      const auth = AuthFactory.from().sharedLink({ allowUpload: false }).build();
+      await expect(sut.getUploadAssetIdByChecksum(auth, file1.toString('hex'))).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(mocks.asset.getUploadAssetIdByChecksum).not.toHaveBeenCalled();
     });
 
     it('should handle a non-existent asset', async () => {
@@ -308,7 +317,7 @@ describe(AssetMediaService.name, () => {
         size: 42,
       };
 
-      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.create.mockResolvedValue(assetEntity as any);
 
       await expect(
         sut.uploadAsset(
@@ -343,7 +352,7 @@ describe(AssetMediaService.name, () => {
         size: 42,
       };
 
-      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.create.mockResolvedValue(assetEntity as any);
 
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',

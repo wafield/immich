@@ -14,8 +14,8 @@ export interface GeoCoordinate {
 export const getAssetCoordinates = (
   asset: TimelineAsset | AssetResponseDto | { latitude?: number | null; longitude?: number | null; exifInfo?: { latitude?: number | null; longitude?: number | null } | null },
 ): GeoCoordinate | null => {
-  const lat = asset.latitude ?? (asset as { exifInfo?: { latitude?: number | null } }).exifInfo?.latitude;
-  const lng = asset.longitude ?? (asset as { exifInfo?: { longitude?: number | null } }).exifInfo?.longitude;
+  const lat = ('latitude' in asset ? (asset as { latitude?: number | null }).latitude : undefined) ?? (asset as { exifInfo?: { latitude?: number | null } }).exifInfo?.latitude;
+  const lng = ('longitude' in asset ? (asset as { longitude?: number | null }).longitude : undefined) ?? (asset as { exifInfo?: { longitude?: number | null } }).exifInfo?.longitude;
   if (isValidLatLng(lat, lng)) {
     return { lat: Number(lat), lng: Number(lng) };
   }

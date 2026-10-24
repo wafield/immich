@@ -1,8 +1,11 @@
+import type { UserConfigDto } from '@immich/sdk';
 import '@testing-library/jest-dom';
 import { fireEvent } from '@testing-library/svelte';
 import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
 import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { queryClient } from '$lib/queries/client';
+import { getUserConfigQuery } from '$lib/queries/config-user.query';
 import { renderWithTooltips } from '$tests/helpers';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { preferencesFactory } from '@test-data/factories/preferences-factory';
@@ -53,6 +56,7 @@ describe('AssetViewerNavBar component', () => {
 
     const asset = assetFactory.build({ isTrashed: false });
     const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+    // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
     expect(getByLabelText('go_back')).toBeInTheDocument();
   });
 
@@ -62,11 +66,22 @@ describe('AssetViewerNavBar component', () => {
       const user = userAdminFactory.build({ id: ownerId });
       const asset = assetFactory.build({ ownerId, isTrashed: false });
       authManager.setUser(user);
+      queryClient.setQueryData(getUserConfigQuery().queryKey, {
+        machineLearning: {
+          enabled: true,
+          clip: { enabled: true },
+          duplicateDetection: { enabled: true },
+          facialRecognition: { enabled: true },
+          ocr: { enabled: true },
+        },
+        trash: { enabled: true, days: 30 },
+      } as UserConfigDto);
 
       const preferences = preferencesFactory.build({ cast: { gCastEnabled: false } });
       authManager.setPreferences(preferences);
 
       const { getByLabelText } = renderWithTooltips(AssetViewerNavBar, { asset, ...additionalProps });
+      // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
       expect(getByLabelText('delete')).toBeInTheDocument();
     });
   });
@@ -93,7 +108,7 @@ describe('AssetViewerNavBar component', () => {
         ...additionalProps,
       });
 
-      expect(queryByTestId('asset-viewer-navbar-zoom-level')).not.toBeInTheDocument();
+      expect(queryByTestId('asset-viewer-navbar-zoom-level')).toBeNull();
     });
 
     it('does not display zoom percentage if the asset is in thumbnail version (preview not loaded)', () => {
@@ -112,7 +127,7 @@ describe('AssetViewerNavBar component', () => {
         ...additionalProps,
       });
 
-      expect(queryByTestId('asset-viewer-navbar-zoom-level')).not.toBeInTheDocument();
+      expect(queryByTestId('asset-viewer-navbar-zoom-level')).toBeNull();
     });
 
     it('does not display zoom percentage if only preview version is displayed (original not loaded)', () => {
@@ -132,7 +147,7 @@ describe('AssetViewerNavBar component', () => {
         ...additionalProps,
       });
 
-      expect(queryByTestId('asset-viewer-navbar-zoom-level')).not.toBeInTheDocument();
+      expect(queryByTestId('asset-viewer-navbar-zoom-level')).toBeNull();
     });
 
     it('displays 50% zoom percentage when 6000x4000 image is fit to 3000x2000 container at 1x zoom', () => {
@@ -154,8 +169,8 @@ describe('AssetViewerNavBar component', () => {
       });
 
       const zoomElement = getByTestId('asset-viewer-navbar-zoom-level');
-      expect(zoomElement).toBeInTheDocument();
-      expect(zoomElement).toHaveTextContent('50%');
+      expect(zoomElement).toBeDefined();
+      expect(zoomElement.textContent).toContain('50%');
     });
 
     it('displays 100% zoom percentage when photo asset reaches 1:1 zoom level (e.g. 2x zoom on 50% fit)', () => {
@@ -178,8 +193,8 @@ describe('AssetViewerNavBar component', () => {
       });
 
       const zoomElement = getByTestId('asset-viewer-navbar-zoom-level');
-      expect(zoomElement).toBeInTheDocument();
-      expect(zoomElement).toHaveTextContent('100%');
+      expect(zoomElement).toBeDefined();
+      expect(zoomElement.textContent).toContain('100%');
     });
 
     it('displays updated percentage when zoom in level changes', () => {
@@ -201,8 +216,8 @@ describe('AssetViewerNavBar component', () => {
       });
 
       const zoomElement = getByTestId('asset-viewer-navbar-zoom-level');
-      expect(zoomElement).toBeInTheDocument();
-      expect(zoomElement).toHaveTextContent('150%');
+      expect(zoomElement).toBeDefined();
+      expect(zoomElement.textContent).toContain('150%');
     });
 
     it('zooms to 1x (initial fit) when scale to fit button is clicked', async () => {
@@ -225,7 +240,7 @@ describe('AssetViewerNavBar component', () => {
       });
 
       const fitButton = getByTestId('asset-viewer-navbar-scale-to-fit');
-      expect(fitButton).toBeInTheDocument();
+      expect(fitButton).toBeDefined();
       await fireEvent.click(fitButton);
 
       expect(animatedZoomSpy).toHaveBeenCalledWith(1);
@@ -252,7 +267,7 @@ describe('AssetViewerNavBar component', () => {
       });
 
       const scale100Button = getByTestId('asset-viewer-navbar-scale-to-100');
-      expect(scale100Button).toBeInTheDocument();
+      expect(scale100Button).toBeDefined();
       await fireEvent.click(scale100Button);
 
       // 6000x4000 in 3000x2000 container has 0.5 scale factor, so 100% is 1 / 0.5 = 2x zoom
@@ -284,8 +299,10 @@ describe('AssetViewerNavBar component', () => {
       });
 
       const meter = getByTestId('asset-viewer-navbar-meter');
-      expect(meter).toBeInTheDocument();
+      expect(meter).toBeDefined();
+      // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
       expect(meter).toHaveAttribute('aria-valuenow', '42');
+      // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
       expect(meter).toHaveAttribute('aria-valuetext', '42%');
     });
 
@@ -305,6 +322,7 @@ describe('AssetViewerNavBar component', () => {
         ...additionalProps,
       });
 
+      // @ts-expect-error pending a type fix: https://github.com/testing-library/jest-dom/pull/742/changes
       expect(queryByTestId('asset-viewer-navbar-meter')).not.toBeInTheDocument();
     });
   });

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { goto, invalidate, onNavigate } from '$app/navigation';
-  import { navigating } from '$app/state';
+  import { goto, onNavigate } from '$app/navigation';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import { timeToLoadTheMap } from '$lib/constants';
   import { LoadingSpinner } from '@immich/ui';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
@@ -34,21 +34,12 @@
   import { assetMultiSelectManager, AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { languageManager } from '$lib/managers/language-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
   import { Route } from '$lib/route';
-  import {
-    getAlbumActions,
-    getAlbumAssetsActions,
-    handleDeleteAlbum,
-    isAlbumEditor,
-    handleDownloadAlbum,
-    isAlbumOwner,
-  } from '$lib/services/album.service';
+  import { getAlbumActions, getAlbumAssetsActions, isAlbumEditor, isAlbumOwner } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
   import { highlightMissingGps } from '$lib/stores/preferences.store';
@@ -61,7 +52,6 @@
     AlbumUserRole,
     AssetOrder,
     AssetVisibility,
-    updateAlbumInfo,
     type AlbumResponseDto,
     updateAssets,
     getAlbumMapMarkers,
@@ -99,18 +89,29 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
-  import type { PageData } from './$types';
+  import type { PageProps } from './$types';
   import AlbumDescription from './AlbumDescription.svelte';
   import AlbumTitle from './AlbumTitle.svelte';
   import JumpToMenu from './JumpToMenu.svelte';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import type MapComponent from '$lib/components/shared-components/map/Map.svelte';
+  import {
+    deleteAlbumMutation,
+    getAlbumInfoQuery,
+    invalidateAlbum,
+    updateAlbumInfoMutation,
+  } from '$lib/queries/album.query';
+  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
+  import { getUserConfigQuery } from '$lib/queries/config-user.query';
 
-  interface Props {
-    data: PageData;
-  }
+  let { params }: PageProps = $props();
 
-  let { data = $bindable() }: Props = $props();
+  const queries = {
+    config: createPreloadedQuery(getUserConfigQuery),
+    album: createPreloadedQuery(() => getAlbumInfoQuery(params.albumId)),
+  };
+  const config = $derived(queries.config.data);
+  const album = $derived(queries.album.data);
   let { slideshowState, slideshowNavigation } = slideshowStore;
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
   let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
@@ -423,18 +424,7 @@
     await goto(Route.albums());
   };
 
-  const refreshAlbum = async (updated?: AlbumResponseDto) => {
-    if (updated) {
-      if (updated.id !== album.id) {
-        return;
-      }
-      album = updated;
-    }
-
-    // invalidating during navigation causes an infinite page load
-    await navigating.complete;
-    await invalidate('album:data');
-  };
+  const refreshAlbum = () => invalidateAlbum(album.id);
 
   const setModeToView = async () => {
     timelineManager.suspendTransitions = true;
@@ -494,28 +484,22 @@
     await updateThumbnail(firstAsset.id);
   };
 
-  const updateThumbnail = async (assetId: string) => {
-    try {
-      const response = await updateAlbumInfo({
-        id: album.id,
-        updateAlbumDto: {
-          albumThumbnailAssetId: assetId,
-        },
-      });
-      eventManager.emit('AlbumUpdate', response);
-      toastManager.primary($t('album_cover_updated'));
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_album_cover'));
-    }
-  };
+  const updateThumbnail = (assetId: string) =>
+    executeMutation(
+      () =>
+        updateAlbumInfoMutation({
+          success: { toast: 'album_cover_updated' },
+          error: { toast: 'errors.unable_to_update_album_cover' },
+        }),
+      [{ id: album.id, updateAlbumDto: { albumThumbnailAssetId: assetId } }],
+    );
 
   onNavigate(async ({ to }) => {
     if (!isAlbumsRoute(to?.route.id) && album.assetCount === 0 && !album.albumName) {
-      await handleDeleteAlbum(album, { notify: false, prompt: false });
+      await executeMutation(() => deleteAlbumMutation({}), [{ id: album.id }]);
     }
   });
 
-  let album = $derived(data.album);
   const albumId = $derived(album.id);
 
   const albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
@@ -648,40 +632,13 @@
     await timelineComponent?.scrollToDate(date);
   };
 
-  const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
-    if (id !== album.id) {
-      return;
-    }
-
-    await goto(Route.albums());
-    viewMode = AlbumPageViewMode.VIEW;
-  };
-
-  const onAlbumAddAssets = async ({ albumIds, assetIds }: { albumIds: string[]; assetIds: string[] }) => {
+  const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[]; assetIds: string[] }) => {
     if (!albumIds.includes(album.id)) {
       return;
     }
 
-    album = { ...album, assetCount: album.assetCount + assetIds.length };
-
     timelineMultiSelectManager.clear();
     await setModeToView();
-  };
-
-  const onAlbumShare = async () => {
-    await refreshAlbum();
-    await setModeToView();
-  };
-
-  const onAlbumUserUpdate = ({ albumId, userId, role }: { albumId: string; userId: string; role: AlbumUserRole }) => {
-    if (albumId !== album.id) {
-      return;
-    }
-
-    const albumUsers = album.albumUsers.map((albumUser) =>
-      albumUser.user.id === userId ? { ...albumUser, role } : albumUser,
-    );
-    album = { ...album, albumUsers };
   };
 
   const { Cast } = $derived(getGlobalActions($t));
@@ -710,18 +667,7 @@
   };
 </script>
 
-<OnEvents
-  onSharedLinkCreate={(link) => refreshAlbum(link.album)}
-  onSharedLinkDelete={() => refreshAlbum()}
-  {onAlbumDelete}
-  {onAlbumAddAssets}
-  {onAlbumRemoveAssets}
-  {onAlbumShare}
-  {onAlbumUserUpdate}
-  onAlbumUserDelete={() => refreshAlbum()}
-  onAlbumUpdate={(album) => refreshAlbum(album)}
-  onAssetsDelete={() => refreshAlbum()}
-/>
+<OnEvents {onAlbumAddAssets} {onAlbumRemoveAssets} onAssetsDelete={() => refreshAlbum()} />
 <CommandPaletteDefaultProvider name={$t('album')} actions={[AddAssets, Upload, Close, ...Object.values(Actions)]} />
 
 <svelte:window
@@ -839,7 +785,9 @@
               />
             {/if}
 
-            {#if featureFlagsManager.value.map}
+            <ActionButton action={Actions.Share} />
+
+            {#if config.map.enabled}
               <IconButton
                 class="hidden md:flex"
                 variant="ghost"
@@ -931,15 +879,11 @@
                 {/if}
                 {#if album.assetCount > 0}
                   <MenuOption icon={mdiPresentationPlay} text={$t('slideshow')} onClick={handleStartSlideshow} />
-                  <MenuOption icon={mdiDownload} text={$t('download')} onClick={() => handleDownloadAlbum(album)} />
+                  <ActionMenuItem action={Actions.Download} />
                 {/if}
 
                 {#if isOwned}
-                  <MenuOption
-                    icon={mdiDeleteOutline}
-                    text={$t('delete_album')}
-                    onClick={() => handleDeleteAlbum(album)}
-                  />
+                  <ActionMenuItem action={Actions.Delete} />
                 {:else}
                   <ActionMenuItem action={Actions.Leave} />
                 {/if}
@@ -1006,8 +950,8 @@
         <Timeline
           bind:this={timelineComponent}
           enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
-          bind:album
-          onAlbumDayUpdate={() => (album = { ...album })}
+          {album}
+          onAlbumDayUpdate={() => refreshAlbum()}
           {albumUsers}
           bind:timelineManager
           {options}
@@ -1027,12 +971,7 @@
             {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-8">
-                <AlbumTitle
-                  id={album.id}
-                  albumName={album.albumName}
-                  {isEditor}
-                  onUpdate={(albumName) => (album = { ...album, albumName })}
-                />
+                <AlbumTitle id={album.id} albumName={album.albumName} {isEditor} />
 
                 {#if album.assetCount > 0}
                   <AlbumSummary {album} />
@@ -1076,11 +1015,7 @@
                     <ActionButton action={Actions.Share} />
                   </div>
                 {/if}
-                <AlbumDescription
-                  id={album.id}
-                  {isEditor}
-                  bind:description={() => album.description, (description) => (album = { ...album, description })}
-                />
+                <AlbumDescription id={album.id} {isEditor} description={album.description} />
               </section>
             {/if}
 

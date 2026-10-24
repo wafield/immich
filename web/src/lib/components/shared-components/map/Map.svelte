@@ -14,7 +14,6 @@
   import { afterNavigate } from '$app/navigation';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
   import { mapSettings } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, handlePromiseError, isValidLatLng, isValidMapHash } from '$lib/utils';
@@ -57,6 +56,11 @@
     ScaleControl,
   } from 'svelte-maplibre';
   import type { SelectionBBox } from './types';
+  import { createPreloadedQuery } from '$lib/queries/client';
+  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+
+  const query = createPreloadedQuery(getPublicConfigQuery);
+  const publicConfig = $derived(query.data);
 
   export interface HoverCoordinate {
     latitude?: number | null;
@@ -181,7 +185,7 @@
     const lat = hoverCoordinate?.latitude ?? hoverCoordinate?.lat;
     const lng = hoverCoordinate?.longitude ?? hoverCoordinate?.lng;
 
-    if (!isValidLatLng(lat, lng)) {
+    if (lat === null || lat === undefined || lng === null || lng === undefined || !isValidLatLng(lat, lng)) {
       if (hoverMarker) {
         hoverMarker.remove();
         hoverMarker = null;
@@ -237,7 +241,7 @@
 
   let isDarkStyle = $state(($mapSettings.allowDarkMode ? themeManager.value : Theme.Light) === Theme.Dark);
   const styleUrl = $derived(
-    isDarkStyle ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
+    isDarkStyle ? publicConfig.map.darkStyle : publicConfig.map.lightStyle,
   );
 
   export function addClipMapMarker(lng: number, lat: number) {

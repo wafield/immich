@@ -3,7 +3,7 @@
   import { getAssetMediaUrl } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getLibrary, AssetMediaSize, getAllAlbums, type AssetResponseDto } from '@immich/sdk';
+  import { getLibrary, AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {
     mdiBookmarkOutline,
@@ -14,6 +14,8 @@
     mdiClockOutline,
     mdiCalendar,
   } from '@mdi/js';
+  import { getAlbumsByAssetQuery } from '$lib/queries/album.query';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
   import { getAllMetadataItems, formatISODateToLocale, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
   import InfoRow from './InfoRow.svelte';
@@ -47,6 +49,9 @@
   const cardWidthClass = $derived(
     imageSize === 'S' ? 'min-w-60' : imageSize === 'M' ? 'min-w-90' : imageSize === 'L' ? 'min-w-180' : 'min-w-240',
   );
+
+  const query = createQuery(() => getAlbumsByAssetQuery(asset.id));
+  const albums = $derived(query.data);
 
   const listFormat = $derived(new Intl.ListFormat($lang));
   const isFromExternalLibrary = $derived(!!asset.libraryId);
@@ -159,18 +164,16 @@
     {/each}
 
     <!-- Albums always shown -->
-    <InfoRow icon={mdiBookmarkOutline} borderBottom={false} title={$t('albums')}>
-      {#await getAllAlbums({ assetId: asset.id })}
+    <InfoRow icon={mdiBookmarkOutline} title={$t('albums')}>
+      {#if !albums}
         {$t('scanning_for_album')}
-      {:then albums}
-        {#if albums.length === 1}
-          {albums[0].albumName}
-        {:else}
-          <span title={listFormat.format(albums.map(({ albumName }) => albumName))}>
-            {$t('in_albums', { values: { count: albums.length } })}
-          </span>
-        {/if}
-      {/await}
+      {:else if albums.length === 1}
+        {albums[0].albumName}
+      {:else}
+        <span title={listFormat.format(albums.map(({ albumName }) => albumName))}>
+          {$t('in_albums', { values: { count: albums.length } })}
+        </span>
+      {/if}
     </InfoRow>
   </div>
 </div>

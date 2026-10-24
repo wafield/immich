@@ -5,18 +5,24 @@
     AlbumModalRowType,
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { createAlbum, getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
+  import { createAlbumMutation, getAllAlbumsQuery } from '$lib/queries/album.query';
+  import { executeMutation, queryClient } from '$lib/queries/client';
+  import { albumViewSettings } from '$lib/stores/preferences.store';
+  import { type AlbumResponseDto } from '@immich/sdk';
   import { Button, Icon, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { mdiImageAlbum, mdiKeyboardReturn } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import type { Action } from 'svelte/action';
   import { t } from 'svelte-i18n';
   import AlbumListItem from '../components/asset-viewer/AlbumListItem.svelte';
   import NewAlbumListItem from '../components/shared-components/album-selection/NewAlbumListItem.svelte';
 
-  let albums: AlbumResponseDto[] = $state([]);
-  let loading = $state(true);
+  const queries = {
+    albums: createQuery(getAllAlbumsQuery, () => queryClient),
+  };
+
+  const albums = $derived(queries.albums.data ?? []);
+  const loading = $derived(queries.albums.isPending);
   let search = $state('');
   let selectedRowIndex: number = $state(-1);
 
@@ -27,10 +33,6 @@
 
   let { onClose, selectedItemsCount }: Props = $props();
 
-  onMount(async () => {
-    albums = await getAllAlbums({});
-    loading = false;
-  });
 
   const multiSelectedAlbumIds: string[] = $state([]);
   const multiSelectActive = $derived(multiSelectedAlbumIds.length > 0);
@@ -39,11 +41,10 @@
   const albumModalRows = $derived(rowConverter.toModalRows(search, albums, selectedRowIndex, multiSelectedAlbumIds));
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
-  const onNewAlbum = async (name: string) => {
-    const album = await createAlbum({ createAlbumDto: { albumName: name } });
-    eventManager.emit('AlbumCreate', album);
-    onClose([album]);
-  };
+  const onNewAlbum = (name: string) =>
+    executeMutation(createAlbumMutation, [{ createAlbumDto: { albumName: name } }], {
+      onSuccess: (album) => onClose([album]),
+    });
 
   const handleAlbumClick = (album?: AlbumResponseDto) => {
     if (multiSelectActive) {

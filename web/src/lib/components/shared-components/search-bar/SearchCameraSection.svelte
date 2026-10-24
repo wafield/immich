@@ -7,17 +7,18 @@
   import { handlePromiseError } from '$lib/utils';
   import { asLocalTimeISO } from '$lib/utils/date-time';
   import { SearchSuggestionType, getSearchSuggestions, type SuggestionResponseDto } from '@immich/sdk';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { Text } from '@immich/ui';
   import type { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    filters: SearchCameraFilter;
+    filters?: SearchCameraFilter;
     libraryId?: string;
     dateFilter?: SearchDateFilter;
   };
 
-  let { filters = $bindable(), libraryId, dateFilter }: Props = $props();
+  let { filters = $bindable(searchManager.filter.camera), libraryId, dateFilter }: Props = $props();
 
   let makes: SuggestionResponseDto[] = $state([]);
   let models: SuggestionResponseDto[] = $state([]);

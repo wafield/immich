@@ -7,10 +7,10 @@ import type {
   JobCreateDto,
   LibraryResponseDto,
   LoginResponseDto,
+  PasskeyResponseDto,
   PersonResponseDto,
   QueueResponseDto,
   ReleaseEventV1,
-  SharedLinkResponseDto,
   StackResponseDto,
   AdminConfigDto,
   TagResponseDto,
@@ -34,6 +34,10 @@ export type Events = {
   ApiKeyCreate: [ApiKeyResponseDto];
   ApiKeyUpdate: [ApiKeyResponseDto];
   ApiKeyDelete: [ApiKeyResponseDto];
+
+  PasskeyCreate: [PasskeyResponseDto];
+  PasskeyUpdate: [PasskeyResponseDto];
+  PasskeyDelete: [PasskeyResponseDto];
 
   AssetUpdate: [AssetResponseDto];
   AssetsArchive: [string[]];
@@ -63,10 +67,6 @@ export type Events = {
   BackupUpload: [{ progress: number; isComplete: boolean }];
 
   QueueUpdate: [QueueResponseDto];
-
-  SharedLinkCreate: [SharedLinkResponseDto];
-  SharedLinkUpdate: [SharedLinkResponseDto];
-  SharedLinkDelete: [SharedLinkResponseDto];
 
   StackCreate: [StackResponseDto];
   /** Unstacked, with assets to handle */
@@ -105,7 +105,6 @@ export type Events = {
   WorkflowCreate: [WorkflowResponseDto];
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
-
   ReleaseEvent: [ReleaseEventV1];
 
   WebsocketConnect: [];

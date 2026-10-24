@@ -6,6 +6,7 @@ import { AlbumUser, AuthSharedLink } from 'src/database.js';
 import { HistoryBuilder } from 'src/decorators.js';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto.js';
 import { MapAsset } from 'src/dtos/asset-response.dto.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto.js';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum.js';
 import { asDateString, asDateTimeString } from 'src/utils/date.js';
@@ -206,7 +207,7 @@ export const AlbumResponseSchema = z
     isActivityEnabled: z.boolean().describe('Activity feed enabled'),
     order: AssetOrderSchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
-    albumDays: z.array(AlbumDayResponseSchema).default([]).describe('Per-day descriptions in the album'),
+    albumDays: z.array(AlbumDayResponseSchema).optional().default([]).describe('Per-day descriptions in the album'),
   })
   .meta({ id: 'AlbumResponseDto' });
 
@@ -253,7 +254,7 @@ export type MapAlbumDto = {
   order: AssetOrder;
 };
 
-export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto => {
+export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>, { auth }: { auth?: AuthDto } = {}): AlbumResponseDto => {
   const albumUsers: AlbumUserResponseDto[] = [];
 
   if (entity.albumUsers) {
@@ -291,7 +292,7 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),
     id: entity.id,
-    albumUsers,
+    albumUsers: auth?.sharedLink ? [] : albumUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
     startDate: asDateTimeString(startDate),

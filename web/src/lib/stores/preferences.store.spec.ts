@@ -27,19 +27,19 @@ describe('preferences.store ROW_SIZE_LAYOUT_OPTIONS', () => {
     vi.spyOn(mediaQueryManager, 'isLarge', 'get').mockReturnValue(false);
 
     expect(ROW_SIZE_LAYOUT_OPTIONS[RowSize.S]).toEqual({
-      rowHeight: 80,
+      rowHeight: 120,
       headerHeight: 32,
       gap: 2,
     });
     expect(ROW_SIZE_LAYOUT_OPTIONS[RowSize.M]).toEqual({
-      rowHeight: 150,
-      headerHeight: 48,
-      gap: 3,
+      rowHeight: 180,
+      headerHeight: 32,
+      gap: 2,
     });
     expect(ROW_SIZE_LAYOUT_OPTIONS[RowSize.L]).toEqual({
-      rowHeight: 210,
-      headerHeight: 60,
-      gap: 4,
+      rowHeight: 220,
+      headerHeight: 32,
+      gap: 2,
     });
   });
 });

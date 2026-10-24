@@ -72,7 +72,7 @@ const BaseSearchSchema = z.object({
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
   isTrashed: z.boolean().nullish().describe('Filter by trashed status'),
   withExif: z.boolean().optional().describe('Include EXIF data in response'),
-  size: z.int().min(1).max(1000).default(250).describe('Number of results to return'),
+  size: z.int().min(1).max(1000).optional().default(250).describe('Number of results to return'),
 });
 
 const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
@@ -374,6 +374,7 @@ const cursorField = z.string().min(1).optional().describe('Cursor for the next p
 
 const RandomSearchBaseSchema = BaseSearchWithResultsSchema.extend({
   withStacked: z.boolean().optional().describe('Include stacked assets'),
+  isStacked: z.boolean().nullish().describe('Filter by stacked status'),
   withPeople: z.boolean().optional().describe('Include people data in response'),
   filter: filterField,
 });
