@@ -57,10 +57,10 @@
   } from 'svelte-maplibre';
   import type { SelectionBBox } from './types';
   import { createPreloadedQuery } from '$lib/queries/client';
-  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
+  import { getServerConfigQuery } from '$lib/queries/server.query';
 
-  const query = createPreloadedQuery(getPublicConfigQuery);
-  const publicConfig = $derived(query.data);
+  const query = createPreloadedQuery(getServerConfigQuery);
+  const serverConfig = $derived(query.data);
 
   export interface HoverCoordinate {
     latitude?: number | null;
@@ -241,7 +241,7 @@
 
   let isDarkStyle = $state(($mapSettings.allowDarkMode ? themeManager.value : Theme.Light) === Theme.Dark);
   const styleUrl = $derived(
-    isDarkStyle ? publicConfig.map.darkStyle : publicConfig.map.lightStyle,
+    isDarkStyle ? (serverConfig?.mapDarkStyleUrl ?? '') : (serverConfig?.mapLightStyleUrl ?? ''),
   );
 
   export function addClipMapMarker(lng: number, lat: number) {

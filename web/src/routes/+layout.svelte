@@ -43,6 +43,7 @@
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
   import '../app.css';
+  import 'maplibre-gl/dist/maplibre-gl.css';
 
   interface Props {
     children?: Snippet;
