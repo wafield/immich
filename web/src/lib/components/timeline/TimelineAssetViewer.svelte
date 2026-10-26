@@ -15,7 +15,7 @@
   import { navigate } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { type AlbumResponseDto, type AssetResponseDto, type PersonResponseDto, getAssetInfo } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -71,6 +71,10 @@
   const loadCloseAssets = async (currentAsset: AssetResponseDto) => {
     const [nextAsset, previousAsset] = await Promise.all([getNextAsset(currentAsset), getPreviousAsset(currentAsset)]);
 
+    if (assetViewerManager.asset?.id !== currentAsset.id) {
+      return;
+    }
+
     assetCursor = {
       current: currentAsset,
       nextAsset,
@@ -78,17 +82,26 @@
     };
   };
 
+  let lastLoadedAssetId: string | undefined = undefined;
+
   //TODO: replace this with async derived in svelte 6
   $effect(() => {
     const asset = assetViewerManager.asset;
     if (asset) {
-      if (asset.id !== assetCursor.current?.id) {
-        assetCursor = {
-          ...assetCursor,
-          current: asset,
-        };
+      if (asset.id !== lastLoadedAssetId) {
+        lastLoadedAssetId = asset.id;
+        untrack(() => {
+          if (asset.id !== assetCursor.current?.id) {
+            assetCursor = {
+              ...assetCursor,
+              current: asset,
+            };
+          }
+          handlePromiseError(loadCloseAssets(asset));
+        });
       }
-      handlePromiseError(loadCloseAssets(asset));
+    } else {
+      lastLoadedAssetId = undefined;
     }
   });
 

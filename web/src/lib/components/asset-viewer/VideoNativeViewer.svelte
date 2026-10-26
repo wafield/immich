@@ -44,11 +44,7 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import './immich-time-range';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
-
-  const query = createPreloadedQuery(getPublicConfigQuery);
-  const publicConfig = $derived(query.data);
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -82,7 +78,7 @@
   let isLoading = $state(true);
   let hasLoadedMetadata = $state(false);
   let assetFileUrl = $derived.by(() => {
-    if (publicConfig.ffmpeg.realtime.enabled) {
+    if (featureFlagsManager.value.realtimeTranscoding) {
       return getAssetHlsUrl(assetId);
     }
 
@@ -380,7 +376,7 @@
         style:aspect-ratio={aspectRatio}
         defaultduration={asset.duration! / 1000}
       >
-        {#if publicConfig.ffmpeg.realtime.enabled}
+        {#if featureFlagsManager.value.realtimeTranscoding}
           <hls-video
             bind:this={videoPlayer}
             slot="media"
@@ -444,7 +440,7 @@
                 <span slot="title">{$t('media_chrome.playback_rate')}</span>
               </media-playback-rate-menu>
             </media-settings-menu-item>
-            {#if publicConfig.ffmpeg.realtime.enabled}
+            {#if featureFlagsManager.value.realtimeTranscoding}
               <media-settings-menu-item class="mx-1 rounded-lg p-1 ps-2">
                 {$t('video_quality')}
                 <Icon slot="suffix" icon={mdiChevronRight} class="m-2" />

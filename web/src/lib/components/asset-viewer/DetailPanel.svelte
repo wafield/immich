@@ -50,11 +50,7 @@
   import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
   import { getAlbumsByAssetQuery } from '$lib/queries/album.query';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
-
-  const query = createPreloadedQuery(getPublicConfigQuery);
-  const publicConfig = $derived(query.data);
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -708,7 +704,7 @@
   </section>
 
   {#if activeTab === 'details'}
-    {#if latlng && publicConfig.map.enabled}
+    {#if latlng && featureFlagsManager.value.map}
       <div class="h-90">
         {#await import('$lib/components/shared-components/map/Map.svelte')}
           {#await delay(timeToLoadTheMap) then}

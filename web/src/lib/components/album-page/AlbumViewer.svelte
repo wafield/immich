@@ -22,11 +22,7 @@
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import ThemeButton from '../shared-components/ThemeButton.svelte';
   import AlbumSummary from './AlbumSummary.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getPublicConfigQuery } from '$lib/queries/config-public.query';
-
-  const query = createPreloadedQuery(getPublicConfigQuery);
-  const publicConfig = $derived(query.data);
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -148,7 +144,7 @@
             icon={mdiDownload}
           />
         {/if}
-        {#if sharedLink.showMetadata && publicConfig.map.enabled}
+        {#if sharedLink.showMetadata && featureFlagsManager.value.map}
           <AlbumMap {album} />
         {/if}
         <ThemeButton />
