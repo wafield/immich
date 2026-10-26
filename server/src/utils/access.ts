@@ -199,7 +199,10 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
         auth.user.id,
         ids.difference(isOwner).difference(isAlbum),
       );
-      return isOwner.union(isAlbum).union(isPartner);
+      const isSharedLibrary = await access.asset.checkSharedLibraryAccess(
+        ids.difference(isOwner).difference(isAlbum).difference(isPartner),
+      );
+      return isOwner.union(isAlbum).union(isPartner).union(isSharedLibrary);
     }
 
     case Permission.AssetDownload: {
@@ -209,7 +212,10 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
         auth.user.id,
         ids.difference(isOwner).difference(isAlbum),
       );
-      return isOwner.union(isAlbum).union(isPartner);
+      const isSharedLibrary = await access.asset.checkSharedLibraryAccess(
+        ids.difference(isOwner).difference(isAlbum).difference(isPartner),
+      );
+      return isOwner.union(isAlbum).union(isPartner).union(isSharedLibrary);
     }
 
     case Permission.AssetUpdate: {
