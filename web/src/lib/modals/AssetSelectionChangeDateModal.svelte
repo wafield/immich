@@ -1,32 +1,31 @@
 <script lang="ts">
-  import Combobox from '$lib/components/shared-components/Combobox.svelte';
-  import DateInput from '$lib/elements/DateInput.svelte';
-  import DurationInput from '$lib/elements/DurationInput.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+  import Combobox from '#lib/components/shared-components/Combobox.svelte';
+  import DateInput from '#lib/elements/DateInput.svelte';
+  import DurationInput from '#lib/elements/DurationInput.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
   import {
     getPreferredTimeZone,
     getTimezones,
-    toIsoDate,
     toDatetime,
+    toIsoDate,
     type ZoneOption,
-  } from '$lib/modals/timezone-utils';
-  import { type AssetResponseDto } from '@immich/sdk';
-  import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAssets } from '@immich/sdk';
-  import { Button, Field, FormModal, Label, Switch, Table, TableBody, TableCell, TableRow } from '@immich/ui';
-  import { mdiCalendarEdit } from '@mdi/js';
-  import { DateTime } from 'luxon';
-  import { t } from 'svelte-i18n';
-  import { formatFullDateTime } from '$lib/utils/date-time-formatter';
-  import { formatUtcOffset } from '$lib/utils/date-time';
+  } from '#lib/modals/timezone-utils.ts';
+  import { getOwnedAssetsWithWarning } from '#lib/utils/asset-utils.ts';
+  import { formatUtcOffset } from '#lib/utils/date-time.ts';
+  import { formatFullDateTime } from '#lib/utils/date-time-formatter.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
   import {
     fromISODateTime,
     fromISODateTimeUTC,
     fromTimelinePlainDateTime,
     type TimelineDateTime,
-  } from '$lib/utils/timeline-util';
+  } from '#lib/utils/timeline-util.ts';
+  import { updateAssets, type AssetResponseDto } from '@immich/sdk';
+  import { Button, Field, FormModal, Label, Switch, Table, TableBody, TableCell, TableRow } from '@immich/ui';
+  import { mdiCalendarEdit } from '@mdi/js';
+  import { DateTime } from 'luxon';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     initialDate?: DateTime;

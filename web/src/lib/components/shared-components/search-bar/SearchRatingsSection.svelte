@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { Text } from '@immich/ui';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { t } from 'svelte-i18n';
   import Combobox from '../Combobox.svelte';
 

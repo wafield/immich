@@ -1,5 +1,4 @@
-import { browser } from '$app/environment';
-import { eventManager } from '$lib/managers/event-manager.svelte';
+import { browser } from '$app/env';
 import { getAllLibraries, type LibraryResponseDto } from '@immich/sdk';
 import { derived, writable } from 'svelte/store';
 
@@ -31,15 +30,3 @@ export const loadUserLibraries = async (force = false) => {
 if (browser) {
   loadUserLibraries();
 }
-
-eventManager.on({
-  LibraryUpdate: () => {
-    loadUserLibraries(true);
-  },
-  LibraryDelete: () => {
-    loadUserLibraries(true);
-  },
-  LibraryCreate: () => {
-    loadUserLibraries(true);
-  },
-});

@@ -3,13 +3,12 @@
 </script>
 
 <script lang="ts">
-  import { useActions, type ActionArray } from '$lib/actions/use-actions';
-  import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
-  import UserSidebar from '$lib/components/shared-components/side-bar/UserSidebar.svelte';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import type { HeaderButtonActionItem } from '$lib/types';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import NavigationBar from '#lib/components/shared-components/navigation-bar/NavigationBar.svelte';
+  import UserSidebar from '#lib/components/shared-components/side-bar/UserSidebar.svelte';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
+  import type { HeaderButtonActionItem } from '#lib/types.ts';
+  import { openFileUploadDialog } from '#lib/utils/file-uploader.ts';
   import { Button, ContextMenuButton, HStack, isMenuItemType, type MenuItemType } from '@immich/ui';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -19,7 +18,6 @@
     title?: string | undefined;
     description?: string | undefined;
     scrollbar?: boolean;
-    use?: ActionArray;
     actions?: Array<HeaderButtonActionItem | MenuItemType>;
     sidebar?: Snippet;
     buttons?: Snippet;
@@ -31,11 +29,11 @@
     title = undefined,
     description = undefined,
     scrollbar = true,
-    use = [],
     actions = [],
     sidebar,
     buttons,
     children,
+    ...rest
   }: Props = $props();
 
   const enabledActions = $derived(
@@ -72,7 +70,7 @@
   {/if}
 
   <main class="relative bg-immich-bg dark:bg-immich-dark-gray">
-    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto md:px-2" use:useActions={use}>
+    <div class="{scrollbarClass} absolute {hasTitleClass} w-full overflow-y-auto md:px-2" {...rest}>
       {@render children?.()}
     </div>
 

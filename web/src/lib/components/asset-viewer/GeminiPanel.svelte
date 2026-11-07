@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { generateGeminiContent } from '$lib/services/gemini.service';
-  import { locale } from '$lib/stores/preferences.store';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { generateGeminiContent } from '#lib/services/gemini.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
   import type { AssetResponseDto } from '@immich/sdk';
   import { Button, Icon, IconButton, LoadingSpinner, Textarea } from '@immich/ui';
   import { mdiAlertCircleOutline, mdiClockOutline, mdiClose, mdiCreation, mdiSend } from '@mdi/js';

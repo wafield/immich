@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { languageManager } from '$lib/managers/language-manager.svelte';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import { onDestroy } from 'svelte';
 
   interface Props {

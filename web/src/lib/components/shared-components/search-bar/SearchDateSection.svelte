@@ -3,11 +3,11 @@
     asSelectedOption,
     asSuggestionOptions,
     type FilterableSelectionListOptions,
-  } from '$lib/components/shared-components/FilterableSelectionList.svelte';
-  import type { SearchDateFilter } from '$lib/types';
-  import { handlePromiseError } from '$lib/utils';
+  } from '#lib/components/shared-components/FilterableSelectionList.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
+  import type { SearchDateFilter } from '#lib/types.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
   import { getSearchSuggestions, SearchSuggestionType, type SuggestionResponseDto } from '@immich/sdk';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { DatePicker, Text } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';

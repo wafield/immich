@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { libraryTableClasses } from '$lib/constants';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getLibraryStatisticsQuery } from '$lib/queries/library.query';
-  import { getUserAdminQuery } from '$lib/queries/user-admin.query';
-  import { Route } from '$lib/route';
-  import { getLibraryActions } from '$lib/services/library.service';
-  import { locale } from '$lib/stores/preferences.store';
-  import { getBytesWithUnit } from '$lib/utils/byte-units';
+  import { libraryTableClasses } from '#lib/constants.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getLibraryStatisticsQuery } from '#lib/queries/library.query.ts';
+  import { getUserAdminQuery } from '#lib/queries/user-admin.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getLibraryActions } from '#lib/services/library.service.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import type { LibraryResponseDto } from '@immich/sdk';
-  import { ContextMenuButton, Link, MenuItemType, TableCell, TableRow } from '@immich/ui';
+  import { ContextMenuButton, Icon, Link, MenuItemType, TableCell, TableRow } from '@immich/ui';
+  import { mdiCheck, mdiClose } from '@mdi/js';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
 
@@ -34,13 +35,31 @@
 
 <TableRow>
   <TableCell class={libraryTableClasses.column1}>
-    <Link href={Route.viewLibrary(library)}>{library.name}</Link>
+    <div class="flex items-center gap-2 px-4">
+      <Link href={Route.viewLibrary(library)}>{library.name}</Link>
+      {#if library.uiColor}
+        <span
+          class="inline-block size-3 rounded-sm border border-gray-300 dark:border-gray-600"
+          style:background-color={library.uiColor}
+          title={library.uiColor}
+        ></span>
+      {/if}
+    </div>
   </TableCell>
   <TableCell class={libraryTableClasses.column2}>
     <Link href={Route.viewUser(owner)}>{owner.name}</Link>
   </TableCell>
+  <TableCell>
+    <div class="flex items-center justify-center">
+      {#if library.shared}
+        <Icon icon={mdiCheck} size="18" class="text-primary" />
+      {:else}
+        <Icon icon={mdiClose} size="18" class="text-gray-400" />
+      {/if}
+    </div>
+  </TableCell>
   {#if stats}
-    {@const [diskUsage, diskUsageUnit] = getBytesWithUnit(stats.usage, 0)}
+    {const [diskUsage, diskUsageUnit] = $derived(getBytesWithUnit(stats.usage, 0))}
     <TableCell class={libraryTableClasses.column3}>
       {stats.photos.toLocaleString($locale)}
     </TableCell>
@@ -62,6 +81,9 @@
       <span class="skeleton-loader inline-block h-4 w-20"></span>
     </TableCell>
   {/if}
+  <TableCell>
+    {library.refreshedAt ? new Date(library.refreshedAt).toLocaleString($locale) : '-'}
+  </TableCell>
   <TableCell class={libraryTableClasses.column6}>
     <ContextMenuButton color="primary" aria-label={$t('open')} items={actions} />
   </TableCell>

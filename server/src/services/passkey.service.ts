@@ -1,14 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import aaguids from 'aaguids';
-import { DateTime, Duration } from 'luxon';
-import { IncomingHttpHeaders } from 'node:http';
 import type {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
   VerifiedAuthenticationResponse,
   VerifiedRegistrationResponse,
 } from '@simplewebauthn/server';
-import type { LoginDetails } from 'src/services/auth.service.js';
+import aaguids from 'aaguids';
+import { DateTime, Duration } from 'luxon';
+import { IncomingHttpHeaders } from 'node:http';
 import { OnJob } from 'src/decorators.js';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto.js';
 import { SystemConfig } from 'src/dtos/config.dto.js';
@@ -23,6 +22,7 @@ import {
   mapPasskey,
 } from 'src/dtos/passkey.dto.js';
 import { AuthChallengeType, JobName, JobStatus, Permission, QueueName } from 'src/enum.js';
+import type { LoginDetails } from 'src/services/auth.service.js';
 import { BaseService } from 'src/services/base.service.js';
 import { findOrFail } from 'src/utils/misc.js';
 
@@ -31,6 +31,9 @@ const RP_NAME = 'Immich';
 const CHALLENGE_TTL = Duration.fromObject({ minutes: 5 });
 
 const MOBILE_RP_ID = 'my.immich.app';
+
+// iOS apps send https:// + the rp id as their origin
+const IOS_ORIGIN = `https://${MOBILE_RP_ID}`;
 
 // keep in sync with https://my.immich.app/.well-known/assetlinks.json
 const ANDROID_CERTIFICATE_FINGERPRINTS = [
@@ -273,7 +276,7 @@ export class PasskeyService extends BaseService {
     const origin = headers.origin;
     // no origin implies a mobile app
     if (!origin) {
-      return { origin: ANDROID_ORIGINS, rpId: MOBILE_RP_ID };
+      return { origin: [IOS_ORIGIN, ...ANDROID_ORIGINS], rpId: MOBILE_RP_ID };
     }
 
     let hostname: string;

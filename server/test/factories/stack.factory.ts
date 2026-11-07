@@ -24,9 +24,9 @@ export class StackFactory {
       id: newUuid(),
       ownerId: newUuid(),
       primaryAssetId: newUuid(),
+      stackType: null,
       updatedAt: newDate(),
       updateId: newUuidV7(),
-      stackType: null,
       ...dto,
     });
   }

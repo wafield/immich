@@ -1,33 +1,34 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { page } from '$app/state';
-  import { shortcuts } from '$lib/actions/shortcut';
-  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
-  import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { languageManager } from '$lib/managers/language-manager.svelte';
-  import { Route } from '$lib/route';
-  import { locale } from '$lib/stores/preferences.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import type { AssetResponseDto } from '@immich/sdk';
-  import { createStack, deleteDuplicates, resolveDuplicates, updateAssets } from '@immich/sdk';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import UserPageLayout from '#lib/components/layouts/UserPageLayout.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import { languageManager } from '#lib/managers/language-manager.svelte.ts';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import {
+    getAssetDuplicatesQuery,
+    removeDuplicateGroups,
+    resolveDuplicatesMutation,
+  } from '#lib/queries/duplicate.query.ts';
+  import { createStackMutation } from '#lib/queries/stack.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { locale } from '#lib/stores/preferences.store.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { updateAssets, type AssetResponseDto } from '@immich/sdk';
   import { Button, modalManager, toastManager } from '@immich/ui';
   import { mdiChevronLeft, mdiChevronRight, mdiPageFirst, mdiPageLast } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { PageData } from './$types';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/state';
+  import DuplicatesCompareControl from './DuplicatesCompareControl.svelte';
 
-  const query = createPreloadedQuery(getUserConfigQuery);
-  const config = $derived(query.data);
+  const queries = {
+    config: createPreloadedQuery(getUserConfigQuery),
+    duplicates: createPreloadedQuery(getAssetDuplicatesQuery),
+  };
+  const config = $derived(queries.config.data);
+  const duplicates = $derived(queries.duplicates.data);
 
-  interface Props {
-    data: PageData;
-  }
-
-  let { data = $bindable() }: Props = $props();
-
-  let duplicates = $state(data.duplicates);
   let showMore = $state(false);
 
   const correctDuplicatesIndex = (index: number) => {
@@ -50,11 +51,7 @@
       }
     }
 
-    try {
-      return await callback();
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_resolve_duplicate'));
-    }
+    return callback();
   };
 
   const deletedNotification = (trashedCount: number) => {
@@ -76,21 +73,21 @@
       async () => {
         const keepAssetIds = duplicateAssetIds.filter((id) => !trashIds.includes(id));
 
-        const response = await resolveDuplicates({
-          duplicateResolveDto: {
-            groups: [{ duplicateId, keepAssetIds, trashAssetIds: trashIds }],
+        await executeMutation(
+          resolveDuplicatesMutation,
+          [{ duplicateResolveDto: { groups: [{ duplicateId, keepAssetIds, trashAssetIds: trashIds }] } }],
+          {
+            onSuccess: ([{ success, error, errorMessage = error }]) => {
+              if (!success) {
+                handleError(new Error(errorMessage), $t('errors.unable_to_resolve_duplicate'));
+                return;
+              }
+
+              deletedNotification(trashIds.length);
+              void navigateToIndex(duplicatesIndex);
+            },
           },
-        });
-
-        const { success, error, errorMessage } = response[0];
-        if (!success) {
-          throw new Error(errorMessage || error);
-        }
-
-        duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
-
-        deletedNotification(trashIds.length);
-        await navigateToIndex(duplicatesIndex);
+        );
       },
       shouldConfirmDelete ? $t('delete_duplicates_confirmation') : undefined,
       shouldConfirmDelete ? $t('permanently_delete') : undefined,
@@ -99,12 +96,16 @@
 
   const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
     const assetIds = assets.map((asset) => asset.id);
-    await createStack({ stackCreateDto: { assetIds, stackType: 'duplicate' } });
-    await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
-    duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
-    await navigateToIndex(duplicatesIndex);
+    await executeMutation(createStackMutation, [{ stackCreateDto: { assetIds, stackType: 'duplicate' } }], {
+      onSuccess: () => void handleStacked(duplicateId, assetIds),
+    });
   };
 
+  const handleStacked = async (duplicateId: string, assetIds: string[]) => {
+    await updateAssets({ assetBulkUpdateDto: { ids: assetIds, duplicateId: null } });
+    removeDuplicateGroups([duplicateId]);
+    await navigateToIndex(duplicatesIndex);
+  };
 
   const handleFirst = () => navigateToIndex(0);
   const handlePrevious = () => navigateToIndex(Math.max(duplicatesIndex - 1, 0));

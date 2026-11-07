@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Dropdown, { type RenderedOption } from '$lib/elements/Dropdown.svelte';
-  import { userLibraries } from '$lib/stores/library.store';
+  import Dropdown, { type RenderedOption } from '#lib/elements/Dropdown.svelte';
+  import { userLibraries } from '#lib/stores/library.store.ts';
   import { getSearchSuggestions, SearchSuggestionType, type SuggestionResponseDto } from '@immich/sdk';
   import { Text } from '@immich/ui';
   import { onMount } from 'svelte';

@@ -3,31 +3,29 @@
 </script>
 
 <script lang="ts">
-  import { page } from '$app/state';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import NotificationPanel from '$lib/components/shared-components/navigation-bar/NotificationPanel.svelte';
-  import SearchBar from '$lib/components/shared-components/search-bar/SearchBar.svelte';
-  import SkipLink from '$lib/elements/SkipLink.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { Route } from '$lib/route';
-  import { getGlobalActions } from '$lib/services/app.service';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { getNotificationsQuery } from '$lib/queries/notification.query';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
+  import NotificationPanel from '#lib/components/shared-components/navigation-bar/NotificationPanel.svelte';
+  import SearchBar from '#lib/components/shared-components/search-bar/SearchBar.svelte';
+  import SkipLink from '#lib/elements/SkipLink.svelte';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { getNotificationsQuery } from '#lib/queries/notification.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getGlobalActions } from '#lib/services/app.service.ts';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
   import { ActionButton, Button, IconButton, Logo } from '@immich/ui';
-  import { createQuery } from '@tanstack/svelte-query';
   import {
     mdiBellBadge,
     mdiBellOutline,
     mdiMagnify,
     mdiMenu,
-    mdiTrayArrowUp,
     mdiMenuLeft,
     mdiMenuRight,
+    mdiTrayArrowUp,
   } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
+  import { page } from '$app/state';
   import ThemeButton from '../ThemeButton.svelte';
   import UserAvatar from '../UserAvatar.svelte';
   import AccountInfoPanel from './AccountInfoPanel.svelte';
@@ -143,10 +141,10 @@
         <ThemeButton />
 
         <div
-          use:clickOutside={{
+          {@attach clickOutside({
             onOutclick: () => (shouldShowNotificationPanel = false),
             onEscape: () => (shouldShowNotificationPanel = false),
-          }}
+          })}
         >
           <div class="relative">
             <IconButton
@@ -176,10 +174,10 @@
         <ActionButton action={Cast} />
 
         <div
-          use:clickOutside={{
+          {@attach clickOutside({
             onOutclick: () => (shouldShowAccountInfoPanel = false),
             onEscape: () => (shouldShowAccountInfoPanel = false),
-          }}
+          })}
         >
           <button
             type="button"

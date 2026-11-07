@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { AssetAction } from '$lib/constants';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
-  import AssetPredeletionConfirmModal from '$lib/modals/AssetPredeletionConfirmModal.svelte';
-  import { deleteAssets as deleteAssetsUtil, type OnUndoDelete } from '$lib/utils/actions';
-  import { handleError } from '$lib/utils/handle-error';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { AssetAction } from '#lib/constants.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import AssetDeleteConfirmModal from '#lib/modals/AssetDeleteConfirmModal.svelte';
+  import AssetPredeletionConfirmModal from '#lib/modals/AssetPredeletionConfirmModal.svelte';
+  import { deleteAssets as deleteAssetsUtil, type OnUndoDelete } from '#lib/utils/actions.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
   import { IconButton, modalManager, toastManager } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { OnAction, PreAction } from './action';
+  import type { OnAction, PreAction } from './action.ts';
 
   interface Props {
     asset: AssetResponseDto;

@@ -1,11 +1,16 @@
-import { toastManager } from '@immich/ui';
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { handleError } from '#lib/utils/handle-error.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
+import { modalManager, toastManager } from '@immich/ui';
 import {
-  createQuery,
-  hashKey,
   MutationCache,
-  mutationOptions,
   MutationObserver,
   QueryClient,
+  createQuery,
+  hashKey,
+  mutationOptions,
   type CreateMutationOptions,
   type DefaultError,
   type DefinedCreateQueryResult,
@@ -16,11 +21,6 @@ import {
 } from '@tanstack/svelte-query';
 import { noop } from 'lodash-es';
 import type { Translations } from 'svelte-i18n';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { getPublicConfigQuery } from '$lib/queries/config-public.query';
-import { getServerConfigQuery } from '$lib/queries/server.query';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 
 type ToastMeta =
   true | Translations | { color: 'primary' | 'success' | 'info' | 'warning' | 'danger'; description: Translations };
@@ -130,14 +130,27 @@ export const createPreloadedQuery = <TQueryFnData, TError, TData, TQueryKey exte
     () => queryClient,
   );
 
-type MutationArgs<TData, TError, TVariables, TOnMutateResult> = TVariables extends void
-  ? [variables?: TVariables, mutateOptions?: MutateOptions<TData, TError, TVariables, TOnMutateResult>]
-  : [variables: TVariables, mutateOptions?: MutateOptions<TData, TError, TVariables, TOnMutateResult>];
+export type ConfirmOptions = Parameters<typeof modalManager.showDialog>[0];
 
-export const executeMutation = <TData, TError, TVariables, TOnMutateResult>(
+type ExecuteMutationOptions<TData, TError, TVariables, TOnMutateResult> = MutateOptions<
+  TData,
+  TError,
+  TVariables,
+  TOnMutateResult
+> & { confirm?: ConfirmOptions | false };
+
+type MutationArgs<TData, TError, TVariables, TOnMutateResult> = TVariables extends void
+  ? [variables?: TVariables, mutateOptions?: ExecuteMutationOptions<TData, TError, TVariables, TOnMutateResult>]
+  : [variables: TVariables, mutateOptions?: ExecuteMutationOptions<TData, TError, TVariables, TOnMutateResult>];
+
+export const executeMutation = async <TData, TError, TVariables, TOnMutateResult>(
   options: () => CreateMutationOptions<TData, TError, TVariables, TOnMutateResult>,
-  ...[variables, mutateOptions]: MutationArgs<TData, TError, TVariables, TOnMutateResult>
+  ...[variables, { confirm, ...mutateOptions } = {}]: MutationArgs<TData, TError, TVariables, TOnMutateResult>
 ) => {
+  if (confirm && !(await modalManager.showDialog(confirm))) {
+    return;
+  }
+
   const observer = new MutationObserver(queryClient, options());
   const unsubscribe = observer.subscribe(noop);
   return observer

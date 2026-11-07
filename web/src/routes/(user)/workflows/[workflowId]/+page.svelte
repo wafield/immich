@@ -1,14 +1,12 @@
 <script lang="ts">
-  import { beforeNavigate, goto } from '$app/navigation';
-  import WorkflowAddStepModal from '$lib/modals/WorkflowAddStepModal.svelte';
-  import WorkflowEditStepModal from '$lib/modals/WorkflowEditStepModal.svelte';
-  import WorkflowTriggerPicker from '$lib/modals/WorkflowTriggerPicker.svelte';
-  import { createPreloadedQuery, executeMutation } from '$lib/queries/client';
-  import { getWorkflowQuery, updateWorkflowMutation } from '$lib/queries/workflow.query';
-  import { Route } from '$lib/route';
-  import { getWorkflowActions } from '$lib/services/workflow.service';
-  import { generateId } from '$lib/utils/generate-id';
-  import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
+  import WorkflowAddStepModal from '#lib/modals/WorkflowAddStepModal.svelte';
+  import WorkflowEditStepModal from '#lib/modals/WorkflowEditStepModal.svelte';
+  import WorkflowTriggerPicker from '#lib/modals/WorkflowTriggerPicker.svelte';
+  import { createPreloadedQuery, executeMutation } from '#lib/queries/client.ts';
+  import { getWorkflowQuery, updateWorkflowMutation } from '#lib/queries/workflow.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { getWorkflowActions } from '#lib/services/workflow.service.ts';
+  import { getTriggerDescription, getTriggerName } from '#lib/utils/workflow.ts';
   import type { WorkflowUpdateDto } from '@immich/sdk';
   import {
     ActionBar,
@@ -29,10 +27,10 @@
     Icon,
     IconButton,
     Input,
-    modalManager,
     Switch,
     Textarea,
     VStack,
+    modalManager,
   } from '@immich/ui';
   import {
     mdiArrowLeft,
@@ -47,6 +45,7 @@
   import { cloneDeep, isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
   import { flip } from 'svelte/animate';
+  import { beforeNavigate, goto } from '$app/navigation';
   import type { PageProps } from './$types';
   import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
   import WorkflowStepCard from './WorkflowStepCard.svelte';
@@ -62,6 +61,9 @@
 
   const query = createPreloadedQuery(() => getWorkflowQuery(params.workflowId));
   const workflow = $derived(query.data);
+
+  let stepCounter = 0;
+  const generateId = () => `step-${stepCounter++}`;
 
   let { id, enabled, name, description, trigger } = $state(query.data);
   let steps = $state(query.data.steps.map((step) => ({ ...step, id: generateId() })));
@@ -223,7 +225,9 @@
     }
   };
 
-  beforeNavigate(({ cancel, to, willUnload }) => {
+  beforeNavigate(({ cancel, to, willUnload, shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     if (!hasChanges || allowNavigation) {
       return;
     }

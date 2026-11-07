@@ -1,12 +1,12 @@
+import PasskeyUpdateModal from '#lib/modals/PasskeyUpdateModal.svelte';
+import { executeMutation } from '#lib/queries/client.ts';
+import { createPasskeyMutation, deletePasskeyMutation } from '#lib/queries/passkey.query.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { type PasskeyResponseDto } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiPencilOutline, mdiPlus, mdiTrashCanOutline } from '@mdi/js';
 import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
 import type { MessageFormatter } from 'svelte-i18n';
-import PasskeyUpdateModal from '$lib/modals/PasskeyUpdateModal.svelte';
-import { executeMutation } from '$lib/queries/client';
-import { createPasskeyMutation, deletePasskeyMutation } from '$lib/queries/passkey.query';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getPasskeysActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
@@ -41,12 +41,8 @@ export const getPasskeyActions = ($t: MessageFormatter, passkey: PasskeyResponse
 const handleDeletePasskey = async (passkey: PasskeyResponseDto) => {
   const $t = await getFormatter();
 
-  const confirmed = await modalManager.showDialog({ prompt: $t('delete_passkey_prompt') });
-  if (!confirmed) {
-    return;
-  }
-
   await executeMutation(deletePasskeyMutation, [{ id: passkey.id }], {
+    confirm: { prompt: $t('delete_passkey_prompt') },
     onSuccess: () =>
       toastManager.primary(
         $t('removed_passkey', { values: { name: passkey.name ?? $t('passkeys', { values: { count: 1 } }) } }),

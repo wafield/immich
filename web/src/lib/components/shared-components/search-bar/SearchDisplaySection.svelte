@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { searchManager } from '$lib/managers/search-manager.svelte';
-  import TriStateFilter from '$lib/components/shared-components/TriStateFilter.svelte';
-  import type { SearchDisplayFilters } from '$lib/types';
+  import TriStateFilter from '#lib/components/shared-components/TriStateFilter.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
+  import type { SearchDisplayFilters } from '#lib/types.ts';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 

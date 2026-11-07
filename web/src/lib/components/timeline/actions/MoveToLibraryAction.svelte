@@ -1,8 +1,8 @@
 <script lang="ts">
-  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import AssetMoveLibraryModal from '$lib/modals/AssetMoveLibraryModal.svelte';
-  import type { OnMove } from '$lib/utils/actions';
+  import MenuOption from '#lib/components/shared-components/context-menu/MenuOption.svelte';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import AssetMoveLibraryModal from '#lib/modals/AssetMoveLibraryModal.svelte';
+  import type { OnMove } from '#lib/utils/actions.ts';
   import { IconButton, modalManager } from '@immich/ui';
   import { mdiDatabaseArrowRight } from '@mdi/js';
   import { t } from 'svelte-i18n';

@@ -1,10 +1,10 @@
-import type { AlbumResponseDto } from '@immich/sdk';
 import {
-  type AlbumModalRow,
   AlbumModalRowConverter,
   AlbumModalRowType,
-} from '$lib/components/shared-components/album-selection/album-selection-utils';
-import { albumFactory } from '@test-data/factories/album-factory';
+  type AlbumModalRow,
+} from '#lib/components/shared-components/album-selection/album-selection-utils.ts';
+import { factory } from '#test/unit/factories.ts';
+import type { AlbumResponseDto } from '@immich/sdk';
 
 // Some helper functions to make tests below more readable
 const createNewAlbumRow = (selected: boolean) => ({
@@ -36,19 +36,14 @@ describe('Album Modal', () => {
 
   it('no matching albums shows message and new', () => {
     const converter = new AlbumModalRowConverter();
-    const modalRows = converter.toModalRows(
-      'matches_nothing',
-      [albumFactory.build({ albumName: 'Holidays' })],
-      -1,
-      [],
-    );
+    const modalRows = converter.toModalRows('matches_nothing', [factory.album({ albumName: 'Holidays' })], -1, []);
 
     expect(modalRows).toStrictEqual([createNewAlbumRow(false), createMessageRow('no_albums_with_name_yet')]);
   });
 
   it('displays single albums', () => {
     const converter = new AlbumModalRowConverter();
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });
+    const holidayAlbum = factory.album({ albumName: 'Holidays' });
     const modalRows = converter.toModalRows('', [holidayAlbum], -1, []);
 
     expect(modalRows).toStrictEqual([
@@ -60,10 +55,10 @@ describe('Album Modal', () => {
 
   it('displays multiple albums sorted by updatedAt', () => {
     const converter = new AlbumModalRowConverter();
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', updatedAt: '2023-01-01T00:00:00.000Z' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction', updatedAt: '2023-04-01T00:00:00.000Z' });
-    const birthdayAlbum = albumFactory.build({ albumName: 'Birthday', updatedAt: '2023-02-01T00:00:00.000Z' });
-    const christmasAlbum = albumFactory.build({ albumName: 'Christmas', updatedAt: '2023-03-01T00:00:00.000Z' });
+    const holidayAlbum = factory.album({ albumName: 'Holidays', updatedAt: '2023-01-01T00:00:00.000Z' });
+    const constructionAlbum = factory.album({ albumName: 'Construction', updatedAt: '2023-04-01T00:00:00.000Z' });
+    const birthdayAlbum = factory.album({ albumName: 'Birthday', updatedAt: '2023-02-01T00:00:00.000Z' });
+    const christmasAlbum = factory.album({ albumName: 'Christmas', updatedAt: '2023-03-01T00:00:00.000Z' });
     const modalRows = converter.toModalRows(
       '',
       [holidayAlbum, constructionAlbum, birthdayAlbum, christmasAlbum],
@@ -83,10 +78,10 @@ describe('Album Modal', () => {
 
   it('search changes messaging and removes non-matching albums', () => {
     const converter = new AlbumModalRowConverter();
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
-    const birthdayAlbum = albumFactory.build({ albumName: 'Birthday' });
-    const christmasAlbum = albumFactory.build({ albumName: 'Christmas' });
+    const holidayAlbum = factory.album({ albumName: 'Holidays' });
+    const constructionAlbum = factory.album({ albumName: 'Construction' });
+    const birthdayAlbum = factory.album({ albumName: 'Birthday' });
+    const christmasAlbum = factory.album({ albumName: 'Christmas' });
     const modalRows = converter.toModalRows(
       'Cons',
       [holidayAlbum, constructionAlbum, birthdayAlbum, christmasAlbum],
@@ -103,8 +98,8 @@ describe('Album Modal', () => {
 
   it('search matches on description as well as name', () => {
     const converter = new AlbumModalRowConverter();
-    const holidayAlbum = albumFactory.build({ albumName: 'Vacances 2019', description: 'Crete' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
+    const holidayAlbum = factory.album({ albumName: 'Vacances 2019', description: 'Crete' });
+    const constructionAlbum = factory.album({ albumName: 'Construction' });
     const modalRows = converter.toModalRows('Crete', [holidayAlbum, constructionAlbum], -1, []);
 
     expect(modalRows).toStrictEqual([
@@ -116,8 +111,8 @@ describe('Album Modal', () => {
 
   it('selection can select new album row', () => {
     const converter = new AlbumModalRowConverter();
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
+    const holidayAlbum = factory.album({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
+    const constructionAlbum = factory.album({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
     const modalRows = converter.toModalRows('', [holidayAlbum, constructionAlbum], 0, []);
 
     expect(modalRows).toStrictEqual([
@@ -130,8 +125,8 @@ describe('Album Modal', () => {
 
   it('selection can select recent row', () => {
     const converter = new AlbumModalRowConverter();
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
+    const holidayAlbum = factory.album({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
+    const constructionAlbum = factory.album({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
     const modalRows = converter.toModalRows('', [holidayAlbum, constructionAlbum], 1, []);
 
     expect(modalRows).toStrictEqual([
@@ -144,8 +139,8 @@ describe('Album Modal', () => {
 
   it('selection can select last row', () => {
     const converter = new AlbumModalRowConverter();
-    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
-    const constructionAlbum = albumFactory.build({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
+    const holidayAlbum = factory.album({ albumName: 'Holidays', updatedAt: '2023-02-01T00:00:00.000Z' });
+    const constructionAlbum = factory.album({ albumName: 'Construction', updatedAt: '2023-01-01T00:00:00.000Z' });
     const modalRows = converter.toModalRows('', [holidayAlbum, constructionAlbum], 2, []);
 
     expect(modalRows).toStrictEqual([

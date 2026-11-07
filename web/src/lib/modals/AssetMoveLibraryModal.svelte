@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-  import type { OnMove } from '$lib/utils/actions';
-  import { handleError } from '$lib/utils/handle-error';
-  import { loadUserLibraries } from '$lib/stores/library.store';
-  import { getAssetInfo, moveAssetsToLibrary, type AssetMoveResponseDto, type LibraryResponseDto } from '@immich/sdk';
+  import { assetMultiSelectManager } from '#lib/managers/asset-multi-select-manager.svelte.ts';
+  import { loadUserLibraries } from '#lib/stores/library.store.ts';
+  import type { OnMove } from '#lib/utils/actions.ts';
+  import { handleError } from '#lib/utils/handle-error.ts';
+  import { getAssetInfo, moveLibrary, type AssetMoveResponseDto, type LibraryResponseDto } from '@immich/sdk';
   import { FormModal, Icon, ListButton, LoadingSpinner, Text, toastManager } from '@immich/ui';
   import { mdiDatabaseArrowRight, mdiFolderNetworkOutline, mdiHarddisk } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -47,7 +47,7 @@
     try {
       isMoving = true;
 
-      const results: AssetMoveResponseDto[] = await moveAssetsToLibrary({
+      const results: AssetMoveResponseDto[] = await moveLibrary({
         moveAssetLibraryDto: {
           assetIds,
           targetLibraryId: selectedLibraryId,

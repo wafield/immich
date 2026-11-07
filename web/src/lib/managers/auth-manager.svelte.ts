@@ -1,21 +1,20 @@
+import { eventManager } from '#lib/managers/event-manager.svelte.ts';
+import { queryClient } from '#lib/queries/client.ts';
+import { getAdminConfigQuery } from '#lib/queries/config-admin.query.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { getAboutInfoQuery } from '#lib/queries/server-info.query.ts';
+import { Route } from '#lib/route.ts';
+import { isSharedLinkRoute } from '#lib/utils/navigation.ts';
 import {
-  getAboutInfo,
   getMyPreferences,
   getMyUser,
   logout,
   type UserAdminResponseDto,
   type UserPreferencesResponseDto,
 } from '@immich/sdk';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { queryClient } from '$lib/queries/client';
-import { getAdminConfigQuery } from '$lib/queries/config-admin.query';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { getAboutInfoQuery } from '$lib/queries/server.query';
-import { Route } from '$lib/route';
-import { isSharedLinkRoute } from '$lib/utils/navigation';
 
 class AuthManager {
   isPurchased = $state(false);
@@ -80,7 +79,7 @@ class AuthManager {
         this.isPurchased = true;
       } else {
         // check server status
-        const serverInfo = await getAboutInfo().catch(() => {});
+        const serverInfo = await queryClient.query(getAboutInfoQuery()).catch(() => {});
         if (serverInfo?.licensed) {
           this.isPurchased = true;
         }

@@ -1,11 +1,11 @@
 import { DateTime } from 'luxon';
-import { formatUtcOffset } from '$lib/utils/date-time';
+import { formatUtcOffset } from '#lib/utils/date-time.ts';
 import {
   fromISODateTime,
   fromISODateTimeUTC,
   fromTimelinePlainDateTime,
   type TimelineDateTime,
-} from '$lib/utils/timeline-util';
+} from '#lib/utils/timeline-util.ts';
 
 const toLuxonDateTime = (dateTime: TimelineDateTime | string, timeZone?: string | null): DateTime => {
   if (typeof dateTime === 'string') {

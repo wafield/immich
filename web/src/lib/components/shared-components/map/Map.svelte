@@ -11,14 +11,15 @@
 </script>
 
 <script lang="ts">
-  import { afterNavigate } from '$app/navigation';
-  import OnEvents from '$lib/components/OnEvents.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import MapSettingsModal from '$lib/modals/MapSettingsModal.svelte';
-  import { mapSettings } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, handlePromiseError, isValidLatLng, isValidMapHash } from '$lib/utils';
+  import OnEvents from '#lib/components/OnEvents.svelte';
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import MapSettingsModal from '#lib/modals/MapSettingsModal.svelte';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getPublicConfigQuery } from '#lib/queries/config-public.query.ts';
+  import { mapSettings } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, handlePromiseError, isValidLatLng, isValidMapHash } from '#lib/utils.ts';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
-  import { Alert, Container, Icon, modalManager, Text, Theme, themeManager } from '@immich/ui';
+  import { Alert, Container, Icon, Text, Theme, modalManager, themeManager } from '@immich/ui';
   import {
     mdiCog,
     mdiCrosshairsGps,
@@ -55,12 +56,11 @@
     Popup,
     ScaleControl,
   } from 'svelte-maplibre';
+  import { afterNavigate } from '$app/navigation';
   import type { SelectionBBox } from './types';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getServerConfigQuery } from '$lib/queries/server.query';
 
-  const query = createPreloadedQuery(getServerConfigQuery);
-  const serverConfig = $derived(query.data);
+  const query = createPreloadedQuery(getPublicConfigQuery);
+  const publicConfig = $derived(query.data);
 
   export interface HoverCoordinate {
     latitude?: number | null;
@@ -240,9 +240,7 @@
   });
 
   let isDarkStyle = $state(($mapSettings.allowDarkMode ? themeManager.value : Theme.Light) === Theme.Dark);
-  const styleUrl = $derived(
-    isDarkStyle ? (serverConfig?.mapDarkStyleUrl ?? '') : (serverConfig?.mapLightStyleUrl ?? ''),
-  );
+  const styleUrl = $derived(isDarkStyle ? publicConfig.map.darkStyle : publicConfig.map.lightStyle);
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (!map) {
@@ -398,7 +396,9 @@
     }
   };
 
-  afterNavigate(() => {
+  afterNavigate(({ shallow, type }) => {
+    if (shallow && type === 'goto') return;
+
     if (!map) {
       return;
     }

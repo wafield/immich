@@ -1,15 +1,15 @@
+import QrCodeModal from '#lib/modals/QrCodeModal.svelte';
+import { executeMutation, readPreloadedQuery } from '#lib/queries/client.ts';
+import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+import { removeSharedLinkMutation } from '#lib/queries/shared-link.query.ts';
+import { Route } from '#lib/route.ts';
+import { copyToClipboard } from '#lib/utils.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { type SharedLinkResponseDto } from '@immich/sdk';
 import { modalManager, type ActionItem } from '@immich/ui';
 import { mdiContentCopy, mdiLink, mdiPencilOutline, mdiQrcode, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
-import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
-import { executeMutation, readPreloadedQuery } from '$lib/queries/client';
-import { getUserConfigQuery } from '$lib/queries/config-user.query';
-import { removeSharedLinkMutation } from '$lib/queries/shared-link.query';
-import { Route } from '$lib/route';
-import { copyToClipboard } from '$lib/utils';
-import { getFormatter } from '$lib/utils/i18n';
 
 export const getSharedLinksActions = ($t: MessageFormatter) => {
   const ViewAll: ActionItem = {
@@ -62,14 +62,7 @@ export const showSharedLinkQrCode = async (sharedLink: SharedLinkResponseDto) =>
 
 const handleDeleteSharedLink = async (sharedLink: SharedLinkResponseDto) => {
   const $t = await getFormatter();
-  const success = await modalManager.showDialog({
-    title: $t('delete_shared_link'),
-    prompt: $t('confirm_delete_shared_link'),
-    confirmText: $t('delete'),
+  await executeMutation(removeSharedLinkMutation, [{ id: sharedLink.id }], {
+    confirm: { title: $t('delete_shared_link'), prompt: $t('confirm_delete_shared_link'), confirmText: $t('delete') },
   });
-  if (!success) {
-    return;
-  }
-
-  await executeMutation(removeSharedLinkMutation, [{ id: sharedLink.id }]);
 };

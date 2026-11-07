@@ -30,6 +30,7 @@
 <div
   class="inset-e-0 me-1 w-fit max-w-full md:me-18 {placement === 'bottom' ? 'fixed bottom-4' : 'absolute top-4'}"
   id="control-bar"
+  data-testid="control-bar"
 >
   <ControlBar closeIcon={backIcon} {onClose} shape="round" class={className}>
     {#if title || leading}

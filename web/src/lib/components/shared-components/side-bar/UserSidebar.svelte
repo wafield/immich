@@ -1,28 +1,30 @@
 <script lang="ts">
-  import BottomInfo from '$lib/components/shared-components/side-bar/BottomInfo.svelte';
-  import RecentAlbums from '$lib/components/shared-components/side-bar/RecentAlbums.svelte';
-  import Sidebar from '$lib/components/sidebar/Sidebar.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Route } from '$lib/route';
-  import { AssetInfoDisplay } from '$lib/constants';
+  import BottomInfo from '#lib/components/shared-components/side-bar/BottomInfo.svelte';
+  import RecentAlbums from '#lib/components/shared-components/side-bar/RecentAlbums.svelte';
+  import Sidebar from '#lib/components/sidebar/Sidebar.svelte';
+  import { AssetInfoDisplay } from '#lib/constants.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import { featureFlagsManager } from '#lib/managers/feature-flags-manager.svelte.ts';
+  import { createPreloadedQuery } from '#lib/queries/client.ts';
+  import { getUserConfigQuery } from '#lib/queries/config-user.query.ts';
+  import { Route } from '#lib/route.ts';
+  import { loadUserLibraries, userLibraries } from '#lib/stores/library.store.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
   import {
-    recentAlbumsDropdown,
+    assetInfoDisplay,
     hideScreenshots,
+    highlightAlbumAssets,
+    highlightMissingTimezone,
+    notInAnyAlbum,
+    recentAlbumsDropdown,
+    RowSize,
+    rowSize,
     selectedLibraries,
     showLibraryIndicator,
-    highlightAlbumAssets,
-    notInAnyAlbum,
-    highlightMissingTimezone,
-    rowSize,
-    RowSize,
-    assetInfoDisplay,
-  } from '$lib/stores/preferences.store';
-  import { sidebarStore } from '$lib/stores/sidebar.svelte';
-  import { loadUserLibraries, userLibraries } from '$lib/stores/library.store';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { NavbarGroup, NavbarItem, Checkbox, Label, Button, Select } from '@immich/ui';
+  } from '#lib/stores/preferences.store.ts';
+  import { sidebarStore } from '#lib/stores/sidebar.svelte.ts';
   import { type LibraryResponseDto } from '@immich/sdk';
-  import { onMount } from 'svelte';
+  import { Button, Checkbox, Label, NavbarGroup, NavbarItem, Select } from '@immich/ui';
   import {
     mdiAccount,
     mdiAccountMultiple,
@@ -55,11 +57,9 @@
     mdiTrashCanOutline,
     mdiUploadOutline,
   } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { createPreloadedQuery } from '$lib/queries/client';
-  import { getUserConfigQuery } from '$lib/queries/config-user.query';
 
   const query = createPreloadedQuery(getUserConfigQuery);
   const config = $derived(query.data);

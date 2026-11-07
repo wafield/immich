@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clickOutside } from '$lib/actions/click-outside';
+  import { clickOutside } from '#lib/actions/click-outside.ts';
   import { Button, Icon } from '@immich/ui';
   import { mdiCalendar, mdiChevronDown } from '@mdi/js';
   import { fly } from 'svelte/transition';
@@ -52,7 +52,7 @@
 <div
   bind:this={buttonContainer}
   class="relative inline-block"
-  use:clickOutside={{ onOutclick: () => (isOpen = false), onEscape: () => (isOpen = false) }}
+  {@attach clickOutside({ onOutclick: () => (isOpen = false), onEscape: () => (isOpen = false) })}
 >
   <Button
     variant="ghost"

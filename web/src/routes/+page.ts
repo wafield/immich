@@ -1,10 +1,10 @@
+import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+import { readPreloadedQuery } from '#lib/queries/client.ts';
+import { getServerConfigQuery } from '#lib/queries/server-info.query.ts';
+import { Route } from '#lib/route.ts';
+import { init } from '#lib/utils/client.ts';
+import { getFormatter } from '#lib/utils/i18n.ts';
 import { redirect } from '@sveltejs/kit';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { readPreloadedQuery } from '$lib/queries/client';
-import { getServerConfigQuery } from '$lib/queries/server.query';
-import { Route } from '$lib/route';
-import { getFormatter } from '$lib/utils/i18n';
-import { init } from '$lib/utils/server';
 import type { PageLoad } from './$types';
 
 export const ssr = false;
@@ -41,7 +41,6 @@ export const load = (async ({ fetch }) => {
   return {
     meta: {
       title: $t('welcome') + ' 🎉',
-      description: $t('immich_web_interface'),
     },
   };
 }) satisfies PageLoad;

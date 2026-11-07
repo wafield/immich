@@ -1,7 +1,6 @@
-import '@testing-library/jest-dom';
-import { fireEvent, screen, waitFor } from '@testing-library/svelte';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { renderWithTooltips } from '$tests/helpers';
+import { render } from 'vitest-browser-svelte';
+import { userEvent } from 'vitest/browser';
 import JumpToMenu from './JumpToMenu.svelte';
 
 describe('JumpToMenu', () => {
@@ -11,8 +10,8 @@ describe('JumpToMenu', () => {
     vi.clearAllMocks();
   });
 
-  it('renders Jump to... button', () => {
-    renderWithTooltips(JumpToMenu, {
+  it('renders Jump to... button', async () => {
+    const screen = await render(JumpToMenu, {
       options: [
         { date: '2026-10-04', label: '2026-10-04 - Day in Paris' },
         { date: '2026-10-03', label: '2026-10-03' },
@@ -21,22 +20,22 @@ describe('JumpToMenu', () => {
     });
 
     const button = screen.getByRole('button', { name: /jump to\.\.\./i });
-    expect(button).toBeDefined();
-    expect(button.hasAttribute('disabled')).toBe(false);
+    await expect.element(button).toBeInTheDocument();
+    await expect.element(button).not.toBeDisabled();
   });
 
-  it('is disabled when options array is empty', () => {
-    renderWithTooltips(JumpToMenu, {
+  it('is disabled when options array is empty', async () => {
+    const screen = await render(JumpToMenu, {
       options: [],
       onSelect,
     });
 
     const button = screen.getByRole('button', { name: /jump to\.\.\./i });
-    expect(button.hasAttribute('disabled')).toBe(true);
+    await expect.element(button).toBeDisabled();
   });
 
   it('opens menu with options when clicked', async () => {
-    renderWithTooltips(JumpToMenu, {
+    const screen = await render(JumpToMenu, {
       options: [
         { date: '2026-10-04', label: '2026-10-04 - Day in Paris' },
         { date: '2026-10-03', label: '2026-10-03' },
@@ -45,14 +44,14 @@ describe('JumpToMenu', () => {
     });
 
     const button = screen.getByRole('button', { name: /jump to\.\.\./i });
-    await fireEvent.click(button);
+    await userEvent.click(button);
 
-    expect(screen.getByText('2026-10-04 - Day in Paris')).toBeDefined();
-    expect(screen.getByText('2026-10-03')).toBeDefined();
+    await expect.element(screen.getByText('2026-10-04 - Day in Paris')).toBeInTheDocument();
+    await expect.element(screen.getByText('2026-10-03')).toBeInTheDocument();
   });
 
   it('calls onSelect with date and closes menu when option is clicked', async () => {
-    renderWithTooltips(JumpToMenu, {
+    const screen = await render(JumpToMenu, {
       options: [
         { date: '2026-10-04', label: '2026-10-04 - Day in Paris' },
         { date: '2026-10-03', label: '2026-10-03' },
@@ -61,14 +60,12 @@ describe('JumpToMenu', () => {
     });
 
     const button = screen.getByRole('button', { name: /jump to\.\.\./i });
-    await fireEvent.click(button);
+    await userEvent.click(button);
 
     const optionItem = screen.getByText('2026-10-04 - Day in Paris');
-    await fireEvent.click(optionItem);
+    await userEvent.click(optionItem);
 
     expect(onSelect).toHaveBeenCalledWith('2026-10-04');
-    await waitFor(() => {
-      expect(screen.queryByText('2026-10-04 - Day in Paris')).toBeNull();
-    });
+    await expect.element(screen.getByText('2026-10-04 - Day in Paris')).not.toBeInTheDocument();
   });
 });

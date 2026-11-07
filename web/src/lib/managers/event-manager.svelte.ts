@@ -1,25 +1,20 @@
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { BaseEventManager } from '#lib/utils/base-event-manager.svelte.ts';
 import type {
+  AdminConfigDto,
   AlbumResponseDto,
   AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
   IntegrityReport,
   JobCreateDto,
-  LibraryResponseDto,
   LoginResponseDto,
   PasskeyResponseDto,
   PersonResponseDto,
-  QueueResponseDto,
   ReleaseEventV1,
   StackResponseDto,
-  AdminConfigDto,
-  TagResponseDto,
   UserAdminResponseDto,
-  WorkflowResponseDto,
 } from '@immich/sdk';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
-import type { TreeNode } from '$lib/utils/tree-utils';
 
 export type Events = {
   AppInit: [];
@@ -66,26 +61,14 @@ export type Events = {
   BackupDeleted: [{ filename: string }];
   BackupUpload: [{ progress: number; isComplete: boolean }];
 
-  QueueUpdate: [QueueResponseDto];
-
   StackCreate: [StackResponseDto];
   /** Unstacked, with assets to handle */
   StackDelete: [{ id: string; assets: AssetResponseDto[] }];
   /** Contains the new stack. If any assets are removed, AssetUpdate events are emitted for each. */
   StackUpdate: [StackResponseDto];
 
-  TagCreate: [TagResponseDto];
-  TagUpdate: [TagResponseDto];
-  TagDelete: [TreeNode];
-
   UserPinCodeReset: [];
 
-  UserAdminCreate: [UserAdminResponseDto];
-  UserAdminUpdate: [UserAdminResponseDto];
-  UserAdminRestore: [UserAdminResponseDto];
-  // soft deleted
-  UserAdminDelete: [UserAdminResponseDto];
-  // confirmed permanently deleted from server
   UserAdminDeleted: [{ id: string }];
 
   SessionLocked: [];
@@ -98,13 +81,6 @@ export type Events = {
 
   JobCreate: [{ dto: JobCreateDto }];
 
-  LibraryCreate: [LibraryResponseDto];
-  LibraryUpdate: [LibraryResponseDto];
-  LibraryDelete: [{ id: string }];
-
-  WorkflowCreate: [WorkflowResponseDto];
-  WorkflowUpdate: [WorkflowResponseDto];
-  WorkflowDelete: [WorkflowResponseDto];
   ReleaseEvent: [ReleaseEventV1];
 
   WebsocketConnect: [];

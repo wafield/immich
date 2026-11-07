@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { AssetInfoDisplay, AssetInfoBarHeight } from '$lib/constants';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import type { ViewerAsset } from '$lib/managers/timeline-manager/viewer-asset.svelte';
-  import type { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
-  import { uploadAssetsStore } from '$lib/stores/upload';
-  import type { CommonPosition } from '$lib/utils/layout-utils';
-  import { highlightAlbumAssets } from '$lib/stores/preferences.store';
+  import { AssetInfoBarHeight, AssetInfoDisplay } from '#lib/constants.ts';
+  import type { VirtualScrollManager } from '#lib/managers/VirtualScrollManager/VirtualScrollManager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import type { ViewerAsset } from '#lib/managers/timeline-manager/viewer-asset.svelte.ts';
+  import { highlightAlbumAssets } from '#lib/stores/preferences.store.ts';
+  import { uploadAssetsStore } from '#lib/stores/upload.ts';
+  import { formatDateTime, formatFullDateTime } from '#lib/utils/date-time-formatter.ts';
+  import type { CommonPosition } from '#lib/utils/layout-utils.ts';
   import { Icon } from '@immich/ui';
-  import { mdiCamera, mdiCalendar } from '@mdi/js';
+  import { mdiCalendar, mdiCamera } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { flip } from 'svelte/animate';
   import { scale } from 'svelte/transition';
-  import { formatDateTime, formatFullDateTime } from '$lib/utils/date-time-formatter';
 
   let { isUploading } = uploadAssetsStore;
 
@@ -49,8 +49,8 @@
 <!-- Image grid -->
 <div data-image-grid class="relative" style:height={height + 'px'} style:width={width + 'px'}>
   {#each viewerAssets as viewerAsset (viewerAsset.id)}
-    {@const position = viewerAsset.position!}
-    {@const asset = viewerAsset.asset!}
+    {const position = $derived(viewerAsset.position!)}
+    {const asset = $derived(viewerAsset.asset!)}
 
     <!-- note: don't remove data-asset-id - its used by web e2e tests -->
     <div

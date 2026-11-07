@@ -1,18 +1,18 @@
-@@ -23,7 +23,7 @@
+@@ -24,7 +24,7 @@
    /// Asset edit ID
    String id;
  
 -  AssetEditActionItemDtoParameters parameters;
 +  Map<String, dynamic> parameters;
  
-   @override
-   bool operator ==(Object other) => identical(this, other) || other is AssetEditActionItemResponseDto &&
-@@ -60,7 +60,7 @@
+   /// The last time the edit was updated
+   DateTime updatedAt;
+@@ -69,7 +69,7 @@
        return AssetEditActionItemResponseDto(
          action: AssetEditAction.fromJson(json[r'action'])!,
          id: mapValueOfType<String>(json, r'id')!,
 -        parameters: AssetEditActionItemDtoParameters.fromJson(json[r'parameters'])!,
 +        parameters: json[r'parameters'],
+         updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')!,
        );
      }
-     return null;

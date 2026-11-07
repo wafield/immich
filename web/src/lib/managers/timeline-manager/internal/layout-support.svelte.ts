@@ -1,7 +1,7 @@
-import { AssetInfoBarHeight, AssetInfoDisplay } from '$lib/constants';
-import { TimelineManager } from '../timeline-manager.svelte';
-import type { TimelineMonth } from '../timeline-month.svelte';
-import type { UpdateGeometryOptions } from '../types';
+import { AssetInfoBarHeight, AssetInfoDisplay } from '#lib/constants.ts';
+import { TimelineManager } from '../timeline-manager.svelte.ts';
+import type { TimelineMonth } from '../timeline-month.svelte.ts';
+import type { UpdateGeometryOptions } from '../types.ts';
 
 export function updateGeometry(timelineManager: TimelineManager, month: TimelineMonth, options: UpdateGeometryOptions) {
   const { invalidateHeight, noDefer = false } = options;

@@ -1,23 +1,22 @@
 <script lang="ts">
-  import { lang, locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl } from '$lib/utils';
-  import { getAltText } from '$lib/utils/thumbnail-util';
-  import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { getLibrary, AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
+  import { getAlbumsByAssetQuery } from '#lib/queries/album.query.ts';
+  import { lang, locale } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl } from '#lib/utils.ts';
+  import { formatISODateToLocale, getAllMetadataItems, type DifferingMetadataFields } from '#lib/utils/duplicate-utils.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
+  import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
+  import { AssetMediaSize, getLibrary, type AssetResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {
     mdiBookmarkOutline,
+    mdiClockOutline,
+    mdiDatabase,
     mdiHeart,
     mdiImageMultipleOutline,
     mdiMagnifyPlus,
-    mdiDatabase,
-    mdiClockOutline,
-    mdiCalendar,
   } from '@mdi/js';
-  import { getAlbumsByAssetQuery } from '$lib/queries/album.query';
   import { createQuery } from '@tanstack/svelte-query';
   import { t } from 'svelte-i18n';
-  import { getAllMetadataItems, formatISODateToLocale, type DifferingMetadataFields } from '$lib/utils/duplicate-utils';
   import InfoRow from './InfoRow.svelte';
 
   interface Props {

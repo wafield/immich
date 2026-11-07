@@ -1,5 +1,5 @@
-import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-import { PersistedLocalStorage } from '$lib/utils/persisted';
+import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+import { PersistedLocalStorage } from '#lib/utils/persisted.ts';
 
 /**
  * Whether sidebar should be collapsed (showing a column of icon buttons only, instead of hiding the sidebar).
@@ -12,6 +12,14 @@ class SidebarStore {
    */
   isVisible = $derived.by(() => mediaQueryManager.isFullSidebar);
 
+  get isOpen() {
+    return this.isVisible;
+  }
+
+  set isOpen(value: boolean) {
+    this.isVisible = value;
+  }
+
   get isCollapsed() {
     return isSidebarCollapsed.current;
   }
@@ -20,9 +28,7 @@ class SidebarStore {
     isSidebarCollapsed.current = value;
   }
 
-  /**
-   * Reset the sidebar visibility to the default, based on the current screen width.
-   */
+  /** Reset the sidebar visibility to the default, based on the current screen width. */
   reset() {
     this.isVisible = mediaQueryManager.isFullSidebar;
   }

@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom';
-import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { render } from 'vitest-browser-svelte';
+import { userEvent } from 'vitest/browser';
 import AlbumDayDescriptionModal from './AlbumDayDescriptionModal.svelte';
 
 describe('AlbumDayDescriptionModal', () => {
@@ -10,21 +10,21 @@ describe('AlbumDayDescriptionModal', () => {
     vi.clearAllMocks();
   });
 
-  it('renders initial description and dateTitle', () => {
-    render(AlbumDayDescriptionModal, {
+  it('renders initial description and dateTitle', async () => {
+    const screen = await render(AlbumDayDescriptionModal, {
       date: '2026-10-04',
       dateTitle: 'Sunday, Oct 4, 2026',
       initialDescription: 'Day 1 in Paris',
       onClose,
     });
 
-    expect(screen.getByText('Sunday, Oct 4, 2026')).toBeDefined();
-    const textarea = screen.getByRole('textbox') as HTMLTextAreaElement;
+    await expect.element(screen.getByText('Sunday, Oct 4, 2026')).toBeInTheDocument();
+    const textarea = screen.getByRole('textbox').element() as HTMLTextAreaElement;
     expect(textarea.value).toBe('Day 1 in Paris');
   });
 
   it('submits updated description', async () => {
-    render(AlbumDayDescriptionModal, {
+    const screen = await render(AlbumDayDescriptionModal, {
       date: '2026-10-04',
       dateTitle: 'Sunday, Oct 4, 2026',
       initialDescription: 'Day 1 in Paris',
@@ -32,16 +32,16 @@ describe('AlbumDayDescriptionModal', () => {
     });
 
     const textarea = screen.getByRole('textbox');
-    await fireEvent.input(textarea, { target: { value: 'Updated description' } });
+    await userEvent.fill(textarea, 'Updated description');
 
     const submitBtn = screen.getByRole('button', { name: /save|submit|confirm/i });
-    await fireEvent.click(submitBtn);
+    await userEvent.click(submitBtn);
 
     expect(onClose).toHaveBeenCalledWith('Updated description');
   });
 
   it('submits empty string when cleared', async () => {
-    render(AlbumDayDescriptionModal, {
+    const screen = await render(AlbumDayDescriptionModal, {
       date: '2026-10-04',
       dateTitle: 'Sunday, Oct 4, 2026',
       initialDescription: 'Old description',
@@ -49,10 +49,10 @@ describe('AlbumDayDescriptionModal', () => {
     });
 
     const textarea = screen.getByRole('textbox');
-    await fireEvent.input(textarea, { target: { value: '' } });
+    await userEvent.fill(textarea, '');
 
     const submitBtn = screen.getByRole('button', { name: /save|submit|confirm/i });
-    await fireEvent.click(submitBtn);
+    await userEvent.click(submitBtn);
 
     expect(onClose).toHaveBeenCalledWith('');
   });

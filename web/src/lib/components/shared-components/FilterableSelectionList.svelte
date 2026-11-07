@@ -55,9 +55,8 @@
 </script>
 
 <script lang="ts">
-  import { shortcuts } from '$lib/actions/shortcut';
-  import { generateId } from '$lib/utils/generate-id';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { shortcuts } from '#lib/actions/shortcut.ts';
+  import { normalizeSearchString } from '#lib/utils/string-utils.ts';
   import { Badge, Checkbox, Icon, IconButton, Label } from '@immich/ui';
   import { mdiCheck, mdiClose, mdiMagnify } from '@mdi/js';
   import { tick } from 'svelte';
@@ -96,7 +95,7 @@
     heightClass = 'h-60',
   }: Props = $props();
 
-  const id: string = generateId();
+  const id = $props.id();
   let searchQuery = $state('');
   let selectedIndex: number | undefined = $state();
   let optionRefs: HTMLElement[] = $state([]);
@@ -201,7 +200,7 @@
       role="searchbox"
       type="text"
       bind:value={searchQuery}
-      use:forceFocusInput
+      {@attach forceFocusInput}
       use:shortcuts={[
         {
           shortcut: { key: 'ArrowUp' },

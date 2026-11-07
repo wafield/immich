@@ -1,5 +1,5 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { isValidLatLng } from '$lib/utils';
+import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { isValidLatLng } from '#lib/utils.ts';
 import type { AssetResponseDto } from '@immich/sdk';
 
 export interface GeoCoordinate {

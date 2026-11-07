@@ -1,3 +1,5 @@
+import { asMutation, queryClient } from '#lib/queries/client.ts';
+import { loadUserLibraries } from '#lib/stores/library.store.ts';
 import {
   createLibrary,
   deleteLibrary,
@@ -8,7 +10,6 @@ import {
   type LibraryResponseDto,
 } from '@immich/sdk';
 import { queryOptions } from '@tanstack/svelte-query';
-import { asMutation, queryClient } from '$lib/queries/client';
 
 const findOrFail = (libraries: LibraryResponseDto[], id: string) => {
   const library = libraries.find((library) => library.id === id);
@@ -39,13 +40,17 @@ export const getLibraryStatisticsQuery = (id: string) =>
 
 export const createLibraryMutation = () =>
   asMutation(createLibrary, {
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: getAllLibrariesQuery().queryKey, exact: true }),
+    onSuccess: async () => {
+      void loadUserLibraries(true);
+      await queryClient.invalidateQueries({ queryKey: getAllLibrariesQuery().queryKey, exact: true });
+    },
     meta: { error: { toast: 'errors.unable_to_create_library' } },
   });
 
 export const updateLibraryMutation = () =>
   asMutation(updateLibrary, {
     onSuccess: async (library) => {
+      void loadUserLibraries(true);
       queryClient.setQueryData(getAllLibrariesQuery().queryKey, (libraries) =>
         libraries?.map((item) => (item.id === library.id ? library : item)),
       );
@@ -57,6 +62,7 @@ export const updateLibraryMutation = () =>
 export const deleteLibraryMutation = () =>
   asMutation(deleteLibrary, {
     onSuccess: (_, [{ id }]) => {
+      void loadUserLibraries(true);
       queryClient.setQueryData(getAllLibrariesQuery().queryKey, (libraries) =>
         libraries?.filter((library) => library.id !== id),
       );

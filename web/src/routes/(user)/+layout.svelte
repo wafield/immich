@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
+  import type { Snippet } from 'svelte';
   import { page } from '$app/state';
   import UploadCover from './DragAndDropUploadOverlay.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import type { Snippet } from 'svelte';
+
   interface Props {
     children?: Snippet;
   }
@@ -12,7 +13,7 @@
   // $page.data.asset is loaded by route specific +page.ts loaders if that
   // route contains the assetId path.
   $effect.pre(() => {
-    if (page.params.assetId && page.data.asset) {
+    if (page.data.asset) {
       assetViewerManager.setAsset(page.data.asset);
     } else {
       assetViewerManager.showAssetViewer(false);

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.3.0-rc.0
+ * 3.4.0-rc.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -63,6 +63,8 @@ export type AdminConfigDatabaseBackupDto = {
     keepLastAmount: number;
 };
 export type AdminConfigBackupsDto = {
+    /** Whether the backups feature is enabled */
+    beta?: boolean;
     database: AdminConfigDatabaseBackupDto;
 };
 export type AdminConfigFFmpegRealtimeDto = {
@@ -478,6 +480,10 @@ export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
     /** Restore backup filename */
     restoreBackupFilename?: string;
+    /** Rollback repository ID */
+    rollbackRepositoryId?: string;
+    /** Rollback snapshot ID */
+    rollbackSnapshotId?: string;
 };
 export type MaintenanceDetectInstallStorageFolderDto = {
     /** Number of files in the folder */
@@ -503,6 +509,8 @@ export type MaintenanceStatusResponseDto = {
     action: MaintenanceAction;
     active: boolean;
     error?: string;
+    /** FUTO Backups job ID */
+    futoBackupsJobId?: string;
     progress?: number;
     task?: string;
 };
@@ -1856,6 +1864,13 @@ export type UserConfigMapDto = {
     /** Light map style URL */
     lightStyle: string;
 };
+export type UserConfigSmtpDto = {
+    /** Whether SMTP email notifications are enabled */
+    enabled: boolean;
+};
+export type UserConfigNotificationsDto = {
+    smtp: UserConfigSmtpDto;
+};
 export type UserConfigOAuthDto = {
     /** Account management URL */
     accountManagementUrl?: string;
@@ -1886,10 +1901,6 @@ export type UserConfigServerDto = {
     /** Public users */
     publicUsers: boolean;
 };
-export type UserConfigThemeDto = {
-    /** Custom CSS for theming */
-    customCss: string;
-};
 export type UserConfigTrashDto = {
     /** Days */
     days: number;
@@ -1905,12 +1916,12 @@ export type UserConfigDto = {
     image: UserConfigImageDto;
     machineLearning: UserConfigMachineLearningDto;
     map: UserConfigMapDto;
+    notifications: UserConfigNotificationsDto;
     oauth: UserConfigOAuthDto;
     passkey: UserConfigPasskeyDto;
     passwordLogin: UserConfigPasswordLoginDto;
     reverseGeocoding: UserConfigReverseGeocodingDto;
     server: UserConfigServerDto;
-    theme: UserConfigThemeDto;
     trash: UserConfigTrashDto;
     user: UserConfigUserDto;
 };
@@ -2573,10 +2584,6 @@ export type PublicConfigServerDto = {
     /** Login page message */
     loginPageMessage: string;
 };
-export type PublicConfigThemeDto = {
-    /** Custom CSS for theming */
-    customCss: string;
-};
 export type PublicConfigDto = {
     ffmpeg: PublicConfigFFmpegDto;
     map: PublicConfigMapDto;
@@ -2584,7 +2591,6 @@ export type PublicConfigDto = {
     passkey: PublicConfigPasskeyDto;
     passwordLogin: PublicConfigPasswordLoginDto;
     server: PublicConfigServerDto;
-    theme: PublicConfigThemeDto;
 };
 export type QueueResponseDto = {
     /** Whether the queue is paused */
@@ -2819,6 +2825,8 @@ export type MetadataSearchDto = {
     isOffline?: boolean | null;
     /** Filter by screenshot status */
     isScreenshot?: boolean | null;
+    /** Filter by stacked status */
+    isStacked?: boolean | null;
     /** Filter by trashed status */
     isTrashed?: boolean | null;
     /** Filter by lens model */
@@ -2948,6 +2956,8 @@ export type RandomSearchDto = {
     isOffline?: boolean | null;
     /** Filter by screenshot status */
     isScreenshot?: boolean | null;
+    /** Filter by stacked status */
+    isStacked?: boolean | null;
     /** Filter by trashed status */
     isTrashed?: boolean | null;
     /** Filter by lens model */
@@ -3222,6 +3232,8 @@ export type ServerConfigDto = {
     userDeleteDelay: number;
 };
 export type ServerFeaturesDto = {
+    /** Whether the backups feature is enabled */
+    backups: boolean;
     /** Whether config file is available */
     configFile: boolean;
     /** Whether duplicate detection is enabled */
@@ -3321,6 +3333,8 @@ export type ServerStorageResponseDto = {
     diskUseRaw: number;
 };
 export type ServerVersionResponseDto = {
+    /** Highest feature level supported by the server, which increments independently of the release version */
+    featureLevel: number;
     /** Major version number */
     major: number;
     /** Minor version number */
@@ -8897,6 +8911,7 @@ export enum Colorspace {
 }
 export enum ImageFormat {
     Jpeg = "jpeg",
+    Jxl = "jxl",
     Webp = "webp"
 }
 export enum LogLevel {
@@ -8924,7 +8939,8 @@ export enum MaintenanceAction {
     Start = "start",
     End = "end",
     SelectDatabaseRestore = "select_database_restore",
-    RestoreDatabase = "restore_database"
+    RestoreDatabase = "restore_database",
+    Rollback = "rollback"
 }
 export enum StorageFolder {
     EncodedVideo = "encoded-video",
@@ -9033,6 +9049,7 @@ export enum Permission {
     BackupDelete = "backup.delete",
     ClusterGroupRead = "clusterGroup.read",
     ClusterGroupLeave = "clusterGroup.leave",
+    ClusterGroupAdmin = "clusterGroup.admin",
     ClusterGroupRequestCreate = "clusterGroupRequest.create",
     ClusterGroupRequestRead = "clusterGroupRequest.read",
     ClusterGroupRequestDelete = "clusterGroupRequest.delete",
@@ -9285,6 +9302,7 @@ export enum WorkflowType {
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
     AssetMetadataExtraction = "AssetMetadataExtraction",
+    AssetOcrExtraction = "AssetOcrExtraction",
     AssetTagged = "AssetTagged"
 }
 export enum QueueJobStatus {
@@ -9509,10 +9527,12 @@ export enum ReleaseType {
     Prepatch = "prepatch",
     Prerelease = "prerelease"
 }
+export enum ServerFeatureLevel {
+    FeatureLevel = 1,
+    Passkeys = 2
+}
 export enum UserMetadataKey {
     Preferences = "preferences",
     License = "license",
     Onboarding = "onboarding"
 }
-export const moveAssetsToLibrary = moveLibrary;
-

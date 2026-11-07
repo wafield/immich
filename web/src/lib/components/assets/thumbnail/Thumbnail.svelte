@@ -1,20 +1,21 @@
 <script lang="ts">
-  import { ProjectionType } from '$lib/constants';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-  import { librariesMap } from '$lib/stores/library.store';
+  import Thumbhash from '#lib/components/Thumbhash.svelte';
+  import { ProjectionType } from '#lib/constants.ts';
+  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
+  import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+  import { librariesMap } from '#lib/stores/library.store.ts';
+  import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
   import {
     highlightMissingGps,
     highlightMissingTimezone,
     locale,
     playVideoThumbnailOnHover,
     showLibraryIndicator,
-  } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
-  import { moveFocus } from '$lib/utils/focus-util';
-  import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { getAltText } from '$lib/utils/thumbnail-util';
+  } from '#lib/stores/preferences.store.ts';
+  import { getAssetMediaUrl, getAssetPlaybackUrl } from '#lib/utils.ts';
+  import { moveFocus } from '#lib/utils/focus-util.ts';
+  import { currentUrlReplaceAssetId } from '#lib/utils/navigation.ts';
+  import { getAltText } from '#lib/utils/thumbnail-util.ts';
   import { AssetMediaSize, AssetVisibility, type UserResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {
@@ -38,9 +39,9 @@
   import { onMount } from 'svelte';
   import type { ClassValue } from 'svelte/elements';
   import { fade } from 'svelte/transition';
-  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import ImageThumbnail from './ImageThumbnail.svelte';
   import VideoThumbnail from './VideoThumbnail.svelte';
+
   interface Props {
     asset: TimelineAsset;
     groupIndex?: number;
@@ -179,36 +180,36 @@
   let startX: number = 0;
   let startY: number = 0;
 
-  function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
-    let didPress = false;
-    const start = (evt: PointerEvent) => {
-      startX = evt.clientX;
-      startY = evt.clientY;
-      didPress = false;
-      // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
-      timer = setTimeout(() => {
-        onLongPress();
-        element.addEventListener('contextmenu', preventContextMenu, { once: true });
-        disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
-        didPress = true;
-      }, 350);
-    };
-    const click = (e: MouseEvent) => {
-      if (!didPress) {
-        return;
-      }
-      e.stopPropagation();
-      e.preventDefault();
-    };
-    element.addEventListener('click', click);
-    element.addEventListener('pointerdown', start, { capture: true });
-    element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
-    return {
-      destroy: () => {
+  function longPress({ onLongPress }: { onLongPress: () => void }) {
+    return (element: HTMLElement) => {
+      let didPress = false;
+      const start = (evt: PointerEvent) => {
+        startX = evt.clientX;
+        startY = evt.clientY;
+        didPress = false;
+        // 350ms for longpress. For reference: iOS uses 500ms for default long press, or 200ms for fast long press.
+        timer = setTimeout(() => {
+          onLongPress();
+          element.addEventListener('contextmenu', preventContextMenu, { once: true });
+          disposeables.push(() => element.removeEventListener('contextmenu', preventContextMenu));
+          didPress = true;
+        }, 350);
+      };
+      const click = (e: MouseEvent) => {
+        if (!didPress) {
+          return;
+        }
+        e.stopPropagation();
+        e.preventDefault();
+      };
+      element.addEventListener('click', click);
+      element.addEventListener('pointerdown', start, { capture: true });
+      element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
+      return () => {
         element.removeEventListener('click', click);
         element.removeEventListener('pointerdown', start, true);
         element.removeEventListener('pointerup', clearLongPressTimer, true);
-      },
+      };
     };
   }
   function moveHandler(e: PointerEvent) {
@@ -250,7 +251,7 @@
   style:height="{height}px"
   onmouseenter={onMouseEnter}
   onmouseleave={onMouseLeave}
-  use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
+  {@attach longPress({ onLongPress: () => onSelect?.($state.snapshot(asset)) })}
   onkeydown={(evt) => {
     if (['Enter', ' ', 'Spacebar'].includes(evt.key)) {
       evt.preventDefault();
@@ -362,14 +363,14 @@
           ]}
         >
           {#if $showLibraryIndicator}
-            {@const targetLibrary = asset.libraryId ? $librariesMap.get(asset.libraryId) : null}
-            {@const libraryColor = asset.libraryId === null ? '#ffffff' : targetLibrary?.uiColor}
+            {const targetLibrary = $derived(asset.libraryId ? $librariesMap.get(asset.libraryId) : null)}
+            {const libraryColor = $derived(asset.libraryId === null ? '#ffffff' : targetLibrary?.uiColor)}
             {#if libraryColor}
               <span class="inline-block size-3 self-center rounded-full" style:background-color={libraryColor}></span>
             {/if}
           {/if}
           {#if !authManager.isSharedLink && asset.isFavorite}
-            <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
+            <Icon data-icon-favorite data-testid="favorite-icon" icon={mdiHeart} size="24" class="text-white" />
           {/if}
           {#if !authManager.isSharedLink && asset.isEdited}
             <Icon icon={mdiImageEditOutline} size="24" class="text-white" />
@@ -384,7 +385,13 @@
             <Icon data-icon-missing-gps icon={mdiMapMarkerOff} size="24" class="text-danger" />
           {/if}
           {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
-            <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
+            <Icon
+              data-icon-archive
+              data-testid="archive-icon"
+              icon={mdiArchiveArrowDownOutline}
+              size="24"
+              class="text-white"
+            />
           {/if}
         </div>
 
@@ -395,7 +402,6 @@
             </p>
           </div>
         {/if}
-
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
           <div class="absolute inset-e-0 top-0 z-2 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
@@ -415,6 +421,7 @@
         <!-- Stacked asset -->
         {#if asset.stack && showStackedIcon}
           <div
+            data-testid="stack-icon"
             class={[
               'absolute z-2 flex place-items-center gap-1 pe-2 pt-2 text-xs font-medium text-white',
               asset.isImage && !asset.livePhotoVideoId ? 'inset-e-0 top-0' : 'inset-e-1 top-7',
@@ -449,6 +456,7 @@
 
     {#if selectionCandidate}
       <div
+        data-testid="selection-candidate"
         class={['absolute top-0 z-2 size-full bg-immich-primary opacity-40', { 'rounded-xl': selected }]}
         in:fade={{ duration: 100 }}
         out:fade={{ duration: 100 }}
@@ -467,13 +475,13 @@
         {disabled}
       >
         {#if disabled}
-          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-zinc-800" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-zinc-800" />
         {:else if selected}
           <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-            <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-primary" />
+            <Icon icon={mdiCheckCircle} size="24" class="text-primary" />
           </div>
         {:else}
-          <Icon data-icon-select icon={mdiCheckCircle} size="24" class="text-white/80 group-hover/select:text-white" />
+          <Icon icon={mdiCheckCircle} size="24" class="text-white/80 group-hover/select:text-white" />
         {/if}
       </button>
     {/if}

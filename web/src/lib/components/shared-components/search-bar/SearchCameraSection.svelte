@@ -2,12 +2,12 @@
   import FilterableSelectionList, {
     asSelectedOption,
     asSuggestionOptions,
-  } from '$lib/components/shared-components/FilterableSelectionList.svelte';
-  import type { SearchCameraFilter, SearchDateFilter } from '$lib/types';
-  import { handlePromiseError } from '$lib/utils';
-  import { asLocalTimeISO } from '$lib/utils/date-time';
+  } from '#lib/components/shared-components/FilterableSelectionList.svelte';
+  import { searchManager } from '#lib/managers/search-manager.svelte.ts';
+  import type { SearchCameraFilter, SearchDateFilter } from '#lib/types.ts';
+  import { handlePromiseError } from '#lib/utils.ts';
+  import { asLocalTimeISO } from '#lib/utils/date-time.ts';
   import { SearchSuggestionType, getSearchSuggestions, type SuggestionResponseDto } from '@immich/sdk';
-  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { Text } from '@immich/ui';
   import type { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -94,9 +94,11 @@
   $effect(() => {
     handlePromiseError(updateMakes(currentLibraryId, startTime, endTime));
   });
+
   $effect(() => {
     handlePromiseError(updateModels(makeFilter, currentLibraryId, startTime, endTime));
   });
+
   $effect(() => {
     handlePromiseError(updateLensModels(makeFilter, modelFilter, currentLibraryId, startTime, endTime));
   });

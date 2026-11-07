@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
-import { RowSize, ROW_SIZE_LAYOUT_OPTIONS } from '$lib/stores/preferences.store';
+import { mediaQueryManager } from '#lib/stores/media-query-manager.svelte.ts';
+import { ROW_SIZE_LAYOUT_OPTIONS, RowSize } from '#lib/stores/preferences.store.ts';
 
 describe('preferences.store ROW_SIZE_LAYOUT_OPTIONS', () => {
   it('returns large layout options when viewport is large or above', () => {
