@@ -38,6 +38,7 @@
             <TableHeading class={libraryTableClasses.column1}>{$t('name')}</TableHeading>
             <TableHeading class={libraryTableClasses.column2}>{$t('owner')}</TableHeading>
             <TableHeading>{$t('shared')}</TableHeading>
+            <TableHeading>Upload Destination</TableHeading>
             <TableHeading class={libraryTableClasses.column3}>{$t('photos')}</TableHeading>
             <TableHeading class={libraryTableClasses.column4}>{$t('videos')}</TableHeading>
             <TableHeading class={libraryTableClasses.column5}>{$t('size')}</TableHeading>

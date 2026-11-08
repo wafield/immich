@@ -320,6 +320,7 @@ const library = (overrides: Partial<LibraryResponseDto> = {}): LibraryResponseDt
     updatedAt: now,
     refreshedAt: null,
     automatedDailyMove: false,
+    isUploadDestination: false,
     shared: false,
     uiColor: null,
     uploadPath: null,

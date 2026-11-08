@@ -52,7 +52,19 @@ export const updateLibraryMutation = () =>
     onSuccess: async (library) => {
       void loadUserLibraries(true);
       queryClient.setQueryData(getAllLibrariesQuery().queryKey, (libraries) =>
-        libraries?.map((item) => (item.id === library.id ? library : item)),
+        libraries?.map((item) => {
+          if (item.id === library.id) {
+            return library;
+          }
+          if (item.ownerId === library.ownerId) {
+            return {
+              ...item,
+              automatedDailyMove: library.automatedDailyMove ? false : item.automatedDailyMove,
+              isUploadDestination: library.isUploadDestination ? false : item.isUploadDestination,
+            };
+          }
+          return item;
+        }),
       );
       await queryClient.invalidateQueries({ queryKey: getLibraryStatisticsQuery(library.id).queryKey });
     },

@@ -17,6 +17,7 @@
     getLibraryUploadPathActions,
     handleUpdateLibraryAutomatedDailyMove,
     handleUpdateLibraryShared,
+    handleUpdateLibraryUploadDestination,
   } from '#lib/services/library.service.ts';
   import { getBytesWithUnit } from '#lib/utils/byte-units.ts';
   import { getAllLibraries } from '@immich/sdk';
@@ -36,6 +37,7 @@
     mdiCameraIris,
     mdiChartPie,
     mdiCheck,
+    mdiCloudUploadOutline,
     mdiFilterMinusOutline,
     mdiFolderOutline,
     mdiPaletteOutline,
@@ -70,6 +72,48 @@
   $effect(() => {
     shared = library.shared ?? false;
   });
+
+  let isUploadDestination = $state(library.isUploadDestination ?? false);
+
+  $effect(() => {
+    isUploadDestination = library.isUploadDestination ?? false;
+  });
+
+  const onSubmitUploadDestination = async () => {
+    if (isUploadDestination) {
+      if (!uploadPath || uploadPath.trim() === '') {
+        await modalManager.showDialog({
+          title: 'Upload Path Required',
+          prompt: 'An upload path must be configured and saved before enabling upload destination.',
+        });
+        isUploadDestination = library.isUploadDestination ?? false;
+        return;
+      }
+
+      try {
+        const allLibs = await getAllLibraries();
+        const otherLib = allLibs.find(
+          (l) => l.ownerId === library.ownerId && l.id !== library.id && l.isUploadDestination,
+        );
+
+        if (otherLib) {
+          const confirmed = await modalManager.showDialog({
+            title: 'Replace Upload Destination Library',
+            prompt: `Upload destination is already enabled for external library "${otherLib.name}". Enabling it for "${library.name}" will turn it off for "${otherLib.name}". Do you want to proceed?`,
+          });
+
+          if (!confirmed) {
+            isUploadDestination = library.isUploadDestination ?? false;
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check other libraries', err);
+      }
+    }
+
+    await handleUpdateLibraryUploadDestination(library, isUploadDestination);
+  };
 
   let automatedDailyMove = $state((library as any).automatedDailyMove ?? false);
 
@@ -200,6 +244,25 @@
             shape="round"
             leadingIcon={mdiCheck}
             onclick={() => handleUpdateLibraryShared(library, shared)}
+          >
+            {$t('confirm')}
+          </Button>
+        </div>
+      </AdminCard>
+
+      <AdminCard icon={mdiCloudUploadOutline} title="Upload Destination">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Indicate whether uploaded assets from this library's owner should be stored in this external library instead
+          of the default library. At most one external library per user can be set as the upload destination.
+        </p>
+        <div class="mt-4 flex items-center gap-3">
+          <Checkbox id="library-upload-destination-checkbox" bind:checked={isUploadDestination} />
+          <Label label="Upload Destination" for="library-upload-destination-checkbox" />
+          <Button
+            size="small"
+            shape="round"
+            leadingIcon={mdiCheck}
+            onclick={() => onSubmitUploadDestination()}
           >
             {$t('confirm')}
           </Button>

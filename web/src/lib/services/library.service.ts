@@ -184,6 +184,13 @@ export const handleUpdateLibraryAutomatedDailyMove = async (
   await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { automatedDailyMove } }]);
 };
 
+export const handleUpdateLibraryUploadDestination = async (
+  library: LibraryResponseDto,
+  isUploadDestination: boolean,
+) => {
+  await executeMutation(updateLibraryMutation, [{ id: library.id, updateLibraryDto: { isUploadDestination } }]);
+};
+
 const handleDeleteLibrary = async (library: LibraryResponseDto) => {
   const $t = await getFormatter();
 

@@ -58,6 +58,15 @@
       {/if}
     </div>
   </TableCell>
+  <TableCell>
+    <div class="flex items-center justify-center">
+      {#if library.isUploadDestination}
+        <Icon icon={mdiCheck} size="18" class="text-primary" />
+      {:else}
+        <Icon icon={mdiClose} size="18" class="text-gray-400" />
+      {/if}
+    </div>
+  </TableCell>
   {#if stats}
     {const [diskUsage, diskUsageUnit] = $derived(getBytesWithUnit(stats.usage, 0))}
     <TableCell class={libraryTableClasses.column3}>
