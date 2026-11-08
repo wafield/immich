@@ -15,7 +15,7 @@
   import { faceManager } from '#lib/stores/face.svelte.ts';
   import { locale } from '#lib/stores/preferences.store.ts';
   import { getAssetMediaUrl } from '#lib/utils.ts';
-  import { delay, getDimensions } from '#lib/utils/asset-utils.ts';
+  import { delay, getDimensions, isAssetOwner } from '#lib/utils/asset-utils.ts';
   import { getByteUnitString } from '#lib/utils/byte-units.ts';
   import { getCameraName } from '#lib/utils/camera-utils.ts';
   import { getParentPath } from '#lib/utils/tree-utils.ts';
@@ -63,7 +63,7 @@
 
   let { asset, currentAlbum = null }: Props = $props();
 
-  let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
+  let isOwner = $derived(isAssetOwner(asset));
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;

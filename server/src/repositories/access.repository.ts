@@ -193,9 +193,17 @@ class AssetAccess {
 
     return this.db
       .selectFrom('asset')
+      .leftJoin('library', (join) =>
+        join.onRef('library.id', '=', 'asset.libraryId').on('library.deletedAt', 'is', null),
+      )
       .select('asset.id')
       .where('asset.id', 'in', [...assetIds])
-      .where('asset.ownerId', '=', userId)
+      .where((eb) =>
+        eb.or([
+          eb('asset.ownerId', '=', userId),
+          eb('library.shared', '=', true),
+        ]),
+      )
       .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
       .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
@@ -341,8 +349,16 @@ class AssetFileAccess {
       .selectFrom('asset_file')
       .select('asset_file.id')
       .innerJoin('asset', 'asset.id', 'asset_file.assetId')
+      .leftJoin('library', (join) =>
+        join.onRef('library.id', '=', 'asset.libraryId').on('library.deletedAt', 'is', null),
+      )
       .$if(!hasElevatedPermission, (eb) => eb.where('asset.visibility', '!=', AssetVisibility.Locked))
-      .where('asset.ownerId', '=', userId)
+      .where((eb) =>
+        eb.or([
+          eb('asset.ownerId', '=', userId),
+          eb('library.shared', '=', true),
+        ]),
+      )
       .where('asset_file.id', 'in', [...fileIds])
       .execute()
       .then((files) => new Set(files.map(({ id }) => id)));
@@ -671,8 +687,16 @@ class PersonAccess {
       .selectFrom('asset_face')
       .select('asset_face.id')
       .leftJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.deletedAt', 'is', null))
+      .leftJoin('library', (join) =>
+        join.onRef('library.id', '=', 'asset.libraryId').on('library.deletedAt', 'is', null),
+      )
       .where('asset_face.id', 'in', [...assetFaceIds])
-      .where('asset.ownerId', '=', userId)
+      .where((eb) =>
+        eb.or([
+          eb('asset.ownerId', '=', userId),
+          eb('library.shared', '=', true),
+        ]),
+      )
       .execute()
       .then((faces) => new Set(faces.map((face) => face.id)));
   }

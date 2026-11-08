@@ -13,6 +13,7 @@
   import GeolocationUpdateConfirmModal from '#lib/modals/GeolocationUpdateConfirmModal.svelte';
   import { keyboardManager } from '#lib/stores/keyboard-manager.svelte.ts';
   import type { LatLng } from '#lib/types.ts';
+  import { isAssetOwner } from '#lib/utils/asset-utils.ts';
   import { setQueryValue } from '#lib/utils/navigation.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { AssetVisibility, getAssetInfo, updateAssets } from '@immich/sdk';
@@ -39,7 +40,7 @@
     withCoordinates: true,
   };
 
-  const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
+  const isOwnAsset = (asset: TimelineAsset) => isAssetOwner(asset);
 
   const handleUpdate = async () => {
     if (!point) {

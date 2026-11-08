@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { isUndefined, omitBy } from 'lodash-es';
 import { DateTime, Duration } from 'luxon';
-import { StorageCore } from 'src/cores/storage.core.js';
 import type { AssetFile } from 'src/database.js';
 import { OnJob } from 'src/decorators.js';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto.js';
@@ -32,7 +31,6 @@ import {
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
 import {
   AssetFileType,
-  AssetPathType,
   AssetStatus,
   AssetType,
   AssetVisibility,
@@ -43,7 +41,7 @@ import {
 } from 'src/enum.js';
 import { BaseService } from 'src/services/base.service.js';
 import { StorageTemplateService } from 'src/services/storage-template.service.js';
-import type { JobItem, JobOf, StorageAsset } from 'src/types.js';
+import type { JobItem, JobOf } from 'src/types.js';
 import { requireElevatedPermission } from 'src/utils/access.js';
 import {
   getAssetFiles,
@@ -53,7 +51,6 @@ import {
   onBeforeLink,
   onBeforeUnlink,
 } from 'src/utils/asset.util.js';
-import { getLivePhotoMotionFilename } from 'src/utils/file.js';
 
 import { updateLockedColumns } from 'src/utils/database.js';
 import { extractTimeZone } from 'src/utils/date.js';
@@ -127,6 +124,9 @@ export class AssetService extends BaseService {
 
     if (!wroteMetadata) {
       this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
+      if (asset.ownerId !== auth.user.id) {
+        this.websocketRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
+      }
     }
 
     return this.get(auth, id) as Promise<AssetResponseDto>;
@@ -191,6 +191,9 @@ export class AssetService extends BaseService {
       const assets = await this.assetRepository.getByIds(ids);
       for (const asset of assets) {
         this.websocketRepository.clientSend('on_asset_update', auth.user.id, mapAsset(asset, { auth }));
+        if (asset.ownerId !== auth.user.id) {
+          this.websocketRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
+        }
       }
     }
   }
@@ -680,12 +683,12 @@ export class AssetService extends BaseService {
         });
 
         results.push(result);
-      } catch (err: any) {
-        this.logger.error(`Failed to move asset ${assetId} to library: ${err.message}`, err.stack);
+      } catch (error: any) {
+        this.logger.error(`Failed to move asset ${assetId} to library: ${error.message}`, error.stack);
         results.push({
           id: assetId,
           success: false,
-          error: err.message || 'Failed to move asset to target library',
+          error: error.message || 'Failed to move asset to target library',
         });
       }
     }

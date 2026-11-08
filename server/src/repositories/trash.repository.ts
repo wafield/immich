@@ -15,7 +15,16 @@ export class TrashRepository {
   async restore(userId: string): Promise<number> {
     const { numUpdatedRows } = await this.db
       .updateTable('asset')
-      .where('ownerId', '=', userId)
+      .where((eb) =>
+        eb.or([
+          eb('ownerId', '=', userId),
+          eb(
+            'libraryId',
+            'in',
+            eb.selectFrom('library').select('id').where('shared', '=', true).where('deletedAt', 'is', null),
+          ),
+        ]),
+      )
       .where('status', '=', AssetStatus.Trashed)
       .set({ status: AssetStatus.Active, deletedAt: null })
       .executeTakeFirst();
@@ -27,7 +36,16 @@ export class TrashRepository {
   async empty(userId: string): Promise<number> {
     const { numUpdatedRows } = await this.db
       .updateTable('asset')
-      .where('ownerId', '=', userId)
+      .where((eb) =>
+        eb.or([
+          eb('ownerId', '=', userId),
+          eb(
+            'libraryId',
+            'in',
+            eb.selectFrom('library').select('id').where('shared', '=', true).where('deletedAt', 'is', null),
+          ),
+        ]),
+      )
       .where('status', '=', AssetStatus.Trashed)
       .set({ status: AssetStatus.Deleted })
       .executeTakeFirst();

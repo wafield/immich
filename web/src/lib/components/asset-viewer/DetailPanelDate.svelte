@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import AssetSelectionChangeDateModal from '#lib/modals/AssetSelectionChangeDateModal.svelte';
   import { locale } from '#lib/stores/preferences.store.ts';
+  import { isAssetOwner } from '#lib/utils/asset-utils.ts';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import { type AssetResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
-  import { mdiCalendar, mdiPencil, mdiCloudUploadOutline } from '@mdi/js';
+  import { mdiCalendar, mdiCloudUploadOutline, mdiPencil } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
@@ -21,7 +21,7 @@
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
       : fromISODateTimeUTC(asset.localDateTime),
   );
-  const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
+  const isOwner = $derived(isAssetOwner(asset));
   const uploadedDate = $derived(asset.createdAt ? DateTime.fromISO(asset.createdAt) : undefined);
 
   const handleChangeDate = async () => {

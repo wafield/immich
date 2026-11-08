@@ -8,7 +8,6 @@
   import type { OnAction, PreAction } from '#lib/components/asset-viewer/actions/action.ts';
   import ButtonContextMenu from '#lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import { assetViewerManager } from '#lib/managers/asset-viewer-manager.svelte.ts';
-  import { authManager } from '#lib/managers/auth-manager.svelte.ts';
   import { languageManager } from '#lib/managers/language-manager.svelte.ts';
   import { getAlbumAssetActions } from '#lib/services/album.service.ts';
   import { getGlobalActions } from '#lib/services/app.service.ts';
@@ -17,6 +16,7 @@
   import { getStackActions } from '#lib/services/stack.service.ts';
   import { getSharedLink, withoutIcons } from '#lib/utils.ts';
   import type { OnUndoDelete } from '#lib/utils/actions.ts';
+  import { isAssetOwner } from '#lib/utils/asset-utils.ts';
   import { getNaturalSize, getScaleTo100Zoom, getZoomPercentage } from '#lib/utils/container-utils.ts';
   import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
   import {
@@ -66,7 +66,7 @@
     viewerKind,
   }: Props = $props();
 
-  const isOwner = $derived(authManager.authenticated && asset.ownerId === authManager.user.id);
+  const isOwner = $derived(isAssetOwner(asset));
   const isLocked = $derived(asset.visibility === AssetVisibility.Locked);
 
   const isPhotoViewer = $derived(viewerKind === 'PhotoViewer');

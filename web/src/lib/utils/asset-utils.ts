@@ -4,6 +4,7 @@ import { downloadManager } from '#lib/managers/download-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import { TimelineManager } from '#lib/managers/timeline-manager/timeline-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { librariesMap } from '#lib/stores/library.store.ts';
 import { locale } from '#lib/stores/preferences.store.ts';
 import { downloadUrlPost, withError } from '#lib/utils.ts';
 import { getByteUnitString } from '#lib/utils/byte-units.ts';
@@ -20,6 +21,7 @@ import {
   type AssetResponseDto,
   type DownloadInfoDto,
   type ExifResponseDto,
+  type LibraryResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
@@ -205,10 +207,30 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
   return supportedImageMimeTypes.has(asset.originalMimeType);
 }
 
-export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
-  const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
+export const isAssetOwner = (
+  asset: { ownerId: string; libraryId?: string | null },
+  libraries?: Map<string, LibraryResponseDto>,
+): boolean => {
+  if (!authManager.authenticated) {
+    return false;
+  }
+  if (asset.ownerId === authManager.user.id) {
+    return true;
+  }
+  if (asset.libraryId) {
+    const map = libraries ?? get(librariesMap);
+    const library = map.get(asset.libraryId);
+    if (library?.shared) {
+      return true;
+    }
+  }
+  return false;
+};
 
-  const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
+export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserResponseDto | null): string[] => {
+  const ids = [...assets].filter((a) => user && isAssetOwner(a)).map((a) => a.id);
+
+  const numberOfIssues = [...assets].filter((a) => user && !isAssetOwner(a)).length;
   if (numberOfIssues > 0) {
     const $t = get(t);
     toastManager.warning($t('errors.cant_change_metadata_assets_count', { values: { count: numberOfIssues } }));

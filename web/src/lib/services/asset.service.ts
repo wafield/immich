@@ -15,8 +15,10 @@ import { Route } from '#lib/route.ts';
 import { SlideshowState, slideshowStore } from '#lib/stores/slideshow.store.ts';
 import { downloadUrl, getAssetMediaUrl, getSharedLink, sleep } from '#lib/utils.ts';
 import type { OnFavorite } from '#lib/utils/actions.ts';
+import { isAssetOwner } from '#lib/utils/asset-utils.ts';
 import { handleError } from '#lib/utils/handle-error.ts';
 import { getFormatter } from '#lib/utils/i18n.ts';
+import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 import {
   AssetJobName,
   AssetMediaSize,
@@ -36,6 +38,8 @@ import {
   mdiAlertOutline,
   mdiArchiveArrowDownOutline,
   mdiArchiveArrowUpOutline,
+  mdiCheckCircle,
+  mdiCheckCircleOutline,
   mdiCogRefreshOutline,
   mdiCompare,
   mdiContentCopy,
@@ -61,13 +65,10 @@ import {
   mdiTagMultipleOutline,
   mdiTagPlusOutline,
   mdiTune,
-  mdiCheckCircle,
-  mdiCheckCircleOutline,
 } from '@mdi/js';
 import { t, type MessageFormatter } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { toTimelineAsset } from '#lib/utils/timeline-util.ts';
 
 export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseDto) => {
   const assetIds = assetMultiSelectManager.assets.map((asset) => asset.id);
@@ -183,7 +184,7 @@ export const getAssetActions = (
 ) => {
   const sharedLink = getSharedLink();
   const authUser = authManager.authenticated ? authManager.user : undefined;
-  const isOwner = !!(authUser && authUser.id === asset.ownerId);
+  const isOwner = isAssetOwner(asset);
   const isAlbumOwner = !!(authUser && authUser.id === album?.albumUsers[0].user.id);
   const smartSearchEnabled = !!authUser && readPreloadedQuery(getUserConfigQuery()).machineLearning.clip.enabled;
 
@@ -413,7 +414,8 @@ export const getAssetActions = (
   };
 
   const Gemini: ActionItem = {
-    title: assetViewerManager.geminiResponsesCount > 0 ? `Gemini (${assetViewerManager.geminiResponsesCount})` : 'Gemini',
+    title:
+      assetViewerManager.geminiResponsesCount > 0 ? `Gemini (${assetViewerManager.geminiResponsesCount})` : 'Gemini',
     icon: mdiCreation,
     onAction: () => assetViewerManager.toggleGeminiPanel(),
   };

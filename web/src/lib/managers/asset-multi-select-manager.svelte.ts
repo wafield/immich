@@ -1,6 +1,7 @@
 import { authManager } from '#lib/managers/auth-manager.svelte.ts';
 import { eventManager } from '#lib/managers/event-manager.svelte.ts';
 import type { TimelineAsset } from '#lib/managers/timeline-manager/types.ts';
+import { isAssetOwner } from '#lib/utils/asset-utils.ts';
 import { AssetVisibility } from '@immich/sdk';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
@@ -20,16 +21,12 @@ export class AssetMultiSelectManager {
   selectionActive = $derived(this.#selectedMap.size > 0);
 
   assets = $derived(Array.from(this.#selectedMap.values()));
-  ownedAssets = $derived(
-    authManager.authenticated ? this.assets.filter((asset) => asset.ownerId === authManager.user.id) : this.assets,
-  );
+  ownedAssets = $derived(authManager.authenticated ? this.assets.filter((asset) => isAssetOwner(asset)) : this.assets);
 
   isAllTrashed = $derived(this.assets.every((asset) => asset.isTrashed));
   isAllArchived = $derived(this.assets.every((asset) => asset.visibility === AssetVisibility.Archive));
   isAllFavorite = $derived(this.assets.every((asset) => asset.isFavorite));
-  isAllUserOwned = $derived(
-    authManager.authenticated && this.assets.every((asset) => asset.ownerId === authManager.user.id),
-  );
+  isAllUserOwned = $derived(authManager.authenticated && this.assets.every((asset) => isAssetOwner(asset)));
 
   #unsubscribe?: () => void;
 
@@ -45,9 +42,7 @@ export class AssetMultiSelectManager {
   }
 
   getOwnedAssets() {
-    return authManager.authenticated
-      ? this.assets.filter((asset) => asset.ownerId === authManager.user.id)
-      : this.assets;
+    return authManager.authenticated ? this.assets.filter((asset) => isAssetOwner(asset)) : this.assets;
   }
 
   hasSelectedAsset(assetId: string) {
