@@ -157,7 +157,7 @@ export class AssetMediaService extends BaseService {
           await this.addToSharedLink(auth.sharedLink, duplicateId);
         }
 
-        this.logger.debug(`Duplicate asset upload rejected (safeguard check): existing asset ${duplicateId}`);
+        this.logger.log(`Duplicate asset upload rejected (safeguard check): existing asset ${duplicateId}`);
         return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
       }
 
@@ -231,6 +231,8 @@ export class AssetMediaService extends BaseService {
 
       await this.eventRepository.emit('AssetCreate', { asset, file });
 
+      this.logger.log(`Asset upload successful: created new asset ${asset.id}`);
+
       return { id: asset.id, status: AssetMediaStatus.CREATED };
     } catch (error: any) {
       // clean up files
@@ -252,7 +254,9 @@ export class AssetMediaService extends BaseService {
           await this.addToSharedLink(auth.sharedLink, duplicateId);
         }
 
-        this.logger.debug(`Duplicate asset upload rejected: existing asset ${duplicateId}`);
+        this.logger.log(
+          `Duplicate asset upload rejected (race condition error handling): existing asset ${duplicateId}`,
+        );
         return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
       }
 
