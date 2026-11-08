@@ -22674,6 +22674,10 @@
             "maxItems": 128,
             "type": "array"
           },
+          "isUploadDestination": {
+            "description": "Upload destination status",
+            "type": "boolean"
+          },
           "name": {
             "description": "Library name",
             "minLength": 1,
@@ -24285,6 +24289,10 @@
             },
             "type": "array"
           },
+          "isUploadDestination": {
+            "description": "Upload destination status",
+            "type": "boolean"
+          },
           "name": {
             "description": "Library name",
             "type": "string"
@@ -24332,6 +24340,7 @@
           "exclusionPatterns",
           "id",
           "importPaths",
+          "isUploadDestination",
           "name",
           "ownerId",
           "refreshedAt",
@@ -33481,6 +33490,10 @@
             },
             "maxItems": 128,
             "type": "array"
+          },
+          "isUploadDestination": {
+            "description": "Upload destination status",
+            "type": "boolean"
           },
           "name": {
             "description": "Library name",

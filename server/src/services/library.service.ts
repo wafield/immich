@@ -254,6 +254,20 @@ export class LibraryService extends BaseService {
       await this.libraryRepository.clearDailyMoveForOwner(dto.ownerId);
     }
 
+    if (dto.isUploadDestination === true) {
+      if (!dto.uploadPath || dto.uploadPath.trim() === '') {
+        throw new BadRequestException(
+          'Target external library must have an upload path configured to be an upload destination',
+        );
+      }
+
+      if (!this.storageRepository.existsSync(dto.uploadPath)) {
+        throw new BadRequestException(`Upload path does not exist on disk: ${dto.uploadPath}`);
+      }
+
+      await this.libraryRepository.clearUploadDestinationForOwner(dto.ownerId);
+    }
+
     const library = await this.libraryRepository.create({
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
@@ -270,6 +284,7 @@ export class LibraryService extends BaseService {
       uiColor: dto.uiColor ?? null,
       shared: dto.shared ?? false,
       automatedDailyMove: dto.automatedDailyMove ?? false,
+      isUploadDestination: dto.isUploadDestination ?? false,
     });
 
     await this.eventRepository.emit('LibraryCreate');
@@ -498,6 +513,21 @@ export class LibraryService extends BaseService {
       }
 
       await this.libraryRepository.clearDailyMoveForOwner(currentLibrary.ownerId, id);
+    }
+
+    if (dto.isUploadDestination === true) {
+      const targetUploadPath = dto.uploadPath === undefined ? currentLibrary.uploadPath : dto.uploadPath;
+      if (!targetUploadPath || targetUploadPath.trim() === '') {
+        throw new BadRequestException(
+          'Target external library must have an upload path configured to be an upload destination',
+        );
+      }
+
+      if (!this.storageRepository.existsSync(targetUploadPath)) {
+        throw new BadRequestException(`Upload path does not exist on disk: ${targetUploadPath}`);
+      }
+
+      await this.libraryRepository.clearUploadDestinationForOwner(currentLibrary.ownerId, id);
     }
 
     const library = await this.libraryRepository.update(id, dto);

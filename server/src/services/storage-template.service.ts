@@ -185,7 +185,19 @@ export class StorageTemplateService extends BaseService {
     const user = await this.userRepository.get(asset.ownerId, {});
     const storageLabel = user?.storageLabel || null;
     const filename = asset.originalFileName || asset.id;
-    await this.moveAsset(asset, { storageLabel, filename });
+    const uploadLibrary = await this.libraryRepository.getUploadDestinationLibraryForOwner(asset.ownerId);
+    const isUploadedAsset =
+      !asset.isExternal || asset.originalPath.startsWith(StorageCore.getBaseFolder(StorageFolder.Upload));
+    const targetUploadPath = isUploadedAsset && uploadLibrary?.uploadPath ? uploadLibrary.uploadPath : undefined;
+
+    await this.moveAsset(asset, { storageLabel, filename }, undefined, targetUploadPath);
+    if (targetUploadPath && uploadLibrary && !asset.isExternal) {
+      await this.assetRepository.update({
+        id: asset.id,
+        libraryId: uploadLibrary.id,
+        isExternal: true,
+      });
+    }
 
     // move motion part of live photo
     if (asset.livePhotoVideoId) {
@@ -196,7 +208,14 @@ export class StorageTemplateService extends BaseService {
         return JobStatus.Failed;
       }
       const motionFilename = getLivePhotoMotionFilename(filename, livePhotoVideo.originalPath);
-      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset);
+      await this.moveAsset(livePhotoVideo, { storageLabel, filename: motionFilename }, asset, targetUploadPath);
+      if (targetUploadPath && uploadLibrary && !livePhotoVideo.isExternal) {
+        await this.assetRepository.update({
+          id: livePhotoVideo.id,
+          libraryId: uploadLibrary.id,
+          isExternal: true,
+        });
+      }
     }
     return JobStatus.Success;
   }
@@ -560,8 +579,13 @@ export class StorageTemplateService extends BaseService {
     await this.moveRepository.cleanMoveHistorySingle(assetId);
   }
 
-  async moveAsset(asset: StorageAsset, metadata: MoveAssetMetadata, stillPhoto?: StorageAsset) {
-    if (asset.isExternal || StorageCore.isAndroidMotionPath(asset.originalPath)) {
+  async moveAsset(
+    asset: StorageAsset,
+    metadata: MoveAssetMetadata,
+    stillPhoto?: StorageAsset,
+    overrideRootPath?: string,
+  ) {
+    if ((asset.isExternal && !overrideRootPath) || StorageCore.isAndroidMotionPath(asset.originalPath)) {
       // External assets are not affected by storage template
       // TODO: shouldn't this only apply to external assets?
       return;
@@ -570,7 +594,7 @@ export class StorageTemplateService extends BaseService {
     return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
       const { id, originalPath, checksum, fileSizeInByte } = asset;
       const oldPath = originalPath;
-      const newPath = await this.getTemplatePath(asset, metadata, stillPhoto);
+      const newPath = await this.getTemplatePath(asset, metadata, stillPhoto, overrideRootPath);
 
       if (!fileSizeInByte) {
         this.logger.error(`Asset ${id} missing exif info, skipping storage template migration`);

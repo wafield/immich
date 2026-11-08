@@ -181,9 +181,13 @@ export class AssetMediaService extends BaseService {
         );
       }
 
+      const uploadDestinationLibrary = await this.libraryRepository.getUploadDestinationLibraryForOwner(auth.user.id);
+      const targetLibrary = uploadDestinationLibrary?.uploadPath ? uploadDestinationLibrary : undefined;
+
       asset = await this.assetRepository.create({
         ownerId: auth.user.id,
-        libraryId: null,
+        libraryId: targetLibrary?.id ?? null,
+        ...(targetLibrary ? { isExternal: true } : {}),
 
         checksum: file.checksum,
         checksumAlgorithm: ChecksumAlgorithm.sha1File,

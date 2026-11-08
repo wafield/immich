@@ -19,6 +19,7 @@ const CreateLibrarySchema = z
     uiColor: hexColor.nullable().optional().describe('UI color (RGBA in hex format)'),
     shared: z.boolean().optional().describe('Shared status'),
     automatedDailyMove: z.boolean().optional().describe('Automated daily move status'),
+    isUploadDestination: z.boolean().optional().describe('Upload destination status'),
   })
   .meta({ id: 'CreateLibraryDto' });
 
@@ -31,6 +32,7 @@ const UpdateLibrarySchema = z
     uiColor: hexColor.nullable().optional().describe('UI color (RGBA in hex format)'),
     shared: z.boolean().optional().describe('Shared status'),
     automatedDailyMove: z.boolean().optional().describe('Automated daily move status'),
+    isUploadDestination: z.boolean().optional().describe('Upload destination status'),
   })
   .meta({ id: 'UpdateLibraryDto' });
 
@@ -80,6 +82,7 @@ const LibraryResponseSchema = z
     uiColor: z.string().nullable().describe('UI color'),
     shared: z.boolean().describe('Shared status'),
     automatedDailyMove: z.boolean().describe('Automated daily move status'),
+    isUploadDestination: z.boolean().describe('Upload destination status'),
     createdAt: isoDatetimeToDate.describe('Creation date'),
     updatedAt: isoDatetimeToDate.describe('Last update date'),
     refreshedAt: isoDatetimeToDate.nullable().describe('Last refresh date'),
@@ -137,5 +140,6 @@ export function mapLibrary(entity: Library): LibraryResponseDto {
     uiColor: entity.uiColor ?? null,
     shared: entity.shared,
     automatedDailyMove: entity.automatedDailyMove ?? false,
+    isUploadDestination: entity.isUploadDestination ?? false,
   };
 }

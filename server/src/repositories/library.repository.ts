@@ -156,4 +156,24 @@ export class LibraryRepository {
       .$if(!!excludeLibraryId, (qb) => qb.where('library.id', '!=', excludeLibraryId!))
       .execute();
   }
+
+  getUploadDestinationLibraryForOwner(ownerId: string) {
+    return this.db
+      .selectFrom('library')
+      .selectAll('library')
+      .where('library.ownerId', '=', ownerId)
+      .where('library.isUploadDestination', '=', true)
+      .where('library.deletedAt', 'is', null)
+      .executeTakeFirst();
+  }
+
+  clearUploadDestinationForOwner(ownerId: string, excludeLibraryId?: string) {
+    return this.db
+      .updateTable('library')
+      .set({ isUploadDestination: false })
+      .where('library.ownerId', '=', ownerId)
+      .where('library.isUploadDestination', '=', true)
+      .$if(!!excludeLibraryId, (qb) => qb.where('library.id', '!=', excludeLibraryId!))
+      .execute();
+  }
 }

@@ -42,6 +42,9 @@ export class LibraryTable {
   @Column({ type: 'boolean', default: false })
   automatedDailyMove!: Generated<boolean>;
 
+  @Column({ type: 'boolean', default: false })
+  isUploadDestination!: Generated<boolean>;
+
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 

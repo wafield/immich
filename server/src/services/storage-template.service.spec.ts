@@ -1,4 +1,5 @@
 import { Stats } from 'node:fs';
+import path from 'node:path';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { AssetPathType, AssetType, AssetVisibility, JobStatus, StorageFolder } from 'src/enum.js';
 import { StorageCore } from 'src/cores/storage.core.js';
@@ -155,6 +156,80 @@ describe(StorageTemplateService.name, () => {
       expect(mocks.storage.checkFileExists).toHaveBeenCalledTimes(2);
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: stillAsset.id, originalPath: newStillPicturePath });
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: motionAsset.id, originalPath: newMotionPicturePath });
+    });
+
+    it('should move uploaded asset to user upload destination external library when configured', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({
+        ownerId: user.id,
+        libraryId: 'dest-lib-1',
+        isExternal: true,
+        originalPath: `${StorageCore.getBaseFolder(StorageFolder.Upload)}/${user.id}/ab/cd/photo.jpg`,
+        originalFileName: 'photo.jpg',
+        fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+      })
+        .owner(user)
+        .exif()
+        .build();
+      const destinationLibrary = {
+        id: 'dest-lib-1',
+        ownerId: user.id,
+        uploadPath: '/external/upload',
+        isUploadDestination: true,
+      };
+      const expectedPath = path.normalize('/external/upload/2022/2022-06-19/photo.jpg');
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.library.getUploadDestinationLibraryForOwner.mockResolvedValue(destinationLibrary as any);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+      mocks.move.create.mockResolvedValueOnce({
+        id: 'move-1',
+        entityId: asset.id,
+        pathType: AssetPathType.Original,
+        oldPath: asset.originalPath,
+        newPath: expectedPath,
+      });
+
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.library.getUploadDestinationLibraryForOwner).toHaveBeenCalledWith(user.id);
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        pathType: AssetPathType.Original,
+        oldPath: asset.originalPath,
+        newPath: expectedPath,
+      });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, originalPath: expectedPath });
+    });
+
+    it('should not move scanned external asset when user has upload destination external library', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({
+        ownerId: user.id,
+        libraryId: 'dest-lib-1',
+        isExternal: true,
+        originalPath: '/external/import/existing/photo.jpg',
+        originalFileName: 'photo.jpg',
+        fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+      })
+        .owner(user)
+        .exif()
+        .build();
+      const destinationLibrary = {
+        id: 'dest-lib-1',
+        ownerId: user.id,
+        uploadPath: '/external/upload',
+        isUploadDestination: true,
+      };
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.library.getUploadDestinationLibraryForOwner.mockResolvedValue(destinationLibrary as any);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      await expect(sut.handleMigrationSingle({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.move.create).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
     it('should migrate live photo motion video alongside the still image using album in path', async () => {

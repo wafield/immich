@@ -2123,6 +2123,8 @@ export type LibraryResponseDto = {
     id: string;
     /** Import paths */
     importPaths: string[];
+    /** Upload destination status */
+    isUploadDestination: boolean;
     /** Library name */
     name: string;
     /** Owner user ID */
@@ -2145,6 +2147,8 @@ export type CreateLibraryDto = {
     exclusionPatterns?: string[];
     /** Import paths (max 128) */
     importPaths?: string[];
+    /** Upload destination status */
+    isUploadDestination?: boolean;
     /** Library name */
     name?: string;
     /** Owner user ID */
@@ -2163,6 +2167,8 @@ export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     /** Import paths (max 128) */
     importPaths?: string[];
+    /** Upload destination status */
+    isUploadDestination?: boolean;
     /** Library name */
     name?: string;
     /** Shared status */

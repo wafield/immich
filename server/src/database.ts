@@ -54,6 +54,7 @@ export type Library = {
   uiColor: string | null;
   shared: boolean;
   automatedDailyMove: boolean;
+  isUploadDestination: boolean;
   deletedAt: Date | null;
   refreshedAt: Date | null;
   assets?: MapAsset[];

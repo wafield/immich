@@ -22,6 +22,7 @@ import { authStub } from 'test/fixtures/auth.stub.js';
 import { fileStub } from 'test/fixtures/file.stub.js';
 import { userStub } from 'test/fixtures/user.stub.js';
 import { getForAsset } from 'test/mappers.js';
+import { factory } from 'test/small.factory.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
 
 const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
@@ -364,6 +365,40 @@ describe(AssetMediaService.name, () => {
         file.originalPath,
         expect.any(Date),
         new Date(createDto.fileModifiedAt),
+      );
+    });
+
+    it('should assign asset to upload destination external library when user has one configured', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 42,
+      };
+      const destinationLibrary = factory.library({
+        id: 'dest-lib-id',
+        ownerId: authStub.user1.user.id,
+        uploadPath: '/external/upload',
+        isUploadDestination: true,
+      });
+
+      mocks.library.getUploadDestinationLibraryForOwner.mockResolvedValue(destinationLibrary);
+      mocks.asset.create.mockResolvedValue(assetEntity as any);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.CREATED,
+      });
+
+      expect(mocks.library.getUploadDestinationLibraryForOwner).toHaveBeenCalledWith(authStub.user1.user.id);
+      expect(mocks.asset.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ownerId: authStub.user1.user.id,
+          libraryId: 'dest-lib-id',
+          isExternal: true,
+        }),
       );
     });
 

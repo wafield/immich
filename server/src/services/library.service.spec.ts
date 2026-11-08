@@ -1190,6 +1190,48 @@ describe(LibraryService.name, () => {
         expect.objectContaining({ automatedDailyMove: true }),
       );
     });
+
+    it('should reject enabling isUploadDestination if no uploadPath is configured', async () => {
+      const library = factory.library({ uploadPath: null });
+      mocks.library.get.mockResolvedValue(library);
+
+      await expect(sut.update('library-id', { isUploadDestination: true })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should reject enabling isUploadDestination if uploadPath does not exist on disk', async () => {
+      const library = factory.library({ uploadPath: '/missing/path' });
+      mocks.library.get.mockResolvedValue(library);
+      mocks.storage.existsSync.mockReturnValue(false);
+
+      await expect(sut.update('library-id', { isUploadDestination: true })).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+    });
+
+    it('should clear isUploadDestination from other libraries owned by same user and update target library', async () => {
+      const library = factory.library({ id: 'library-id', ownerId: 'user-1', uploadPath: '/valid/upload/path' });
+      const updatedLibrary = factory.library({
+        ...library,
+        isUploadDestination: true,
+      });
+
+      mocks.library.get.mockResolvedValue(library);
+      mocks.storage.existsSync.mockReturnValue(true);
+      mocks.library.clearUploadDestinationForOwner.mockResolvedValue([]);
+      mocks.library.update.mockResolvedValue(updatedLibrary);
+
+      await expect(sut.update('library-id', { isUploadDestination: true })).resolves.toEqual(
+        mapLibrary(updatedLibrary),
+      );
+
+      expect(mocks.library.clearUploadDestinationForOwner).toHaveBeenCalledWith('user-1', 'library-id');
+      expect(mocks.library.update).toHaveBeenCalledWith(
+        'library-id',
+        expect.objectContaining({ isUploadDestination: true }),
+      );
+    });
   });
 
   describe('create', () => {
@@ -1242,6 +1284,35 @@ describe(LibraryService.name, () => {
       ).resolves.toEqual(mapLibrary(library));
 
       expect(mocks.library.clearDailyMoveForOwner).toHaveBeenCalledWith('owner-id');
+    });
+
+    it('should reject creation with isUploadDestination if uploadPath is missing', async () => {
+      await expect(
+        sut.create({ ownerId: 'owner-id', name: 'My Library', isUploadDestination: true }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
+
+    it('should create library with isUploadDestination and clear previous library for owner', async () => {
+      const library = factory.library({
+        ownerId: 'owner-id',
+        uploadPath: '/custom/upload/path',
+        isUploadDestination: true,
+      });
+
+      mocks.storage.existsSync.mockReturnValue(true);
+      mocks.library.clearUploadDestinationForOwner.mockResolvedValue([]);
+      mocks.library.create.mockResolvedValue(library);
+
+      await expect(
+        sut.create({
+          ownerId: 'owner-id',
+          name: 'My Library',
+          uploadPath: '/custom/upload/path',
+          isUploadDestination: true,
+        }),
+      ).resolves.toEqual(mapLibrary(library));
+
+      expect(mocks.library.clearUploadDestinationForOwner).toHaveBeenCalledWith('owner-id');
     });
   });
 
