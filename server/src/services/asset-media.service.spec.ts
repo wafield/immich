@@ -367,6 +367,31 @@ describe(AssetMediaService.name, () => {
       );
     });
 
+    it('should reject a duplicate found during the pre-create safeguard check', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 0,
+      };
+
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValueOnce(assetEntity.id);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'id_1',
+        status: AssetMediaStatus.DUPLICATE,
+      });
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['fake_path/asset_1.jpeg'] },
+      });
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
     it('should handle a duplicate', async () => {
       const file = {
         uuid: 'random-uuid',
@@ -380,7 +405,7 @@ describe(AssetMediaService.name, () => {
       (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
       mocks.asset.create.mockRejectedValue(error);
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(assetEntity.id);
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValueOnce(undefined).mockResolvedValueOnce(assetEntity.id);
 
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',
@@ -879,8 +904,8 @@ describe(AssetMediaService.name, () => {
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
       mocks.asset.getByChecksums.mockResolvedValue([
-        { id: 'asset-1', checksum: file1, deletedAt: null, originalPath: '/path/to/file1.jpg' },
-        { id: 'asset-2', checksum: file2, deletedAt: null, originalPath: '/path/to/file2.jpg' },
+        { id: 'asset-1', checksum: file1, deletedAt: null, originalPath: '/path/to/file1.jpg', libraryName: null },
+        { id: 'asset-2', checksum: file2, deletedAt: null, originalPath: '/path/to/file2.jpg', libraryName: null },
       ]);
 
       await expect(
@@ -919,7 +944,7 @@ describe(AssetMediaService.name, () => {
       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');
 
       mocks.asset.getByChecksums.mockResolvedValue([
-        { id: 'asset-1', checksum: file1, deletedAt: null, originalPath: '/path/to/file1.jpg' },
+        { id: 'asset-1', checksum: file1, deletedAt: null, originalPath: '/path/to/file1.jpg', libraryName: null },
       ]);
 
       await expect(

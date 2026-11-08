@@ -689,4 +689,67 @@ describe(AssetRepository.name, () => {
       expect(counts[0] + counts[1]).toBe(assets.length);
     }, 60_000);
   });
+
+  describe('getUploadAssetIdByChecksum and getByChecksums', () => {
+    it('should match assets in owned libraries and shared libraries, but ignore other users private libraries', async () => {
+      const { ctx, sut } = setup();
+      const [{ user: user1 }, { user: user2 }] = await Promise.all([ctx.newUser(), ctx.newUser()]);
+      const libraryRepo = ctx.get(LibraryRepository);
+
+      const [user1ExtLib, sharedLib, user2PrivateLib] = await Promise.all([
+        libraryRepo.create({ ownerId: user1.id, name: 'user1-ext', importPaths: [], exclusionPatterns: [] }),
+        libraryRepo.create({
+          ownerId: user2.id,
+          name: 'shared-ext',
+          shared: true,
+          importPaths: [],
+          exclusionPatterns: [],
+        }),
+        libraryRepo.create({
+          ownerId: user2.id,
+          name: 'user2-private',
+          shared: false,
+          importPaths: [],
+          exclusionPatterns: [],
+        }),
+      ]);
+
+      const defaultChecksum = Buffer.from('checksum-default-lib');
+      const ownedExtChecksum = Buffer.from('checksum-owned-ext-lib');
+      const sharedExtChecksum = Buffer.from('checksum-shared-ext-lib');
+      const otherPrivateChecksum = Buffer.from('checksum-other-private-lib');
+
+      const [
+        { asset: defaultAsset },
+        { asset: ownedExtAsset },
+        { asset: sharedExtAsset },
+      ] = await Promise.all([
+        ctx.newAsset({ ownerId: user1.id, libraryId: null, checksum: defaultChecksum }),
+        ctx.newAsset({ ownerId: user1.id, libraryId: user1ExtLib.id, isExternal: true, checksum: ownedExtChecksum }),
+        ctx.newAsset({ ownerId: user2.id, libraryId: sharedLib.id, isExternal: true, checksum: sharedExtChecksum }),
+        ctx.newAsset({
+          ownerId: user2.id,
+          libraryId: user2PrivateLib.id,
+          isExternal: true,
+          checksum: otherPrivateChecksum,
+        }),
+      ]);
+
+      await expect(sut.getUploadAssetIdByChecksum(user1.id, defaultChecksum)).resolves.toBe(defaultAsset.id);
+      await expect(sut.getUploadAssetIdByChecksum(user1.id, ownedExtChecksum)).resolves.toBe(ownedExtAsset.id);
+      await expect(sut.getUploadAssetIdByChecksum(user1.id, sharedExtChecksum)).resolves.toBe(sharedExtAsset.id);
+      await expect(sut.getUploadAssetIdByChecksum(user1.id, otherPrivateChecksum)).resolves.toBeUndefined();
+
+      const results = await sut.getByChecksums(user1.id, [
+        defaultChecksum,
+        ownedExtChecksum,
+        sharedExtChecksum,
+        otherPrivateChecksum,
+      ]);
+
+      expect(results.map((r) => r.id).toSorted()).toEqual(
+        [defaultAsset.id, ownedExtAsset.id, sharedExtAsset.id].toSorted(),
+      );
+    });
+  });
 });

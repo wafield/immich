@@ -289,7 +289,7 @@ export class LibraryService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const assetImports: Insertable<AssetTable>[] = [];
+    const assetImports: (Insertable<AssetTable> & { checksum: Buffer; originalPath: string; ownerId: string })[] = [];
     await Promise.all(
       job.paths.map(async (path) => {
         try {
@@ -302,16 +302,47 @@ export class LibraryService extends BaseService {
       }),
     );
 
+    const existingAssets = await this.assetRepository.getByChecksums(
+      library.ownerId,
+      assetImports.map((asset) => asset.checksum),
+    );
+    const existingByChecksum = new Map(
+      existingAssets.map((asset) => [
+        asset.checksum.toString('hex'),
+        { originalPath: asset.originalPath, libraryName: asset.libraryName ?? 'Default Library' },
+      ]),
+    );
+
+    const assetsToCreate: typeof assetImports = [];
+    for (const asset of assetImports) {
+      const checksumHex = asset.checksum.toString('hex');
+      const existing = existingByChecksum.get(checksumHex);
+      if (existing) {
+        await this.notifyDuplicateAsset(
+          asset.ownerId,
+          asset.originalPath,
+          library.name,
+          existing.originalPath,
+          existing.libraryName,
+        );
+        continue;
+      }
+      existingByChecksum.set(checksumHex, { originalPath: asset.originalPath, libraryName: library.name });
+      assetsToCreate.push(asset);
+    }
+
     let assetIds: string[] = [];
     try {
       // createAll performs the actual database insertion action.
-      assetIds = await this.assetRepository.createAll(assetImports);
+      if (assetsToCreate.length > 0) {
+        assetIds = await this.assetRepository.createAll(assetsToCreate);
+      }
     } catch (error: any) {
       if (!isAssetChecksumConstraint(error)) {
         throw error;
       }
       // Upon any checksum (uniqueness) violation, try inserting the assets one by one to find the culprit.
-      for (const asset of assetImports) {
+      for (const asset of assetsToCreate) {
         try {
           const createdIds = await this.assetRepository.createAll([asset]);
           if (createdIds.length > 0) {
@@ -320,26 +351,16 @@ export class LibraryService extends BaseService {
         } catch (insertError: any) {
           // Upon another violation, this asset must be a duplicate of a previously inserted one.
           if (isAssetChecksumConstraint(insertError)) {
-            const existingAsset = await this.assetRepository.getByChecksum({
-              ownerId: asset.ownerId,
-              libraryId: asset.libraryId ?? undefined,
-              checksum: asset.checksum,
-            });
+            const [existingAsset] = await this.assetRepository.getByChecksums(asset.ownerId, [asset.checksum]);
 
             if (existingAsset) {
-              const title = 'Duplicate File Skipped';
-              const description = `New file "${asset.originalPath}" in library "${library.name}" is identical to existing asset "${existingAsset.originalPath}".`;
-              this.logger.warn(description);
-
-              const notification = await this.notificationRepository.create({
-                userId: asset.ownerId,
-                type: NotificationType.SystemMessage,
-                level: NotificationLevel.Warning,
-                title,
-                description,
-              });
-
-              this.websocketRepository.clientSend('on_notification', asset.ownerId, mapNotification(notification));
+              await this.notifyDuplicateAsset(
+                asset.ownerId,
+                asset.originalPath,
+                library.name,
+                existingAsset.originalPath,
+                existingAsset.libraryName ?? 'Default Library',
+              );
             } else {
               this.logger.error(`Failed to locate duplicate for checksum constraint`);
             }
@@ -366,6 +387,28 @@ export class LibraryService extends BaseService {
     await this.queuePostSyncJobs(assetIds);
 
     return JobStatus.Success;
+  }
+
+  private async notifyDuplicateAsset(
+    ownerId: string,
+    newPath: string,
+    newLibraryName: string,
+    existingPath: string,
+    existingLibraryName: string,
+  ) {
+    const title = 'Duplicate File Skipped';
+    const description = `File duplicate detected.\nNew: ${newPath} from ${newLibraryName}\nExisting: ${existingPath} from ${existingLibraryName}`;
+    this.logger.warn(description);
+
+    const notification = await this.notificationRepository.create({
+      userId: ownerId,
+      type: NotificationType.SystemMessage,
+      level: NotificationLevel.Warning,
+      title,
+      description,
+    });
+
+    this.websocketRepository.clientSend('on_notification', ownerId, mapNotification(notification));
   }
 
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {

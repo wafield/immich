@@ -19,7 +19,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getByIdsWithAllRelationsButStacks: vitest.fn().mockResolvedValue([]),
     getById: vitest.fn(),
     getByChecksum: vitest.fn(),
-    getByChecksums: vitest.fn(),
+    getByChecksums: vitest.fn().mockResolvedValue([]),
     getUploadAssetIdByChecksum: vitest.fn(),
     getLivePhotoCount: vitest.fn(),
     getLibraryAssetCount: vitest.fn(),

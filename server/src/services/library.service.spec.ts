@@ -669,14 +669,63 @@ describe(LibraryService.name, () => {
       expect(mocks.asset.createAll.mock.calls).toEqual([]);
     });
 
-    it('should catch checksum unique constraint errors, insert non-duplicates individually, and create notifications', async () => {
+    it('should skip duplicate assets found across owned or shared libraries before insertion and create notifications', async () => {
       const library = factory.library();
-      const duplicateAsset = AssetFactory.create({ originalPath: '/data/user1/existing.jpg' });
+      const hash1 = Buffer.from('hash-1');
+      const hash2 = Buffer.from('hash-2');
 
       const mockLibraryJob: ILibraryFileJob = {
         libraryId: library.id,
         paths: ['/data/user1/photo1.jpg', '/data/user1/photo2.jpg'],
       };
+
+      mocks.crypto.hashFile.mockResolvedValueOnce(hash1).mockResolvedValueOnce(hash2);
+      mocks.library.get.mockResolvedValue(library);
+      mocks.asset.getByChecksums.mockResolvedValue([
+        {
+          id: 'existing-id',
+          checksum: hash2,
+          deletedAt: null,
+          originalPath: '/data/shared/existing.jpg',
+          libraryName: 'Shared Library',
+        },
+      ]);
+      mocks.asset.createAll.mockResolvedValue(['asset-id-1']);
+      mocks.notification.create.mockResolvedValue({ id: 'notification-id' } as any);
+
+      await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(library.ownerId, [hash1, hash2]);
+      expect(mocks.asset.createAll).toHaveBeenCalledTimes(1);
+      expect(mocks.asset.createAll).toHaveBeenCalledWith([
+        expect.objectContaining({
+          originalPath: path.normalize('/data/user1/photo1.jpg'),
+        }),
+      ]);
+      expect(mocks.notification.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: library.ownerId,
+          type: 'SystemMessage',
+          level: 'warning',
+          title: 'Duplicate File Skipped',
+          description: `File duplicate detected.\nNew: ${path.normalize('/data/user1/photo2.jpg')} from ${library.name}\nExisting: /data/shared/existing.jpg from Shared Library`,
+        }),
+      );
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_notification', library.ownerId, expect.anything());
+    });
+
+    it('should catch checksum unique constraint errors, insert non-duplicates individually, and create notifications', async () => {
+      const library = factory.library();
+      const hash1 = Buffer.from('hash-1');
+      const hash2 = Buffer.from('hash-2');
+      const duplicateAsset = AssetFactory.create({ checksum: hash2, originalPath: '/data/user1/existing.jpg' });
+
+      const mockLibraryJob: ILibraryFileJob = {
+        libraryId: library.id,
+        paths: ['/data/user1/photo1.jpg', '/data/user1/photo2.jpg'],
+      };
+
+      mocks.crypto.hashFile.mockResolvedValueOnce(hash1).mockResolvedValueOnce(hash2);
 
       const dbError = new Error('unique constraint');
       (dbError as any).constraint_name = 'asset_ownerId_libraryId_checksum_idx';
@@ -686,18 +735,24 @@ describe(LibraryService.name, () => {
         .mockRejectedValueOnce(dbError);
 
       mocks.library.get.mockResolvedValue(library);
-      mocks.asset.getByChecksum.mockResolvedValue(duplicateAsset);
+      mocks.asset.getByChecksums
+        .mockResolvedValueOnce([])
+        .mockResolvedValueOnce([
+          {
+            id: duplicateAsset.id,
+            checksum: duplicateAsset.checksum,
+            deletedAt: null,
+            originalPath: duplicateAsset.originalPath,
+            libraryName: null,
+          },
+        ]);
       mocks.notification.create.mockResolvedValue({ id: 'notification-id' } as any);
 
       await expect(sut.handleSyncFiles(mockLibraryJob)).resolves.toBe(JobStatus.Success);
 
       expect(mocks.asset.createAll).toHaveBeenCalledTimes(3);
 
-      expect(mocks.asset.getByChecksum).toHaveBeenCalledWith({
-        ownerId: library.ownerId,
-        libraryId: library.id,
-        checksum: expect.anything(),
-      });
+      expect(mocks.asset.getByChecksums).toHaveBeenNthCalledWith(2, library.ownerId, [hash2]);
 
       expect(mocks.notification.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -705,7 +760,7 @@ describe(LibraryService.name, () => {
           type: 'SystemMessage',
           level: 'warning',
           title: 'Duplicate File Skipped',
-          description: expect.stringContaining('identical to existing asset "/data/user1/existing.jpg"'),
+          description: `File duplicate detected.\nNew: ${path.normalize('/data/user1/photo2.jpg')} from ${library.name}\nExisting: /data/user1/existing.jpg from Default Library`,
         }),
       );
 

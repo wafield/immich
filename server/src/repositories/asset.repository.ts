@@ -188,6 +188,19 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
   );
 };
 
+const isOwnedOrInSharedLibrary = (eb: ExpressionBuilder<DB, 'asset'>, userId: string) =>
+  eb.or([
+    eb('asset.ownerId', '=', asUuid(userId)),
+    eb.exists(
+      eb
+        .selectFrom('library')
+        .select(sql.lit(1).as('exists'))
+        .whereRef('library.id', '=', 'asset.libraryId')
+        .where('library.shared', '=', true)
+        .where('library.deletedAt', 'is', null),
+    ),
+  ]);
+
 @Injectable()
 export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -818,11 +831,16 @@ export class AssetRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.BUFFER]] })
   getByChecksums(userId: string, checksums: Buffer[]) {
+    if (checksums.length === 0) {
+      return Promise.resolve([]);
+    }
+
     return this.db
       .selectFrom('asset')
-      .select(['id', 'checksum', 'deletedAt', 'originalPath'])
-      .where('ownerId', '=', asUuid(userId))
-      .where('checksum', 'in', checksums)
+      .leftJoin('library', 'library.id', 'asset.libraryId')
+      .select(['asset.id', 'asset.checksum', 'asset.deletedAt', 'asset.originalPath', 'library.name as libraryName'])
+      .where((eb) => isOwnedOrInSharedLibrary(eb, userId))
+      .where('asset.checksum', 'in', checksums)
       .execute();
   }
 
@@ -831,7 +849,7 @@ export class AssetRepository {
     const asset = await this.db
       .selectFrom('asset')
       .select('id')
-      .where('ownerId', '=', asUuid(ownerId))
+      .where((eb) => isOwnedOrInSharedLibrary(eb, ownerId))
       .where('checksum', '=', checksum)
       .limit(1)
       .executeTakeFirst();
