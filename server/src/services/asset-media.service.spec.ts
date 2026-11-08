@@ -216,6 +216,16 @@ describe(AssetMediaService.name, () => {
       });
       expect(mocks.asset.getUploadAssetIdByChecksum).toHaveBeenCalledWith(authStub.admin.user.id, file1);
     });
+
+    it('should find a deleted asset tombstone', async () => {
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(undefined);
+      mocks.asset.getDeletedAssetTombstone.mockResolvedValue({ id: 'tombstone-id', assetId: 'deleted-asset-id' });
+      await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
+        id: 'deleted-asset-id',
+        status: AssetMediaStatus.DUPLICATE,
+      });
+      expect(mocks.asset.getDeletedAssetTombstone).toHaveBeenCalledWith(authStub.admin.user.id, file1);
+    });
   });
 
   describe('canUpload', () => {
@@ -416,6 +426,32 @@ describe(AssetMediaService.name, () => {
 
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',
+        status: AssetMediaStatus.DUPLICATE,
+      });
+
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['fake_path/asset_1.jpeg'] },
+      });
+      expect(mocks.user.updateUsage).not.toHaveBeenCalled();
+    });
+
+    it('should reject a duplicate when tombstone exists', async () => {
+      const file = {
+        uuid: 'random-uuid',
+        originalPath: 'fake_path/asset_1.jpeg',
+        mimeType: 'image/jpeg',
+        checksum: Buffer.from('file hash', 'utf8'),
+        originalName: 'asset_1.jpeg',
+        size: 0,
+      };
+
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValueOnce(undefined);
+      mocks.asset.getDeletedAssetTombstone.mockResolvedValueOnce({ id: 'tombstone-id', assetId: 'deleted-asset-id' });
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
+        id: 'deleted-asset-id',
         status: AssetMediaStatus.DUPLICATE,
       });
 

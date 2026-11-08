@@ -11,6 +11,7 @@ import {
   album_user_delete,
   album_user_delete_audit,
   asset_delete_audit,
+  asset_delete_tombstone,
   asset_face_audit,
   asset_metadata_audit,
   asset_ocr_delete_audit,
@@ -55,6 +56,7 @@ import { AssetTable } from 'src/schema/tables/asset.table.js';
 import { AuthChallengeTable } from 'src/schema/tables/auth-challenge.table.js';
 import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table.js';
 import { ClusterGroupTable } from 'src/schema/tables/cluster-group.table.js';
+import { DeletedAssetTombstoneTable } from 'src/schema/tables/deleted-asset-tombstone.table.js';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table.js';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table.js';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table.js';
@@ -132,6 +134,7 @@ export class ImmichDatabase {
     AssetExifTable,
     ClusterGroupTable,
     ClusterGroupRequestTable,
+    DeletedAssetTombstoneTable,
     FaceSearchTable,
     GeodataPlacesTable,
     IntegrityReportTable,
@@ -186,6 +189,7 @@ export class ImmichDatabase {
     user_delete_audit,
     partner_delete_audit,
     asset_delete_audit,
+    asset_delete_tombstone,
     album_user_after_insert,
     album_user_delete_audit,
     memory_delete_audit,
@@ -251,6 +255,8 @@ export interface DB {
   ocr_search: OcrSearchTable;
 
   face_search: FaceSearchTable;
+
+  deleted_asset_tombstone: DeletedAssetTombstoneTable;
 
   geodata_places: GeodataPlacesTable;
 

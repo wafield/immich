@@ -112,4 +112,5 @@
 1792511451454-AddPasskeyTable
 1792517020180-AddUpdateIdIndexes
 1792568637987-AddAssetOwnerIdUpdateIdIndex
-1792600000000-AddIsUploadDestinationToLibrary
+1794155204123-AddIsUploadDestinationToLibrary
+1794161516821-AddDeletedAssetTombstoneTable

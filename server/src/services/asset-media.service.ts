@@ -50,12 +50,18 @@ export class AssetMediaService extends BaseService {
 
     await this.requireAccess({ auth, permission: Permission.AssetUpload, ids: [auth.user.id] });
 
-    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, fromChecksum(checksum));
-    if (!assetId) {
-      return;
+    const bufferChecksum = fromChecksum(checksum);
+    const assetId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, bufferChecksum);
+    if (assetId) {
+      return { id: assetId, status: AssetMediaStatus.DUPLICATE };
     }
 
-    return { id: assetId, status: AssetMediaStatus.DUPLICATE };
+    const tombstone = await this.assetRepository.getDeletedAssetTombstone(auth.user.id, bufferChecksum);
+    if (tombstone) {
+      return { id: tombstone.assetId ?? tombstone.id, status: AssetMediaStatus.DUPLICATE };
+    }
+
+    return;
   }
 
   canUploadFile({ auth, fieldName, file, body }: UploadRequest): true {
@@ -161,6 +167,18 @@ export class AssetMediaService extends BaseService {
         return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
       }
 
+      const tombstone = await this.assetRepository.getDeletedAssetTombstone(auth.user.id, file.checksum);
+      if (tombstone) {
+        await this.jobRepository.queue({
+          name: JobName.FileDelete,
+          data: { files: [file.originalPath, sidecarFile?.originalPath].filter((p): p is string => !!p) },
+        });
+
+        const id = tombstone.assetId ?? tombstone.id;
+        this.logger.log(`Duplicate asset upload rejected (tombstone check): deleted asset ${id}`);
+        return { status: AssetMediaStatus.DUPLICATE, id };
+      }
+
       if (dto.livePhotoVideoId) {
         if (auth.sharedLink) {
           const ids = new Set([dto.livePhotoVideoId]);
@@ -187,7 +205,7 @@ export class AssetMediaService extends BaseService {
       asset = await this.assetRepository.create({
         ownerId: auth.user.id,
         libraryId: targetLibrary?.id ?? null,
-        ...(targetLibrary ? { isExternal: true } : {}),
+        ...(targetLibrary && { isExternal: true }),
 
         checksum: file.checksum,
         checksumAlgorithm: ChecksumAlgorithm.sha1File,

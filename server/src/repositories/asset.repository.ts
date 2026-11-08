@@ -857,6 +857,21 @@ export class AssetRepository {
     return asset?.id;
   }
 
+  async getDeletedAssetTombstone(
+    ownerId: string,
+    checksum: Buffer,
+  ): Promise<{ id: string; assetId?: string | null } | undefined> {
+    const tombstone = await this.db
+      .selectFrom('deleted_asset_tombstone')
+      .select(['id', 'assetId'])
+      .where('ownerId', '=', ownerId)
+      .where('checksum', '=', checksum)
+      .limit(1)
+      .executeTakeFirst();
+
+    return tombstone;
+  }
+
   findLivePhotoMatch(options: LivePhotoSearchOptions) {
     const { ownerId, libraryId, otherAssetId, livePhotoCID, type } = options;
     return this.db

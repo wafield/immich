@@ -120,6 +120,20 @@ export const asset_delete_audit = registerFunction({
     END`,
 });
 
+export const asset_delete_tombstone = registerFunction({
+  name: 'asset_delete_tombstone',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO deleted_asset_tombstone ("assetId", "ownerId", "checksum")
+      SELECT DISTINCT ON ("ownerId", "checksum") "id", "ownerId", "checksum"
+      FROM OLD
+      ON CONFLICT ("ownerId", "checksum") DO NOTHING;
+      RETURN NULL;
+    END`,
+});
+
 export const album_asset_delete_audit = registerFunction({
   name: 'album_asset_delete_audit',
   returnType: 'TRIGGER',
